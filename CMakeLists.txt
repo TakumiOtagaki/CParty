@@ -13,19 +13,19 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
 
-SET(SOURCE
-  src/W_final.cc 
-  src/pseudo_loop.cc 
+SET(CPARTY_CORE_SOURCES
+  src/W_final.cc
+  src/pseudo_loop.cc
   src/part_func.cc
-  src/CParty.cc
-  src/cmdline.cc
-  src/Result.cc	
-  src/s_energy_matrix.cc	
+  src/Result.cc
+  src/s_energy_matrix.cc
   src/Hotspot.cc
   src/sparse_tree.cc
   src/dot_plot.cc
   src/mea.cc
   src/centroid.cc
+  src/CPartyAPI.cc
+  src/CPartyAPI_globals.cc
 )
 
 set(constraints_SOURCE
@@ -98,11 +98,16 @@ add_library(RNA STATIC ${vienna_SOURCE})
 
 target_include_directories(RNA PRIVATE .)
 
-add_executable(CParty ${SOURCE})
+add_library(CPartyCore STATIC ${CPARTY_CORE_SOURCES})
+target_link_libraries(CPartyCore PUBLIC RNA)
+target_include_directories(CPartyCore PUBLIC src)
+target_compile_definitions(CPartyCore PUBLIC CPARTY_API_BUILD)
+
+add_executable(CParty src/CParty.cc src/cmdline.cc)
 
 # Install CParty into the bin directory
 install(TARGETS CParty RUNTIME DESTINATION bin)
 
-target_link_libraries(CParty PRIVATE RNA)
+target_link_libraries(CParty PRIVATE CPartyCore)
 
 include_directories(src)
