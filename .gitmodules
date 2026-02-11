@@ -1,0 +1,3 @@
+[submodule "ralph-loop"]
+	path = ralph-loop
+	url = https://github.com/syuya2036/ralph-loop.git
