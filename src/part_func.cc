@@ -153,8 +153,7 @@ inline pf_t W_final_pf::to_Energy(pf_t energy, cand_pos_t length) {
     return ((-log(energy) - length * log(exp_params_->pf_scale)) * exp_params_->kT / 1000.0);
 }
 
-pf_t W_final_pf::hfold_pf(sparse_tree &tree) {
-
+void W_final_pf::run_partition_dp(sparse_tree &tree) {
     for (cand_pos_t i = n; i >= 1; --i) {
         for (cand_pos_t j = i; j <= n; ++j) {
 
@@ -170,6 +169,9 @@ pf_t W_final_pf::hfold_pf(sparse_tree &tree) {
             compute_energy_WM_restricted(i, j, tree);
         }
     }
+}
+
+void W_final_pf::run_partition_exterior(sparse_tree &tree) {
     for (cand_pos_t j = TURN + 1; j <= n; j++) {
         pf_t contributions = 0;
         if (tree.tree[j].pair < 0) contributions += W[j - 1] * scale[1];
@@ -184,8 +186,9 @@ pf_t W_final_pf::hfold_pf(sparse_tree &tree) {
         }
         W[j] = contributions;
     }
-    pf_t energy = to_Energy(W[n], n);
+}
 
+void W_final_pf::finalize_partition_outputs(sparse_tree &tree) {
     // Base pair probability
     structure = std::string(n, '.');
     for (cand_pos_t i = 0; i < num_samples; ++i) {
@@ -210,6 +213,13 @@ pf_t W_final_pf::hfold_pf(sparse_tree &tree) {
     if (PSplot) {
         create_dot_plot(seq, tree.tree, MFE_structure, samples, num_samples);
     }
+}
+
+pf_t W_final_pf::hfold_pf(sparse_tree &tree) {
+    run_partition_dp(tree);
+    run_partition_exterior(tree);
+    const pf_t energy = to_Energy(W[n], n);
+    finalize_partition_outputs(tree);
 
     return energy;
 }

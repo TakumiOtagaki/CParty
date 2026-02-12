@@ -131,6 +131,14 @@ if(BUILD_TESTING)
   set_tests_properties(pseudo_loop_regression PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
   add_test(
+    NAME part_func_regression
+    COMMAND ${CMAKE_SOURCE_DIR}/tests/regression_matrix.sh
+            $<TARGET_FILE:CParty>
+            ${CMAKE_SOURCE_DIR}/tests/baselines/regression
+  )
+  set_tests_properties(part_func_regression PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
     NAME fixtures_schema
     COMMAND ${CMAKE_SOURCE_DIR}/tests/fixed_energy_fixtures.sh
             ${CMAKE_SOURCE_DIR}/tests/cparty_fixed_structure_energy/fixtures.tsv

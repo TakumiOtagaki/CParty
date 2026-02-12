@@ -110,7 +110,7 @@
         "src/part_func.cc",
         "tests/*part_func*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 5,

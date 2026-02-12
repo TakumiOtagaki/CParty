@@ -178,6 +178,12 @@ class W_final_pf {
 
     void exp_params_rescale(double mfe);
 
+    void run_partition_dp(sparse_tree &tree);
+
+    void run_partition_exterior(sparse_tree &tree);
+
+    void finalize_partition_outputs(sparse_tree &tree);
+
     void compute_energy_restricted(cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
     void compute_WMv_WMp(cand_pos_t i, cand_pos_t j, std::vector<Node> &tree);
