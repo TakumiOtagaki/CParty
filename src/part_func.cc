@@ -162,7 +162,8 @@ void W_final_pf::run_partition_dp(sparse_tree &tree) {
             const pair_type ptype_closing = pair[S_[i]][S_[j]];
             const bool restricted = tree.tree[i].pair == -1 || tree.tree[j].pair == -1;
 
-            if (ptype_closing > 0 && evaluate && !restricted & !pk_only) compute_energy_restricted(i, j, tree);
+            const bool allowed_closing_pair = cparty::part_func_can_pair::can_form_allowed_pair(seq, i, j);
+            if (ptype_closing > 0 && allowed_closing_pair && evaluate && !restricted & !pk_only) compute_energy_restricted(i, j, tree);
 
             if (!pk_free) compute_pk_energies(i, j, tree);
 
@@ -289,7 +290,8 @@ pf_t W_final_pf::compute_internal_restricted(cand_pos_t i, cand_pos_t j, std::ve
         if (cparty::part_func_can_pair::can_use_internal_left_unpaired_span(up, i, k)) {
             cand_pos_t min_l = std::max(k + TURN + 1 + MAXLOOP + 2, k + j - i) - MAXLOOP - 2;
             for (cand_pos_t l = j - 1; l >= min_l; --l) {
-                if (cparty::part_func_can_pair::can_use_internal_right_unpaired_span(up, l, j)) {
+                const bool allowed_internal_pair = cparty::part_func_can_pair::can_form_allowed_pair(seq, k, l);
+                if (allowed_internal_pair && cparty::part_func_can_pair::can_use_internal_right_unpaired_span(up, l, j)) {
                     pf_t v_iloop_kl = get_energy(k, l)
                                       * exp_E_IntLoop(k - i - 1, j - l - 1, ptype_closing, rtype[pair[S_[k]][S_[l]]], S1_[i + 1], S1_[j - 1],
                                                       S1_[k - 1], S1_[l + 1], exp_params_);
@@ -388,7 +390,8 @@ void W_final_pf::compute_pk_energies(cand_pos_t i, cand_pos_t j, sparse_tree &tr
         VPL[ij] = 0;
         VPR[ij] = 0;
     } else {
-        if (ptype_closing > 0 && tree.tree[i].pair < -1 && tree.tree[j].pair < -1) compute_VP(i, j, tree);
+        const bool allowed_closing_pair = cparty::part_func_can_pair::can_form_allowed_pair(seq, i, j);
+        if (ptype_closing > 0 && allowed_closing_pair && tree.tree[i].pair < -1 && tree.tree[j].pair < -1) compute_VP(i, j, tree);
         if (tree.tree[j].pair < -1) compute_VPL(i, j, tree);
         if (tree.tree[j].pair < j) compute_VPR(i, j, tree);
     }
@@ -503,7 +506,8 @@ void W_final_pf::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     }
 
     pair_type ptype_closingip1jm1 = pair[S_[i + 1]][S_[j - 1]];
-    if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 && ptype_closingip1jm1 > 0) {
+    if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 && ptype_closingip1jm1 > 0
+        && cparty::part_func_can_pair::can_form_allowed_pair(seq, i + 1, j - 1)) {
         pf_t vp_stp = (get_e_stP(i, j) * get_energy_VP(i + 1, j - 1));
         vp_stp *= scale[2];
         contributions += vp_stp;
@@ -520,7 +524,7 @@ void W_final_pf::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
             for (cand_pos_t l = j - 1; l > max_borders; --l) {
                 pair_type ptype_closingkj = pair[S_[k]][S_[l]];
                 if (k == i + 1 && l == j - 1) continue; // I have to add or else it will add a stP version and an eintP version to the sum
-                if (tree.tree[l].pair < -1 && ptype_closingkj > 0
+                if (tree.tree[l].pair < -1 && ptype_closingkj > 0 && cparty::part_func_can_pair::can_form_allowed_pair(seq, k, l)
                     && cparty::part_func_can_pair::can_use_internal_right_unpaired_span(tree.up, l, j)) {
                     pf_t vp_iloop_kl = (get_e_intP(i, k, l, j) * get_energy_VP(k, l));
                     cand_pos_t u1 = k - i - 1;
@@ -870,7 +874,8 @@ void W_final_pf::Sample_V(cand_pos_t i, cand_pos_t j, std::string &structure,
         if (cparty::part_func_can_pair::can_use_internal_left_unpaired_span(tree.up, i, k)) {
             cand_pos_t min_l = std::max(k + TURN + 1 + MAXLOOP + 2, k + j - i) - MAXLOOP - 2;
             for (l = j - 1; l >= min_l; --l) {
-                if (cparty::part_func_can_pair::can_use_internal_right_unpaired_span(tree.up, l, j)) {
+                const bool allowed_internal_pair = cparty::part_func_can_pair::can_form_allowed_pair(seq, k, l);
+                if (allowed_internal_pair && cparty::part_func_can_pair::can_use_internal_right_unpaired_span(tree.up, l, j)) {
                     cand_pos_t u1 = k - i - 1;
                     cand_pos_t u2 = j - l - 1;
                     V_temp = get_energy(k, l)
@@ -1465,7 +1470,8 @@ void W_final_pf::Sample_VP(cand_pos_t i, cand_pos_t j, std::string &structure,
         }
     }
     pair_type ptype_closingip1jm1 = pair[S_[i + 1]][S_[j - 1]];
-    if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 && ptype_closingip1jm1 > 0) {
+    if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 && ptype_closingip1jm1 > 0
+        && cparty::part_func_can_pair::can_form_allowed_pair(seq, i + 1, j - 1)) {
         V_temp = (get_e_stP(i, j) * get_energy_VP(i + 1, j - 1));
         V_temp *= scale[2];
         qt += V_temp;
@@ -1486,7 +1492,7 @@ void W_final_pf::Sample_VP(cand_pos_t i, cand_pos_t j, std::string &structure,
             for (l = j - 1; l > max_borders; --l) {
                 pair_type ptype_closingkj = pair[S_[k]][S_[l]];
                 if (k == i + 1 && l == j - 1) continue; // I have to add or else it will add a stP version and an eintP version to the sum
-                if (tree.tree[l].pair < -1 && ptype_closingkj > 0
+                if (tree.tree[l].pair < -1 && ptype_closingkj > 0 && cparty::part_func_can_pair::can_form_allowed_pair(seq, k, l)
                     && cparty::part_func_can_pair::can_use_internal_right_unpaired_span(tree.up, l, j)) {
                     cand_pos_t u1 = k - i - 1;
                     cand_pos_t u2 = j - l - 1;

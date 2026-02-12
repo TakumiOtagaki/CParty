@@ -423,7 +423,7 @@
         "src/part_func.cc",
         "tests/*part_func_can_pair_integration*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 19,
