@@ -1,5 +1,6 @@
 // Iterative HFold files
 #include "Result.hh"
+#include "CPartyAPI.hh"
 #include "W_final.hh"
 #include "cmdline.hh"
 #include "h_globals.hh"
@@ -7,6 +8,7 @@
 #include "part_func.hh"
 // a simple driver for the HFold
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
@@ -90,6 +92,25 @@ std::string hfold(std::string seq, std::string res, double &energy, sparse_tree 
     return structure;
 }
 
+cparty::EnergyEvalOptions to_energy_eval_options(bool pk_free, bool pk_only, int dangles) {
+    cparty::EnergyEvalOptions options;
+    options.pk_free = pk_free;
+    options.pk_only = pk_only;
+    options.dangles = dangles;
+    return options;
+}
+
+double evaluate_shared_fixed_energy_or_fallback(const std::string &seq,
+                                                const std::string &db_full,
+                                                const cparty::EnergyEvalOptions &options,
+                                                double fallback_energy) {
+    const double shared_energy = get_structure_energy(seq, db_full, options);
+    if (std::isfinite(shared_energy)) {
+        return shared_energy;
+    }
+    return fallback_energy;
+}
+
 std::string hfold_pf(std::string &seq, std::string &final_structure, double &energy, std::string &MEA_structure, pf_t &MEA, std::string &centroid_structure,pf_t &distance, pf_t &frequency, pf_t &diversity, sparse_tree &tree, bool pk_free,bool pk_only,bool fatgraph, int dangles, double min_en,
                      int num_samples, bool PSplot) {
     W_final_pf min_fold(seq, final_structure, pk_free,pk_only,fatgraph, dangles, min_en, num_samples, PSplot);
@@ -140,6 +161,7 @@ int main(int argc, char *argv[]) {
     bool fatgraph = args_info.fatgraph_given;
 
     int dangles = args_info.dangles_given ? dangle_model : 2;
+    const cparty::EnergyEvalOptions energy_options = to_energy_eval_options(pk_free, pk_only, dangles);
 
     int num_samples = args_info.samples_given ? samples : 1000;
 
@@ -197,15 +219,20 @@ int main(int argc, char *argv[]) {
         std::string structure = hotspot_list[i].get_structure();
         sparse_tree tree(structure, n);
         std::string final_structure = hfold(seq, structure, energy, tree, pk_free, pk_only, dangles);
+        double reported_energy = energy;
+        if (args_info.input_structure_given) {
+            reported_energy = evaluate_shared_fixed_energy_or_fallback(seq, final_structure, energy_options, energy);
+        }
         std::string final_structure_pf = hfold_pf(seq, final_structure, energy_pf,MEA_structure,MEA,centroid_structure,distance,frequency, diversity, tree, pk_free,pk_only,fatgraph, dangles, energy, num_samples, PSplot);
 
         if (!args_info.input_structure_given && energy > 0.0) {
             energy = 0.0;
             energy_pf = 0.0;
+            reported_energy = 0.0;
             final_structure = std::string(n, '.');
         }
 
-        Result result(seq, hotspot_list[i].get_structure(), hotspot_list[i].get_energy(), final_structure, energy, final_structure_pf, energy_pf,MEA_structure,MEA,centroid_structure,distance,frequency,diversity);
+        Result result(seq, hotspot_list[i].get_structure(), hotspot_list[i].get_energy(), final_structure, reported_energy, final_structure_pf, energy_pf,MEA_structure,MEA,centroid_structure,distance,frequency,diversity);
         result_list.push_back(result);
     }
 
