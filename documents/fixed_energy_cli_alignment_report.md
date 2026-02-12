@@ -2,6 +2,14 @@
 
 Baseline source: `tests/baselines/fixed_energy_cli/density2_mfe.tsv`
 
+## Summary
+
+- compared: 22
+- skipped: 2
+- mismatched: 16
+- abs_tol: 1e-06
+- rel_tol: 1e-06
+
 ## Compared Rows (`status=ok` and `exit_code=0`)
 
 | fixture_id | flag_id | flags | cli_mfe_energy | api_structure_energy | within_tolerance |

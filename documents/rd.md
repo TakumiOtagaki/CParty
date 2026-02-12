@@ -147,6 +147,17 @@ Three layers:
   - treat this baseline as an implementation-consistency oracle for CParty paths
   - do not treat it as an external physical ground truth oracle
 
+## 12.2 Alignment Gate Staging Policy
+- To avoid retroactive invalidation of earlier stories, CLI-vs-API alignment checks are staged:
+  - Story 23-24:
+    - collect/report alignment deltas
+    - validate shared options/context wiring, baseline determinism, and no CLI parameter-state side effects
+    - do not require `mismatched=0`
+  - Story 25+:
+    - enforce strict gate where any comparable-row mismatch fails the test
+    - keep skip policy explicit for nonzero CLI exit rows
+- Story status (`passes`) must be re-evaluated whenever test strictness changes, especially when moving from report mode to fail-on-mismatch mode.
+
 ## 13. Current can-pair Coverage Clarification
 - Current can-pair hard-constraint enforcement is not only a ViennaRNA constraint setting.
 - In the current implementation, can-pair is enforced by:

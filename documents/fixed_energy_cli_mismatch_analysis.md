@@ -14,6 +14,7 @@ Inputs:
 - `EnergyEvalOptions` / `EnergyEvalContext` types and API overload were introduced (`get_structure_energy(seq, db_full, options)`).
 - Alignment test now maps CLI flags (`-p`, `-k`, `-d0`) into API options before comparison.
 - Remaining mismatch drivers are therefore no longer "API has no options input", but production-path divergence (CLI core path vs API path), model-parameter divergence, and scorer/representation differences.
+- Current execution state: Story 23/24 are treated as re-validation pending until staged non-strict gates are re-run cleanly under the updated PRD policy.
 
 ## Mismatch Categories
 - Production-path option/context mismatch: shared options exist, but CLI main execution path and API fixed-energy path are not yet unified through one production scorer/context pipeline.

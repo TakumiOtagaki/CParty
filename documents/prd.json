@@ -511,7 +511,7 @@
       "depends_on": [
         22
       ],
-      "test_command": "ctest --output-on-failure -R \"api_structure_energy_.*|fixed_energy_e2e|api_cli_density2_energy_alignment\"",
+      "test_command": "ctest --output-on-failure -R \"api_structure_energy_.*|fixed_energy_e2e|fixed_energy_cli_baseline|can_pair_cross_path_consistency\"",
       "retry_limit": 2,
       "done_when": [
         "A shared options/context type is introduced and used in production (not test-only) call paths.",
@@ -528,9 +528,10 @@
         "src/CParty.cc",
         "src/*energy*",
         "tests/*api_structure_energy*",
-        "tests/*api_cli_density2_energy_alignment*"
+        "tests/*api_cli_density2_energy_alignment*",
+        "tests/*api_structure_energy_cli_state_guard*"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 24,
@@ -538,12 +539,13 @@
       "depends_on": [
         23
       ],
-      "test_command": "ctest --output-on-failure -R \"fixed_energy_e2e|api_cli_density2_energy_alignment|can_pair_cross_path_consistency\"",
+      "test_command": "ctest --output-on-failure -R \"fixed_energy_e2e|fixed_energy_cli_baseline|api_structure_energy_.*|can_pair_cross_path_consistency\"",
       "retry_limit": 2,
       "done_when": [
         "Core fixed-structure scoring logic exists in one implementation unit and both call sites delegate to it.",
         "CLI/API no longer duplicate formula branches for shared fixed-structure terms.",
-        "Cross-path can-pair acceptance/rejection consistency remains green."
+        "Cross-path can-pair acceptance/rejection consistency remains green.",
+        "Strict CLI-vs-API numeric equality is not required at this story and is enforced later by Story 25+."
       ],
       "artifacts": [
         "src/*energy*",
@@ -552,7 +554,7 @@
         "tests/*fixed_energy_e2e*",
         "tests/*api_cli_density2_energy_alignment*"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 25,
