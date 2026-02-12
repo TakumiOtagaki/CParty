@@ -17,6 +17,7 @@ SET(CPARTY_CORE_SOURCES
   src/W_final.cc
   src/pseudo_loop.cc
   src/part_func.cc
+  src/fixed_structure_energy_internal.cc
   src/Result.cc
   src/s_energy_matrix.cc
   src/Hotspot.cc
@@ -114,6 +115,12 @@ include_directories(src)
 
 include(CTest)
 if(BUILD_TESTING)
+  add_executable(
+    fixed_energy_internal_test
+    tests/fixed_energy_internal_test.cc
+  )
+  target_link_libraries(fixed_energy_internal_test PRIVATE CPartyCore)
+
   add_test(
     NAME regression_matrix
     COMMAND ${CMAKE_SOURCE_DIR}/tests/regression_matrix.sh
@@ -144,4 +151,11 @@ if(BUILD_TESTING)
             ${CMAKE_SOURCE_DIR}/tests/cparty_fixed_structure_energy/fixtures.tsv
   )
   set_tests_properties(fixtures_schema PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME fixed_energy_internal
+    COMMAND $<TARGET_FILE:fixed_energy_internal_test>
+            ${CMAKE_SOURCE_DIR}/tests/cparty_fixed_structure_energy/fixtures.tsv
+  )
+  set_tests_properties(fixed_energy_internal PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()

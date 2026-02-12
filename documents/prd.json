@@ -128,7 +128,7 @@
         "src/*fixed*energy*",
         "tests/*fixed_energy_internal*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 6,
