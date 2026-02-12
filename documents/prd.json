@@ -6,59 +6,174 @@
     "Use small, behavior-preserving commits for refactoring steps.",
     "Do not treat CParty CLI -r output as fixed-structure energy ground truth."
   ],
+  "execution_policy": {
+    "default_retry_limit": 2,
+    "global_stop_condition": {
+      "max_consecutive_identical_failures": 3,
+      "max_total_failures": 12,
+      "halt_on_signals": [
+        "repeated_test_infrastructure_failure",
+        "fixture_schema_missing_or_unreadable",
+        "build_system_configuration_broken"
+      ]
+    }
+  },
+  "numeric_tolerance": {
+    "abs_tol": 1e-6,
+    "rel_tol": 1e-6
+  },
   "user_stories": [
     {
       "id": 1,
       "story": "Add a regression test matrix for existing CParty behavior (with combinations of -p, -k, -d, with/without -r). Focus on non-regression, finite outputs, and deterministic behavior.",
+      "depends_on": [],
       "test_command": "ctest --output-on-failure -R regression",
+      "retry_limit": 2,
+      "done_when": [
+        "Regression matrix covers all declared flag combinations.",
+        "Determinism and finite-output assertions are present.",
+        "ctest filter 'regression' passes."
+      ],
+      "artifacts": [
+        "tests/*regression*",
+        "tests/baselines/*"
+      ],
       "passes": false
     },
     {
       "id": 2,
       "story": "Create/normalize fixed-energy fixtures in tests/cparty_fixed_structure_energy/, including PK-free, H-type, K-type, and invalid cases. Ensure every valid case has consistent lengths and parseable structures.",
+      "depends_on": [1],
       "test_command": "ctest --output-on-failure -R fixtures",
+      "retry_limit": 2,
+      "done_when": [
+        "Fixture schema documented and enforced.",
+        "Valid fixtures parse and have matching sequence/structure lengths.",
+        "Invalid fixtures are explicitly tagged and tested."
+      ],
+      "artifacts": [
+        "tests/cparty_fixed_structure_energy/*",
+        "tests/cparty_fixed_structure_energy/README*"
+      ],
       "passes": false
     },
     {
       "id": 3,
       "story": "Refactor src/pseudo_loop.cc into smaller helper functions (behavior-preserving only). Add tests to prove no numeric regressions on the regression matrix.",
+      "depends_on": [1],
       "test_command": "ctest --output-on-failure -R pseudo_loop",
+      "retry_limit": 2,
+      "done_when": [
+        "pseudo_loop responsibilities split into helper functions.",
+        "Regression matrix remains within abs_tol/rel_tol.",
+        "ctest filter 'pseudo_loop' passes."
+      ],
+      "artifacts": [
+        "src/pseudo_loop.cc",
+        "tests/*pseudo_loop*"
+      ],
       "passes": false
     },
     {
       "id": 4,
       "story": "Refactor src/part_func.cc to isolate partition-function path from future fixed-structure path, without changing existing outputs.",
+      "depends_on": [1],
       "test_command": "ctest --output-on-failure -R part_func",
+      "retry_limit": 2,
+      "done_when": [
+        "Partition-function logic is isolated from fixed-structure hooks.",
+        "Existing outputs remain unchanged within abs_tol/rel_tol.",
+        "ctest filter 'part_func' passes."
+      ],
+      "artifacts": [
+        "src/part_func.cc",
+        "tests/*part_func*"
+      ],
       "passes": false
     },
     {
       "id": 5,
       "story": "Introduce an internal fixed-structure evaluator that computes E(db_full, seq) in kcal/mol and returns NaN on invalid input. Keep it internal first.",
+      "depends_on": [2, 3, 4],
       "test_command": "ctest --output-on-failure -R fixed_energy_internal",
+      "retry_limit": 2,
+      "done_when": [
+        "Internal evaluator entry point exists and is callable from tests.",
+        "Valid cases return finite kcal/mol values.",
+        "Invalid inputs return NaN."
+      ],
+      "artifacts": [
+        "src/*fixed*energy*",
+        "tests/*fixed_energy_internal*"
+      ],
       "passes": false
     },
     {
       "id": 6,
       "story": "Expose public API get_structure_energy(seq, db_full) in CPartyAPI backed by the internal evaluator. Preserve all existing public APIs.",
+      "depends_on": [5],
       "test_command": "ctest --output-on-failure -R api_structure_energy",
+      "retry_limit": 2,
+      "done_when": [
+        "Public API signature is available in headers.",
+        "API calls through to internal evaluator.",
+        "Existing public APIs remain source-compatible."
+      ],
+      "artifacts": [
+        "include/*",
+        "src/*api*",
+        "tests/*api_structure_energy*"
+      ],
       "passes": false
     },
     {
       "id": 7,
       "story": "Add deterministic and error-handling tests for get_structure_energy: valid finite outputs, repeated-call equality, and NaN on invalid input.",
+      "depends_on": [6],
       "test_command": "ctest --output-on-failure -R api_structure_energy_validation",
+      "retry_limit": 2,
+      "done_when": [
+        "Repeated identical calls produce equal outputs within abs_tol/rel_tol.",
+        "Valid inputs are finite.",
+        "Invalid inputs return NaN."
+      ],
+      "artifacts": [
+        "tests/*api_structure_energy_validation*"
+      ],
       "passes": false
     },
     {
       "id": 8,
       "story": "Add optional internal EnergyBreakdown diagnostics (debug-only) to help validate term composition (pk-free core, PK penalties, band-scaled terms, total) without changing default API behavior.",
+      "depends_on": [5],
       "test_command": "ctest --output-on-failure -R breakdown",
+      "retry_limit": 2,
+      "done_when": [
+        "Debug-only breakdown object contains requested term groups.",
+        "Breakdown total matches evaluator total within abs_tol/rel_tol.",
+        "Default public API behavior is unchanged."
+      ],
+      "artifacts": [
+        "src/*breakdown*",
+        "tests/*breakdown*"
+      ],
       "passes": false
     },
     {
       "id": 9,
       "story": "Run end-to-end fixed-energy validation on tests/cparty_fixed_structure_energy/test.multi.fa and produce a short markdown report with observed energies and any unsupported cases.",
+      "depends_on": [7, 8],
       "test_command": "ctest --output-on-failure -R fixed_energy_e2e",
+      "retry_limit": 1,
+      "done_when": [
+        "End-to-end fixture set runs successfully.",
+        "Observed energies are recorded with case identifiers.",
+        "Unsupported cases are listed with explicit reasons."
+      ],
+      "artifacts": [
+        "tests/cparty_fixed_structure_energy/test.multi.fa",
+        "documents/fixed_energy_report.md"
+      ],
       "passes": false
     }
   ]

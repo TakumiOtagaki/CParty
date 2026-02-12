@@ -76,3 +76,31 @@ Three layers:
 ## 8. Notes for Future Comparison
 - Cross-tool energy comparison with HFold/HotKnots may differ due to model and decomposition differences.
 - Use cross-tool checks only as coarse sanity checks unless full parameter/decomposition alignment is implemented.
+
+## 9. Numeric Tolerance Policy
+- Use shared tolerance settings for regression and deterministic checks:
+  - `abs_tol = 1e-6`
+  - `rel_tol = 1e-6`
+- Equality checks for floating-point outputs must use:
+  - `abs(a - b) <= max(abs_tol, rel_tol * max(abs(a), abs(b)))`
+- Exact string equality is not required for floating-point logs/reports.
+
+## 10. Dot-Bracket and Invalidity Rules
+- `db_full` must match sequence length exactly.
+- Accept unpaired symbol `.` and paired symbols supported by the current CParty parser.
+- If the structure uses unsupported bracket symbols or crossing patterns not representable by current CParty constraints, return `NaN`.
+- Invalid input examples that must return `NaN`:
+  - length mismatch between `seq` and `db_full`
+  - invalid sequence symbols after `T -> U` normalization
+  - unbalanced bracket counts
+  - representability failure under current CParty grammar
+
+## 11. Loop Safety Policy (for ralph-loop)
+- Per-story retry policy:
+  - default `retry_limit = 2`
+  - Story 9 uses `retry_limit = 1`
+- Global stop conditions:
+  - stop if the same failure signature occurs 3 times consecutively
+  - stop if total failed attempts reaches 12 in one run
+  - stop immediately on infrastructure/configuration failures (test framework broken, fixture schema unreadable, build configuration broken)
+- On stop, emit a short failure summary including failing story id, last command, and failure signature.
