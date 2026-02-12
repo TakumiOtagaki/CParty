@@ -484,6 +484,129 @@
         "documents/fixed_energy_cli_alignment_report.md"
       ],
       "passes": true
+    },
+    {
+      "id": 22,
+      "story": "Investigate and document root causes of CLI density2 MFE vs fixed-structure API energy mismatches with per-case attribution.",
+      "depends_on": [
+        21
+      ],
+      "test_command": "ctest --output-on-failure -R api_cli_density2_energy_alignment",
+      "retry_limit": 2,
+      "done_when": [
+        "Mismatch categories are explicitly documented (option/context mismatch, model-term mismatch, parser/baseline mismatch, or implementation bug).",
+        "For each current mismatched fixture/flag row, a concrete cause hypothesis is recorded with code pointer(s).",
+        "A prioritized fix order is documented and accepted for the next stages."
+      ],
+      "artifacts": [
+        "documents/fixed_energy_cli_alignment_report.md",
+        "documents/fixed_energy_cli_mismatch_analysis.md"
+      ],
+      "passes": false
+    },
+    {
+      "id": 23,
+      "story": "Introduce shared EnergyEvalOptions/EnergyEvalContext so CLI and get_structure_energy evaluate fixed structures under identical policy/options.",
+      "depends_on": [
+        22
+      ],
+      "test_command": "ctest --output-on-failure -R \"api_structure_energy_.*|fixed_energy_e2e|api_cli_density2_energy_alignment\"",
+      "retry_limit": 2,
+      "done_when": [
+        "A shared options/context type is introduced and threaded through both CLI fixed-structure evaluation and API path.",
+        "Flags/policy knobs relevant to can-pair and density behavior are represented explicitly in the shared context.",
+        "No behavior regression is introduced for existing fixed-energy API validation and compatibility tests."
+      ],
+      "artifacts": [
+        "src/CPartyAPI.hh",
+        "src/CPartyAPI.cc",
+        "src/*energy*",
+        "tests/*api_structure_energy*",
+        "tests/*api_cli_density2_energy_alignment*"
+      ],
+      "passes": false
+    },
+    {
+      "id": 24,
+      "story": "Refactor fixed-structure energy computation into a single shared scorer used by both CLI density2 output and public API, while preserving current semantics.",
+      "depends_on": [
+        23
+      ],
+      "test_command": "ctest --output-on-failure -R \"fixed_energy_e2e|api_cli_density2_energy_alignment|can_pair_cross_path_consistency\"",
+      "retry_limit": 2,
+      "done_when": [
+        "Core fixed-structure scoring logic exists in one implementation unit and both call sites delegate to it.",
+        "CLI/API no longer duplicate formula branches for shared fixed-structure terms.",
+        "Cross-path can-pair acceptance/rejection consistency remains green."
+      ],
+      "artifacts": [
+        "src/*energy*",
+        "src/pseudo_loop.cc",
+        "src/part_func.cc",
+        "tests/*fixed_energy_e2e*",
+        "tests/*api_cli_density2_energy_alignment*"
+      ],
+      "passes": false
+    },
+    {
+      "id": 25,
+      "story": "Harden alignment gate: treat any CLI-vs-API energy mismatch on comparable rows as test failure, and keep nonzero-exit CLI rows explicitly skipped.",
+      "depends_on": [
+        24
+      ],
+      "test_command": "ctest --output-on-failure -R api_cli_density2_energy_alignment",
+      "retry_limit": 2,
+      "done_when": [
+        "api_cli_density2_energy_alignment fails when mismatched > 0 for comparable rows.",
+        "Skipped rows are only those with nonzero CLI exit and each skip reason is recorded.",
+        "Report includes compared/skipped/mismatched counts and uses configured abs_tol/rel_tol."
+      ],
+      "artifacts": [
+        "tests/api_cli_density2_energy_alignment_test.cc",
+        "documents/fixed_energy_cli_alignment_report.md"
+      ],
+      "passes": false
+    },
+    {
+      "id": 26,
+      "story": "Reduce complexity in src/pseudo_loop.cc and src/part_func.cc with behavior-preserving extraction around can-pair and fixed-energy touchpoints.",
+      "depends_on": [
+        25
+      ],
+      "test_command": "ctest --output-on-failure -R \"pseudo_loop_refactor_phase2|part_func_refactor_phase2|can_pair_rollout_e2e|api_cli_density2_energy_alignment\"",
+      "retry_limit": 2,
+      "done_when": [
+        "Long functions in pseudo_loop/part_func are split into smaller helpers with clear names and explicit input contracts.",
+        "All existing can-pair rollout and fixed-energy alignment tests remain green after extraction.",
+        "No functional delta is introduced other than readability/testability improvements."
+      ],
+      "artifacts": [
+        "src/pseudo_loop.cc",
+        "src/part_func.cc",
+        "src/pseudo_loop.hh",
+        "src/part_func.hh"
+      ],
+      "passes": false
+    },
+    {
+      "id": 27,
+      "story": "Finalize numeric cross-path consistency: CLI density2 MFE and fixed-structure API energies are aligned for all comparable baseline rows under shared options.",
+      "depends_on": [
+        26
+      ],
+      "test_command": "ctest --output-on-failure -R \"api_cli_density2_energy_alignment|can_pair_rollout_e2e\"",
+      "retry_limit": 2,
+      "done_when": [
+        "For all comparable rows in tests/baselines/fixed_energy_cli/density2_mfe.tsv, mismatched=0 within abs_tol/rel_tol.",
+        "Known non-comparable rows are explicitly documented with deterministic skip reasons.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "documents/fixed_energy_cli_alignment_report.md",
+        "documents/fixed_energy_cli_mismatch_analysis.md",
+        "tests/baselines/fixed_energy_cli/density2_mfe.tsv"
+      ],
+      "passes": false
     }
   ]
 }
