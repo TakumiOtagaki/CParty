@@ -10,13 +10,20 @@ Inputs:
 - Mismatched rows: 16
 - Skipped rows (`exit_code!=0`): 2 (`pkfree_hairpin` with `-k` / `-k -d0`, both `139`)
 
+## Status Update (After Story 23 Partial Work)
+- `EnergyEvalOptions` / `EnergyEvalContext` types and API overload were introduced (`get_structure_energy(seq, db_full, options)`).
+- Alignment test now maps CLI flags (`-p`, `-k`, `-d0`) into API options before comparison.
+- Remaining mismatch drivers are therefore no longer "API has no options input", but production-path divergence (CLI core path vs API path), model-parameter divergence, and scorer/representation differences.
+
 ## Mismatch Categories
-- Option/context mismatch: CLI energy depends on runtime flags (`-p`, `-k`, `-d`) but `get_structure_energy` currently has no options input and always uses one internal evaluator configuration.
+- Production-path option/context mismatch: shared options exist, but CLI main execution path and API fixed-energy path are not yet unified through one production scorer/context pipeline.
 - Model-term mismatch: CLI default path loads Dirks/Pierce parameters while fixed-structure API path loads Turner 2004 parameters.
 - Implementation-path mismatch: fixed-structure API currently calls `W_final::hfold` (search under constraints) instead of a direct fixed-structure scorer.
 - PK constraint representation mismatch: API parser converts `[]` to `.` in `tree_structure` used to build `sparse_tree`, which can relax PK-specific tree constraints in the scoring path.
 
 ## Per-Row Attribution (Current Mismatches)
+Note: The per-row notes below were first captured before production-path unification. Option-threading observations should be revalidated after Story 24 implements shared scorer routing.
+
 | fixture_id | flag_id | delta (api - cli) | category | Cause hypothesis | Code pointers |
 | --- | --- | ---: | --- | --- | --- |
 | pkfree_hairpin | r1_p0_k0_d2 | -1.55 | model-term + implementation-path | Same structure still differs; likely parameter-set mismatch and non-direct scoring path. | `src/CParty.cc:165`, `src/fixed_structure_energy_internal.cc:57`, `src/fixed_structure_energy_internal.cc:181` |
@@ -37,10 +44,10 @@ Inputs:
 | k_type_1 | r1_p0_k1_d0 | -10.83 | option/context + model-term + implementation-path + PK representation | Same as previous with `-d0` option mismatch. | `src/CParty.cc:139`, `src/CParty.cc:142`, `src/fixed_structure_energy_internal.cc:179` |
 
 ## Prioritized Fix Order (for Stories 23+)
-1. Introduce shared `EnergyEvalOptions`/`EnergyEvalContext` and thread `pk_free`, `pk_only`, and `dangles` through both CLI and API fixed-structure evaluation entry points.
+1. Complete Story 23 in production paths: wire CLI main fixed-energy path to the same `EnergyEvalOptions`/`EnergyEvalContext` contract (current state is partial).
 2. Unify parameter loading policy for alignment tests (same `.par` source in both paths) to remove baseline model-set skew.
 3. Replace API fixed-energy `W_final::hfold` reuse with one direct fixed-structure scoring routine used by both CLI alignment flow and API.
 4. Preserve PK bracket constraints in the evaluator tree/context instead of rewriting `[]` to `.` for PK rows.
 
 ## Acceptance for Next Stage
-- This analysis is sufficient to start Story 23 (shared options/context) because the dominant mismatch classes are now concrete, code-pointed, and prioritized.
+- This analysis is sufficient to proceed with Story 23 completion and Story 24 implementation because dominant mismatch classes are concrete, code-pointed, and prioritized.

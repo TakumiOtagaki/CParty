@@ -487,7 +487,7 @@
     },
     {
       "id": 22,
-      "story": "Investigate and document root causes of CLI density2 MFE vs fixed-structure API energy mismatches with per-case attribution.",
+      "story": "Investigate and document root causes of CLI density2 MFE vs fixed-structure API energy mismatches, and keep the analysis synchronized with current code changes.",
       "depends_on": [
         21
       ],
@@ -496,7 +496,8 @@
       "done_when": [
         "Mismatch categories are explicitly documented (option/context mismatch, model-term mismatch, parser/baseline mismatch, or implementation bug).",
         "For each current mismatched fixture/flag row, a concrete cause hypothesis is recorded with code pointer(s).",
-        "A prioritized fix order is documented and accepted for the next stages."
+        "A prioritized fix order is documented and accepted for the next stages.",
+        "The analysis document is updated whenever assumptions change due to new implementation work."
       ],
       "artifacts": [
         "documents/fixed_energy_cli_alignment_report.md",
@@ -506,25 +507,28 @@
     },
     {
       "id": 23,
-      "story": "Introduce shared EnergyEvalOptions/EnergyEvalContext so CLI and get_structure_energy evaluate fixed structures under identical policy/options.",
+      "story": "Introduce shared EnergyEvalOptions/EnergyEvalContext in production code paths and wire CLI fixed-structure evaluation and get_structure_energy through the same option semantics.",
       "depends_on": [
         22
       ],
       "test_command": "ctest --output-on-failure -R \"api_structure_energy_.*|fixed_energy_e2e|api_cli_density2_energy_alignment\"",
       "retry_limit": 2,
       "done_when": [
-        "A shared options/context type is introduced and threaded through both CLI fixed-structure evaluation and API path.",
+        "A shared options/context type is introduced and used in production (not test-only) call paths.",
+        "CLI runtime flags (-p, -k, -d) are translated into the shared options/context before fixed-structure energy evaluation.",
+        "get_structure_energy overload with options uses the same shared options/context contract.",
         "Flags/policy knobs relevant to can-pair and density behavior are represented explicitly in the shared context.",
         "No behavior regression is introduced for existing fixed-energy API validation and compatibility tests."
       ],
       "artifacts": [
         "src/CPartyAPI.hh",
         "src/CPartyAPI.cc",
+        "src/CParty.cc",
         "src/*energy*",
         "tests/*api_structure_energy*",
         "tests/*api_cli_density2_energy_alignment*"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 24,
