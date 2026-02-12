@@ -518,6 +518,8 @@
         "CLI runtime flags (-p, -k, -d) are translated into the shared options/context before fixed-structure energy evaluation.",
         "get_structure_energy overload with options uses the same shared options/context contract.",
         "Flags/policy knobs relevant to can-pair and density behavior are represented explicitly in the shared context.",
+        "Invoking shared fixed-energy evaluation from CLI does not mutate or invalidate the parameter set used by subsequent CLI MFE/PF computations in the same run.",
+        "At least one regression/integration test explicitly guards against CLI parameter-state side effects introduced by shared evaluation wiring.",
         "No behavior regression is introduced for existing fixed-energy API validation and compatibility tests."
       ],
       "artifacts": [
@@ -528,7 +530,7 @@
         "tests/*api_structure_energy*",
         "tests/*api_cli_density2_energy_alignment*"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 24,
