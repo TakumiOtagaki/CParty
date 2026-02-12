@@ -56,7 +56,7 @@
         "tests/*regression*",
         "tests/baselines/*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 2,

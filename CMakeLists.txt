@@ -111,3 +111,14 @@ install(TARGETS CParty RUNTIME DESTINATION bin)
 target_link_libraries(CParty PRIVATE CPartyCore)
 
 include_directories(src)
+
+include(CTest)
+if(BUILD_TESTING)
+  add_test(
+    NAME regression_matrix
+    COMMAND ${CMAKE_SOURCE_DIR}/tests/regression_matrix.sh
+            $<TARGET_FILE:CParty>
+            ${CMAKE_SOURCE_DIR}/tests/baselines/regression
+  )
+  set_tests_properties(regression_matrix PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+endif()
