@@ -149,6 +149,12 @@ if(BUILD_TESTING)
   target_link_libraries(part_func_can_pair_integration_test PRIVATE CPartyCore)
 
   add_executable(
+    can_pair_cross_path_consistency_test
+    tests/can_pair_cross_path_consistency_test.cc
+  )
+  target_link_libraries(can_pair_cross_path_consistency_test PRIVATE CPartyCore)
+
+  add_executable(
     fixed_energy_internal_test
     tests/fixed_energy_internal_test.cc
   )
@@ -294,6 +300,12 @@ if(BUILD_TESTING)
     COMMAND $<TARGET_FILE:part_func_can_pair_integration_test>
   )
   set_tests_properties(part_func_can_pair_integration_helpers PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME can_pair_cross_path_consistency
+    COMMAND $<TARGET_FILE:can_pair_cross_path_consistency_test>
+  )
+  set_tests_properties(can_pair_cross_path_consistency PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
   add_test(
     NAME fixed_energy_cli_baseline

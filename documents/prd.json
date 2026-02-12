@@ -443,7 +443,7 @@
         "tests/*can_pair_cross_path_consistency*",
         "documents/can_pair_consistency_matrix.md"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 20,

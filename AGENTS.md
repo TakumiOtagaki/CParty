@@ -1,6 +1,7 @@
 # Agent Learnings
 
 ## Regression Patterns
+- For can-pair cross-path consistency stages, define one shared acceptance/rejection matrix with explicit `(seq, db_full, pair indices)` rows and assert the same decision across API finite/`NaN` outcomes plus pseudo-loop/part-function pair helpers.
 - For part-function can-pair integration stages, route pair-formation checks through `part_func_can_pair::can_form_allowed_pair` and keep `tree.up` span checks delegated to shared policy helpers so recurrence and backtracking stay semantically aligned.
 - For pseudo-loop can-pair integration stages, guard recurrence/backtracking pair formation with one shared helper (`can_form_allowed_pair`) and route internal `tree.up` emptiness checks through helper predicates so unsupported pairs are blocked consistently.
 - For phase-2 part-function refactors, route every `tree.up` span predicate through a tiny `part_func_can_pair` helper so recurrence and backtracking gates share identical can-pair checks and can be unit-tested.
