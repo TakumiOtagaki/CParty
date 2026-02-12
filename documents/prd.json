@@ -256,7 +256,7 @@
       "artifacts": [
         "tests/*api_structure_energy_compat*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 12,
