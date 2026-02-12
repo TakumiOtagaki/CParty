@@ -12,3 +12,4 @@
 - For staged public API rollout, add a boundary normalizer/validator first and assert `std::isnan` contracts before evaluator wiring to avoid coupling multiple stories.
 - For staged fixed-energy API rollout, gate `get_structure_energy` by feature level (PK-free first) and assert API/internal evaluator equality on enabled paths.
 - For staged PK rollout, classify `[]` pseudoknot topology at the API boundary so H-type can be enabled while K-type remains an explicit `NaN` path.
+- When enabling a previously staged-out topology (such as K-type), update earlier stage tests that asserted `NaN` so full regression remains forward-compatible.

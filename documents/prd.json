@@ -36,8 +36,8 @@
     }
   },
   "numeric_tolerance": {
-    "abs_tol": 1e-6,
-    "rel_tol": 1e-6
+    "abs_tol": 1e-06,
+    "rel_tol": 1e-06
   },
   "user_stories": [
     {
@@ -61,7 +61,9 @@
     {
       "id": 2,
       "story": "Create/normalize fixed-energy fixtures in tests/cparty_fixed_structure_energy/, including PK-free, H-type, K-type, and invalid cases. Ensure every valid case has consistent lengths and parseable structures.",
-      "depends_on": [1],
+      "depends_on": [
+        1
+      ],
       "test_command": "ctest --output-on-failure -R fixtures",
       "retry_limit": 2,
       "done_when": [
@@ -79,7 +81,9 @@
     {
       "id": 3,
       "story": "Refactor src/pseudo_loop.cc into smaller helper functions (behavior-preserving only). Add tests to prove no numeric regressions on the regression matrix.",
-      "depends_on": [1],
+      "depends_on": [
+        1
+      ],
       "test_command": "ctest --output-on-failure -R pseudo_loop",
       "retry_limit": 2,
       "done_when": [
@@ -97,7 +101,9 @@
     {
       "id": 4,
       "story": "Refactor src/part_func.cc to isolate partition-function path from future fixed-structure path, without changing existing outputs.",
-      "depends_on": [1],
+      "depends_on": [
+        1
+      ],
       "test_command": "ctest --output-on-failure -R part_func",
       "retry_limit": 2,
       "done_when": [
@@ -115,7 +121,11 @@
     {
       "id": 5,
       "story": "Introduce an internal fixed-structure evaluator that computes E(db_full, seq) in kcal/mol and returns NaN on invalid input. Keep it internal first.",
-      "depends_on": [2, 3, 4],
+      "depends_on": [
+        2,
+        3,
+        4
+      ],
       "test_command": "ctest --output-on-failure -R fixed_energy_internal",
       "retry_limit": 2,
       "done_when": [
@@ -133,7 +143,9 @@
     {
       "id": 6,
       "story": "Stage 6a: Expose public API declaration get_structure_energy(seq, db_full) in CPartyAPI (declaration only, no behavior change yet).",
-      "depends_on": [5],
+      "depends_on": [
+        5
+      ],
       "test_command": "ctest --output-on-failure -R api_structure_energy_decl",
       "retry_limit": 2,
       "done_when": [
@@ -150,7 +162,9 @@
     {
       "id": 7,
       "story": "Stage 6b: Implement API input normalization/validation layer (T->U normalization, length/symbol/structure validation) and enforce NaN contract on invalid input.",
-      "depends_on": [6],
+      "depends_on": [
+        6
+      ],
       "test_command": "ctest --output-on-failure -R api_structure_energy_validation",
       "retry_limit": 2,
       "done_when": [
@@ -168,7 +182,9 @@
     {
       "id": 8,
       "story": "Stage 6c-1: Connect API to internal evaluator for PK-free and base can-pair hard constraints.",
-      "depends_on": [7],
+      "depends_on": [
+        7
+      ],
       "test_command": "ctest --output-on-failure -R api_structure_energy_pkfree",
       "retry_limit": 2,
       "done_when": [
@@ -186,7 +202,9 @@
     {
       "id": 9,
       "story": "Stage 6c-2: Extend can-pair hard constraints and evaluator wiring for H-type pseudoknot cases.",
-      "depends_on": [8],
+      "depends_on": [
+        8
+      ],
       "test_command": "ctest --output-on-failure -R api_structure_energy_h_type",
       "retry_limit": 2,
       "done_when": [
@@ -204,7 +222,9 @@
     {
       "id": 10,
       "story": "Stage 6c-3: Extend can-pair hard constraints and evaluator wiring for K-type pseudoknot cases; keep unsupported representability as NaN.",
-      "depends_on": [9],
+      "depends_on": [
+        9
+      ],
       "test_command": "ctest --output-on-failure -R api_structure_energy_k_type",
       "retry_limit": 2,
       "done_when": [
@@ -217,12 +237,14 @@
         "src/*fixed*energy*",
         "tests/*api_structure_energy_k_type*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 11,
       "story": "Compatibility and deterministic tests for get_structure_energy: repeated-call equality, finite outputs on valid inputs, and no regressions in existing APIs.",
-      "depends_on": [10],
+      "depends_on": [
+        10
+      ],
       "test_command": "ctest --output-on-failure -R api_structure_energy_compat",
       "retry_limit": 2,
       "done_when": [
@@ -239,7 +261,9 @@
     {
       "id": 12,
       "story": "Add optional internal EnergyBreakdown diagnostics (debug-only) to help validate term composition (pk-free core, PK penalties, band-scaled terms, total) without changing default API behavior.",
-      "depends_on": [10],
+      "depends_on": [
+        10
+      ],
       "test_command": "ctest --output-on-failure -R breakdown",
       "retry_limit": 2,
       "done_when": [
@@ -257,7 +281,10 @@
     {
       "id": 13,
       "story": "Run end-to-end fixed-energy validation on tests/cparty_fixed_structure_energy/test.multi.fa and produce a short markdown report with observed energies and any unsupported cases.",
-      "depends_on": [11, 12],
+      "depends_on": [
+        11,
+        12
+      ],
       "test_command": "ctest --output-on-failure -R fixed_energy_e2e",
       "retry_limit": 1,
       "done_when": [

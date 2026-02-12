@@ -29,11 +29,13 @@ struct Case {
 
 int main() {
     const std::vector<Case> cases = {
-        {"h_type_valid", "GGGCAAAAGGCGAAAAGCCCAAAACGCC", "((((....[[[[....))))....]]]]", false, true},
-        {"h_type_valid_t_normalized", "GGGCTAAAGGCGAAAAGCCCAAAACGCC", "((((....[[[[....))))....]]]]", false, true},
-        {"h_type_invalid_can_pair", "AAAAAAAAAAAAAAAAAAAAAAAAAAAA", "((((....[[[[....))))....]]]]", true, false},
-        {"k_type_enabled", "GGCGGAAAAACCGGCAAAAACCGCCAAAAACGGGUAAUAAGCUGGAAAAAGCCCG",
+        {"k_type_valid", "GGCGGAAAAACCGGCAAAAACCGCCAAAAACGGGUAAUAAGCUGGAAAAAGCCCG",
          "(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))", false, true},
+        {"k_type_valid_t_normalized", "GGCGGAAAAACCGGCAAAAACCGCCAAAAACGGGTAAUAAGCTGGAAAAAGCCCG",
+         "(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))", false, true},
+        {"k_type_invalid_can_pair", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+         "(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))", true, false},
+        {"unsupported_noncrossing_square", "GGGCAAAAGGCGAAAAGCCCAAAACGCC", "((((....[[[[....]]]]....))))", true, false},
     };
 
     size_t failed = 0;
@@ -69,10 +71,10 @@ int main() {
     }
 
     if (failed != 0) {
-        std::cerr << "api_structure_energy_h_type_test: failed=" << failed << std::endl;
+        std::cerr << "api_structure_energy_k_type_test: failed=" << failed << std::endl;
         return 1;
     }
 
-    std::cout << "api_structure_energy_h_type_test: checked=" << cases.size() << std::endl;
+    std::cout << "api_structure_energy_k_type_test: checked=" << cases.size() << std::endl;
     return 0;
 }

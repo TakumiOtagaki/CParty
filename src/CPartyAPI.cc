@@ -112,6 +112,7 @@ bool is_valid_api_symbol(char c) { return c == 'A' || c == 'C' || c == 'G' || c 
 enum class PkTopology {
     kNone,
     kHType,
+    kKType,
     kUnsupported,
 };
 
@@ -257,7 +258,7 @@ PkTopology classify_pk_topology(const std::string &db_full) {
         return PkTopology::kUnsupported;
     }
     if (has_left_cross && has_right_cross) {
-        return PkTopology::kUnsupported;
+        return PkTopology::kKType;
     }
     return PkTopology::kHType;
 }
