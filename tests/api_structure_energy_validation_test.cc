@@ -18,8 +18,8 @@ struct Case {
 
 int main() {
     const std::vector<Case> cases = {
-        {"valid_pkfree", "GCAUGC", "(....)", true},
-        {"valid_t_normalization", "GCATGC", "(....)", true},
+        {"valid_pkfree", "GCAUGC", "(....)", false},
+        {"valid_t_normalization", "GCATGC", "(....)", false},
         {"invalid_length", "GCAAA", "(....)", true},
         {"invalid_symbol", "GCXAC", "(..).", true},
         {"invalid_unbalanced", "GCAAC", "((..)", true},

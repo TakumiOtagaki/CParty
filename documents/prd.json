@@ -181,7 +181,7 @@
         "src/*fixed*energy*",
         "tests/*api_structure_energy_pkfree*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 9,

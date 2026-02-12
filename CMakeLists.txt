@@ -133,6 +133,12 @@ if(BUILD_TESTING)
   )
   target_link_libraries(api_structure_energy_validation_test PRIVATE CPartyCore)
 
+  add_executable(
+    api_structure_energy_pkfree_test
+    tests/api_structure_energy_pkfree_test.cc
+  )
+  target_link_libraries(api_structure_energy_pkfree_test PRIVATE CPartyCore)
+
   add_test(
     NAME regression_matrix
     COMMAND ${CMAKE_SOURCE_DIR}/tests/regression_matrix.sh
@@ -182,4 +188,10 @@ if(BUILD_TESTING)
     COMMAND $<TARGET_FILE:api_structure_energy_validation_test>
   )
   set_tests_properties(api_structure_energy_validation PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME api_structure_energy_pkfree
+    COMMAND $<TARGET_FILE:api_structure_energy_pkfree_test>
+  )
+  set_tests_properties(api_structure_energy_pkfree PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()

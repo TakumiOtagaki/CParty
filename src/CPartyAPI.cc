@@ -1,6 +1,7 @@
 #include "CPartyAPI.hh"
 
 #include "W_final.hh"
+#include "fixed_structure_energy_internal.hh"
 #include "part_func.hh"
 #include "sparse_tree.hh"
 
@@ -107,6 +108,11 @@ std::string normalize_api_sequence(std::string seq) {
 }
 
 bool is_valid_api_symbol(char c) { return c == 'A' || c == 'C' || c == 'G' || c == 'U'; }
+
+bool has_pk_symbols(const std::string &db_full) {
+    return db_full.find('[') != std::string::npos || db_full.find(']') != std::string::npos || db_full.find('{') != std::string::npos ||
+           db_full.find('}') != std::string::npos || db_full.find('<') != std::string::npos || db_full.find('>') != std::string::npos;
+}
 
 bool validate_api_structure(const std::string &seq, const std::string &db_full) {
     if (seq.empty() || db_full.empty() || seq.size() != db_full.size()) {
@@ -260,6 +266,10 @@ double get_structure_energy(const std::string &seq, const std::string &db_full) 
         return std::numeric_limits<double>::quiet_NaN();
     }
 
-    // Stage 6b: normalization + validation only. Evaluator wiring is added in Stage 6c.
-    return std::numeric_limits<double>::quiet_NaN();
+    // Stage 6c-1: wire PK-free path first. PK families are staged in later stories.
+    if (has_pk_symbols(db_full)) {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+
+    return cparty::internal::evaluate_fixed_structure_energy_kcal(normalized_seq, db_full);
 }
