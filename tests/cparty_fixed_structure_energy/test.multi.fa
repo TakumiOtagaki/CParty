@@ -1,0 +1,35 @@
+>pkfree_stem | family=pk_free | expected=valid
+GCAUGC
+(....)
+
+>pkfree_hairpin | family=pk_free | expected=valid
+CGGCAACAGCCG
+((((....))))
+
+>h_type_1 | family=h_type | expected=valid
+GGGCAAAAGGCGAAAAGCCCAAAACGCC
+((((....[[[[....))))....]]]]
+
+>k_type_1 | family=k_type | expected=valid
+GGCGGAAAAACCGGCAAAAACCGCCAAAAACGGGUAAUAAGCUGGAAAAAGCCCG
+(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))
+
+>invalid_length_mismatch | family=invalid | expected=invalid | reason=length_mismatch
+GCAAA
+(....)
+
+>invalid_sequence_symbol | family=invalid | expected=invalid | reason=invalid_sequence_symbol
+GCXAC
+(..).
+
+>invalid_unbalanced_structure | family=invalid | expected=invalid | reason=unbalanced_structure
+GCAAC
+((..)
+
+>invalid_mixed_pk_families | family=invalid | expected=invalid | reason=mixed_pk_families
+AGGGGAAAAAGGAGGAAAUGGGGAAAAAAACCCCUAAAACCUCCAAAGGCGGAAAAACCCCGAAAAACCGCC
+(((((.....{{{{{...[[[[[.......)))))....}}}}}...(((((.....]]]]].....)))))
+
+>invalid_unsupported_pk_family | family=invalid | expected=invalid | reason=unsupported_pk_family
+GGGCAAAAGGCGAAAAGCCCAAAACGCC
+((((....<<<<....))))....>>>>

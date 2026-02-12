@@ -1,0 +1,10 @@
+# id	family	expected	seq	db_full	invalid_reason
+pkfree_stem	pk_free	valid	GCAUGC	(....)	-
+pkfree_hairpin	pk_free	valid	CGGCAACAGCCG	((((....))))	-
+h_type_1	h_type	valid	GGGCAAAAGGCGAAAAGCCCAAAACGCC	((((....[[[[....))))....]]]]	-
+k_type_1	k_type	valid	GGCGGAAAAACCGGCAAAAACCGCCAAAAACGGGUAAUAAGCUGGAAAAAGCCCG	(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))	-
+invalid_length_mismatch	invalid	invalid	GCAAA	(....)	length_mismatch
+invalid_sequence_symbol	invalid	invalid	GCXAC	(..).	invalid_sequence_symbol
+invalid_unbalanced_structure	invalid	invalid	GCAAC	((..)	unbalanced_structure
+invalid_mixed_pk_families	invalid	invalid	AGGGGAAAAAGGAGGAAAUGGGGAAAAAAACCCCUAAAACCUCCAAAGGCGGAAAAACCCCGAAAAACCGCC	(((((.....{{{{{...[[[[[.......)))))....}}}}}...(((((.....]]]]].....)))))	mixed_pk_families
+invalid_unsupported_pk_family	invalid	invalid	GGGCAAAAGGCGAAAAGCCCAAAACGCC	((((....<<<<....))))....>>>>	unsupported_pk_family

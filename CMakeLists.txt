@@ -121,4 +121,11 @@ if(BUILD_TESTING)
             ${CMAKE_SOURCE_DIR}/tests/baselines/regression
   )
   set_tests_properties(regression_matrix PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME fixtures_schema
+    COMMAND ${CMAKE_SOURCE_DIR}/tests/fixed_energy_fixtures.sh
+            ${CMAKE_SOURCE_DIR}/tests/cparty_fixed_structure_energy/fixtures.tsv
+  )
+  set_tests_properties(fixtures_schema PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()
