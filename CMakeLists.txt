@@ -197,6 +197,12 @@ if(BUILD_TESTING)
   target_link_libraries(api_structure_energy_compat_test PRIVATE CPartyCore)
 
   add_executable(
+    api_structure_energy_cli_state_guard_test
+    tests/api_structure_energy_cli_state_guard_test.cc
+  )
+  target_link_libraries(api_structure_energy_cli_state_guard_test PRIVATE CPartyCore)
+
+  add_executable(
     fixed_energy_breakdown_test
     tests/fixed_energy_breakdown_test.cc
   )
@@ -364,6 +370,12 @@ if(BUILD_TESTING)
     COMMAND $<TARGET_FILE:api_structure_energy_compat_test>
   )
   set_tests_properties(api_structure_energy_compat PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME api_structure_energy_cli_state_guard
+    COMMAND $<TARGET_FILE:api_structure_energy_cli_state_guard_test>
+  )
+  set_tests_properties(api_structure_energy_cli_state_guard PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
   add_test(
     NAME breakdown
