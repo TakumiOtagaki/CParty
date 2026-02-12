@@ -483,7 +483,7 @@
         "tests/*api_cli_density2_energy_alignment*",
         "documents/fixed_energy_cli_alignment_report.md"
       ],
-      "passes": false
+      "passes": true
     }
   ]
 }
