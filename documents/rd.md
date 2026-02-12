@@ -125,3 +125,23 @@ Three layers:
 - After every refactoring and every feature-addition story, run:
   - the story-local test command
   - full regression command
+
+## 13. Current can-pair Coverage Clarification
+- Current can-pair hard-constraint enforcement is not only a ViennaRNA constraint setting.
+- In the current implementation, can-pair is enforced by:
+  - API/input validation and representability checks in `get_structure_energy`
+  - internal fixed-structure evaluator validation before energy evaluation
+  - evaluator-side pair validation prior to energy calculation
+- This stage primarily guarantees can-pair behavior for the fixed-structure API path.
+- It does not yet guarantee identical can-pair enforcement semantics across all CParty algorithmic paths (`pseudo_loop`, `part_func`) in every recurrence branch.
+
+## 14. Phase-2 Goal (Full-Algorithm Consistency)
+- Next phase goal: apply can-pair hard constraints consistently across:
+  - fixed-structure API path
+  - `pseudo_loop` recurrences
+  - `part_func` recurrences
+- Required strategy:
+  - refactor long recurrence files into helper units first
+  - centralize can-pair policy in one shared helper
+  - add cross-path consistency tests for accept/reject decisions
+  - keep full regression green after each incremental step

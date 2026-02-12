@@ -298,6 +298,149 @@
         "documents/fixed_energy_report.md"
       ],
       "passes": true
+    },
+    {
+      "id": 14,
+      "story": "Phase 2 kickoff: Define a shared can-pair hard-constraint policy layer used consistently by fixed-energy API, pseudo_loop, and part_func paths.",
+      "depends_on": [
+        13
+      ],
+      "test_command": "ctest --output-on-failure -R can_pair_policy",
+      "retry_limit": 2,
+      "done_when": [
+        "Single shared can-pair policy helper exists and is documented.",
+        "Existing get_structure_energy behavior remains unchanged for current fixtures.",
+        "ctest filter 'can_pair_policy' passes.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "src/*can*pair*",
+        "src/*fixed*energy*",
+        "tests/*can_pair_policy*"
+      ],
+      "passes": false
+    },
+    {
+      "id": 15,
+      "story": "Refactor src/pseudo_loop.cc further into testable helper units to isolate can-pair decision points before behavior changes.",
+      "depends_on": [
+        14
+      ],
+      "test_command": "ctest --output-on-failure -R pseudo_loop_refactor_phase2",
+      "retry_limit": 2,
+      "done_when": [
+        "Major recurrence branches in pseudo_loop are split into helper functions.",
+        "Can-pair branching points are explicit and unit-testable.",
+        "ctest filter 'pseudo_loop_refactor_phase2' passes.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "src/pseudo_loop.cc",
+        "src/pseudo_loop.hh",
+        "tests/*pseudo_loop_refactor_phase2*"
+      ],
+      "passes": false
+    },
+    {
+      "id": 16,
+      "story": "Refactor src/part_func.cc further into testable helper units to isolate can-pair decision points before behavior changes.",
+      "depends_on": [
+        14
+      ],
+      "test_command": "ctest --output-on-failure -R part_func_refactor_phase2",
+      "retry_limit": 2,
+      "done_when": [
+        "Partition-function recurrence branches are split into helper functions.",
+        "Can-pair decision points are explicit and unit-testable.",
+        "ctest filter 'part_func_refactor_phase2' passes.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "src/part_func.cc",
+        "src/part_func.hh",
+        "tests/*part_func_refactor_phase2*"
+      ],
+      "passes": false
+    },
+    {
+      "id": 17,
+      "story": "Apply shared can-pair hard constraints in pseudo_loop energy recurrences with behavior-preserving guards for unsupported cases.",
+      "depends_on": [
+        15
+      ],
+      "test_command": "ctest --output-on-failure -R pseudo_loop_can_pair_integration",
+      "retry_limit": 2,
+      "done_when": [
+        "Pseudo-loop recurrence paths use shared can-pair policy at all intended pair checks.",
+        "Unsupported/invalid pair formations are blocked consistently.",
+        "ctest filter 'pseudo_loop_can_pair_integration' passes.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "src/pseudo_loop.cc",
+        "tests/*pseudo_loop_can_pair_integration*"
+      ],
+      "passes": false
+    },
+    {
+      "id": 18,
+      "story": "Apply shared can-pair hard constraints in part_func partition-function recurrences, matching pseudo_loop policy semantics.",
+      "depends_on": [
+        16,
+        17
+      ],
+      "test_command": "ctest --output-on-failure -R part_func_can_pair_integration",
+      "retry_limit": 2,
+      "done_when": [
+        "Partition-function recurrence paths use shared can-pair policy at all intended pair checks.",
+        "Semantics align with pseudo_loop and fixed-energy API decisions.",
+        "ctest filter 'part_func_can_pair_integration' passes.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "src/part_func.cc",
+        "tests/*part_func_can_pair_integration*"
+      ],
+      "passes": false
+    },
+    {
+      "id": 19,
+      "story": "Add cross-path consistency tests to compare can-pair acceptance/rejection outcomes across fixed-energy API, pseudo_loop, and part_func entry points.",
+      "depends_on": [
+        18
+      ],
+      "test_command": "ctest --output-on-failure -R can_pair_cross_path_consistency",
+      "retry_limit": 2,
+      "done_when": [
+        "Shared acceptance/rejection matrix is defined for representative PK-free/H-type/K-type and invalid cases.",
+        "All targeted paths agree on can-pair hard-constraint outcomes for the matrix.",
+        "ctest filter 'can_pair_cross_path_consistency' passes.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "tests/*can_pair_cross_path_consistency*",
+        "documents/can_pair_consistency_matrix.md"
+      ],
+      "passes": false
+    },
+    {
+      "id": 20,
+      "story": "Finalize full-algorithm can-pair rollout with regression/performance smoke checks and summary report.",
+      "depends_on": [
+        19
+      ],
+      "test_command": "ctest --output-on-failure -R can_pair_rollout_e2e",
+      "retry_limit": 1,
+      "done_when": [
+        "All existing regression tests and new can-pair integration tests pass together.",
+        "No critical runtime regression is observed in representative smoke inputs.",
+        "Rollout summary report documents changed decision points and any remaining limitations.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "documents/can_pair_rollout_report.md"
+      ],
+      "passes": false
     }
   ]
 }
