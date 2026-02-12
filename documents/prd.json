@@ -483,7 +483,7 @@
         "tests/*api_cli_density2_energy_alignment*",
         "documents/fixed_energy_cli_alignment_report.md"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 22,
@@ -503,7 +503,7 @@
         "documents/fixed_energy_cli_alignment_report.md",
         "documents/fixed_energy_cli_mismatch_analysis.md"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": 23,
@@ -537,24 +537,23 @@
     },
     {
       "id": 24,
-      "story": "Refactor fixed-structure energy computation into a single shared scorer used by both CLI density2 output and public API, while preserving current semantics.",
+      "story": "Core split step 1: separate fixed-structure input normalization/validation from structure representation building in fixed_structure_energy_internal (behavior-preserving).",
       "depends_on": [
         23
       ],
-      "test_command": "ctest --output-on-failure -R \"fixed_energy_e2e|fixed_energy_cli_baseline|api_structure_energy_.*|can_pair_cross_path_consistency\"",
+      "test_command": "ctest --output-on-failure -R \"api_structure_energy_validation|fixed_energy_internal|fixed_energy_e2e|fixed_energy_cli_baseline\"",
       "retry_limit": 2,
       "done_when": [
-        "Core fixed-structure scoring logic exists in one implementation unit and both call sites delegate to it.",
-        "CLI/API no longer duplicate formula branches for shared fixed-structure terms.",
-        "Cross-path can-pair acceptance/rejection consistency remains green.",
-        "Strict CLI-vs-API numeric equality is not required at this story and is enforced later by Story 25+."
+        "Validation/normalization logic is isolated from dot-bracket-to-internal-structure conversion logic.",
+        "No behavior change is introduced for current accepted/rejected fixtures.",
+        "Stage keeps dangle mode fixed to -d2 assumptions for current refactor focus.",
+        "Related validation/internal tests pass, and full regression command passes."
       ],
       "artifacts": [
         "src/*energy*",
-        "src/pseudo_loop.cc",
-        "src/part_func.cc",
-        "tests/*fixed_energy_e2e*",
-        "tests/*api_cli_density2_energy_alignment*"
+        "tests/*fixed_energy_internal*",
+        "tests/*api_structure_energy_validation*",
+        "tests/*fixed_energy_e2e*"
       ],
       "passes": false
     },
@@ -562,7 +561,7 @@
       "id": 25,
       "story": "Harden alignment gate: treat any CLI-vs-API energy mismatch on comparable rows as test failure, and keep nonzero-exit CLI rows explicitly skipped.",
       "depends_on": [
-        24
+        31
       ],
       "test_command": "ctest --output-on-failure -R api_cli_density2_energy_alignment",
       "retry_limit": 2,
@@ -615,6 +614,94 @@
         "documents/fixed_energy_cli_alignment_report.md",
         "documents/fixed_energy_cli_mismatch_analysis.md",
         "tests/baselines/fixed_energy_cli/density2_mfe.tsv"
+      ],
+      "passes": false
+    },
+    {
+      "id": 28,
+      "story": "Core split step 2: isolate parameter-profile handling from scoring logic by introducing an explicit parameter provider path (no hidden implicit profile switch inside scorer).",
+      "depends_on": [
+        24
+      ],
+      "test_command": "ctest --output-on-failure -R \"api_structure_energy_cli_state_guard|fixed_energy_cli_baseline|fixed_energy_e2e\"",
+      "retry_limit": 2,
+      "done_when": [
+        "Parameter-profile selection (e.g., Dirks/Turner) is handled outside the scorer core.",
+        "Scorer logic consumes an already selected profile/context rather than deciding profile implicitly.",
+        "CLI parameter-state guard and baseline determinism tests pass.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "src/*energy*",
+        "tests/*api_structure_energy_cli_state_guard*",
+        "tests/*fixed_energy_cli_baseline*"
+      ],
+      "passes": false
+    },
+    {
+      "id": 29,
+      "story": "Core split step 3: extract a pure scorer-kernel entry that scores a prepared fixed-structure context in -d2 mode, independent from parsing/validation side effects.",
+      "depends_on": [
+        28
+      ],
+      "test_command": "ctest --output-on-failure -R \"fixed_energy_internal|fixed_energy_e2e|api_structure_energy_compat\"",
+      "retry_limit": 2,
+      "done_when": [
+        "A scorer-kernel function exists for prepared context and is side-effect minimal.",
+        "Prepared-context scoring path is testable without re-running full parse/normalize stack each time.",
+        "Deterministic compatibility tests remain green.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "src/fixed_structure_energy_internal.cc",
+        "src/fixed_structure_energy_internal.hh",
+        "tests/*fixed_energy_internal*",
+        "tests/*api_structure_energy_compat*"
+      ],
+      "passes": false
+    },
+    {
+      "id": 30,
+      "story": "Core split step 4: refactor W_final usage boundaries by separating DP fill and traceback responsibilities to reduce scorer-coupling complexity (behavior-preserving).",
+      "depends_on": [
+        29
+      ],
+      "test_command": "ctest --output-on-failure -R \"regression_matrix|fixed_energy_e2e|fixed_energy_cli_baseline\"",
+      "retry_limit": 2,
+      "done_when": [
+        "W_final logic is split into clearer units for DP-energy computation vs traceback/structure reconstruction responsibilities.",
+        "Refactor is behavior-preserving on regression and baseline tests.",
+        "No new global-parameter side effects are introduced.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "src/W_final.cc",
+        "src/W_final.hh",
+        "tests/*regression*",
+        "tests/*fixed_energy_cli_baseline*"
+      ],
+      "passes": false
+    },
+    {
+      "id": 31,
+      "story": "Core split step 5: wire CLI and API fixed-structure paths to the shared prepared-context scorer in -d2 mode across multiple sequences, and emit mismatch report without strict fail gate.",
+      "depends_on": [
+        30
+      ],
+      "test_command": "ctest --output-on-failure -R \"fixed_energy_cli_baseline|api_cli_density2_energy_alignment|api_structure_energy_.*|fixed_energy_e2e\"",
+      "retry_limit": 2,
+      "done_when": [
+        "CLI/API paths both use the shared prepared-context scorer for fixed-structure energy under -d2 mode.",
+        "Alignment report is generated for multiple sequence fixtures with compared/skipped/mismatched counts.",
+        "This story keeps report mode; strict mismatch fail is deferred to Story 25.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "src/CParty.cc",
+        "src/CPartyAPI.cc",
+        "src/fixed_structure_energy_internal.cc",
+        "tests/*api_cli_density2_energy_alignment*",
+        "documents/fixed_energy_cli_alignment_report.md"
       ],
       "passes": false
     }

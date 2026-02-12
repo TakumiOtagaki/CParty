@@ -157,6 +157,9 @@ Three layers:
     - enforce strict gate where any comparable-row mismatch fails the test
     - keep skip policy explicit for nonzero CLI exit rows
 - Story status (`passes`) must be re-evaluated whenever test strictness changes, especially when moving from report mode to fail-on-mismatch mode.
+- Current repository state note:
+  - `api_cli_density2_energy_alignment` is currently strict (fails when `mismatched > 0`).
+  - Therefore, stories that depend on this command must not remain `passes: true` while mismatches are present.
 
 ## 13. Current can-pair Coverage Clarification
 - Current can-pair hard-constraint enforcement is not only a ViennaRNA constraint setting.
