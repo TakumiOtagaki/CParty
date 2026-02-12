@@ -9,3 +9,4 @@
 - For partition-function refactors, keep `hfold_pf` as a thin orchestrator over explicit stage helpers (DP fill, exterior accumulation, output finalization).
 - Internal fixed-energy APIs are easiest to harden when validation (sequence/brackets/can-pair) is kept separate from the energy kernel and fixture-driven tests assert finite vs `NaN` contracts.
 - For declaration-only API stages, use a compile-time signature test (`decltype` + `static_assert`) so header contracts are verified without forcing link-time behavior changes.
+- For staged public API rollout, add a boundary normalizer/validator first and assert `std::isnan` contracts before evaluator wiring to avoid coupling multiple stories.

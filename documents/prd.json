@@ -163,7 +163,7 @@
         "src/*api*",
         "tests/*api_structure_energy_validation*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 8,

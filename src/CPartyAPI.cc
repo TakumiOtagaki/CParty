@@ -94,6 +94,93 @@ bool validate_structure(const std::string &seq, const std::string &structure) {
     return true;
 }
 
+std::string normalize_api_sequence(std::string seq) {
+    std::transform(seq.begin(), seq.end(), seq.begin(), [](unsigned char c) {
+        return static_cast<char>(std::toupper(c));
+    });
+    for (char &c : seq) {
+        if (c == 'T') {
+            c = 'U';
+        }
+    }
+    return seq;
+}
+
+bool is_valid_api_symbol(char c) { return c == 'A' || c == 'C' || c == 'G' || c == 'U'; }
+
+bool validate_api_structure(const std::string &seq, const std::string &db_full) {
+    if (seq.empty() || db_full.empty() || seq.size() != db_full.size()) {
+        return false;
+    }
+
+    std::vector<size_t> canonical_stack;
+    std::vector<size_t> square_stack;
+    std::vector<size_t> brace_stack;
+    std::vector<size_t> angle_stack;
+    bool seen_square = false;
+    bool seen_brace = false;
+    bool seen_angle = false;
+
+    for (size_t i = 0; i < db_full.size(); ++i) {
+        const char ch = db_full[i];
+        switch (ch) {
+        case '.':
+            break;
+        case '(':
+            canonical_stack.push_back(i);
+            break;
+        case ')':
+            if (canonical_stack.empty()) {
+                return false;
+            }
+            canonical_stack.pop_back();
+            break;
+        case '[':
+            seen_square = true;
+            square_stack.push_back(i);
+            break;
+        case ']':
+            seen_square = true;
+            if (square_stack.empty()) {
+                return false;
+            }
+            square_stack.pop_back();
+            break;
+        case '{':
+            seen_brace = true;
+            brace_stack.push_back(i);
+            break;
+        case '}':
+            seen_brace = true;
+            if (brace_stack.empty()) {
+                return false;
+            }
+            brace_stack.pop_back();
+            break;
+        case '<':
+            seen_angle = true;
+            angle_stack.push_back(i);
+            break;
+        case '>':
+            seen_angle = true;
+            if (angle_stack.empty()) {
+                return false;
+            }
+            angle_stack.pop_back();
+            break;
+        default:
+            return false;
+        }
+    }
+
+    if (!canonical_stack.empty() || !square_stack.empty() || !brace_stack.empty() || !angle_stack.empty()) {
+        return false;
+    }
+
+    const int pk_families = static_cast<int>(seen_square) + static_cast<int>(seen_brace) + static_cast<int>(seen_angle);
+    return pk_families <= 1;
+}
+
 bool load_turner_params_once() {
     static bool loaded = false;
     static bool success = false;
@@ -157,4 +244,22 @@ double get_cond_log_prob(const std::string &seq, const std::string &db_base) {
     const double ensemble_energy = partition.hfold_pf(tree);
 
     return -ensemble_energy / kRT;
+}
+
+double get_structure_energy(const std::string &seq, const std::string &db_full) {
+    const std::string normalized_seq = normalize_api_sequence(seq);
+    if (normalized_seq.empty()) {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    for (char c : normalized_seq) {
+        if (!is_valid_api_symbol(c)) {
+            return std::numeric_limits<double>::quiet_NaN();
+        }
+    }
+    if (!validate_api_structure(normalized_seq, db_full)) {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+
+    // Stage 6b: normalization + validation only. Evaluator wiring is added in Stage 6c.
+    return std::numeric_limits<double>::quiet_NaN();
 }
