@@ -15,3 +15,4 @@
 - For staged PK rollout, classify `[]` pseudoknot topology at the API boundary so H-type can be enabled while K-type remains an explicit `NaN` path.
 - When enabling a previously staged-out topology (such as K-type), update earlier stage tests that asserted `NaN` so full regression remains forward-compatible.
 - For compatibility gates, assert legacy API outputs before and after new API calls to detect cross-API state regressions.
+- End-to-end fixed-energy checks are easiest to keep auditable when a fixture-driven test both enforces finite/`NaN` contracts and writes a markdown report of observed energies plus unsupported reasons.

@@ -163,6 +163,12 @@ if(BUILD_TESTING)
   )
   target_link_libraries(fixed_energy_breakdown_test PRIVATE CPartyCore)
 
+  add_executable(
+    fixed_energy_e2e_test
+    tests/fixed_energy_e2e_test.cc
+  )
+  target_link_libraries(fixed_energy_e2e_test PRIVATE CPartyCore)
+
   add_test(
     NAME regression_matrix
     COMMAND ${CMAKE_SOURCE_DIR}/tests/regression_matrix.sh
@@ -243,4 +249,12 @@ if(BUILD_TESTING)
             ${CMAKE_SOURCE_DIR}/tests/cparty_fixed_structure_energy/fixtures.tsv
   )
   set_tests_properties(breakdown PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME fixed_energy_e2e
+    COMMAND $<TARGET_FILE:fixed_energy_e2e_test>
+            ${CMAKE_SOURCE_DIR}/tests/cparty_fixed_structure_energy/test.multi.fa
+            ${CMAKE_SOURCE_DIR}/documents/fixed_energy_report.md
+  )
+  set_tests_properties(fixed_energy_e2e PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()

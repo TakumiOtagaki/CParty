@@ -297,7 +297,7 @@
         "tests/cparty_fixed_structure_energy/test.multi.fa",
         "documents/fixed_energy_report.md"
       ],
-      "passes": false
+      "passes": true
     }
   ]
 }
