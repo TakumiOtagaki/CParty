@@ -184,6 +184,23 @@ bool validate_and_parse(const std::string &seq,
     return parse_structure(context.api_context.normalized_seq, db_full, context.parsed);
 }
 
+bool parse_context_for_scoring(const cparty::EnergyEvalContext &context, InternalEvalContext &internal_context) {
+    if (context.normalized_seq.empty() || context.db_full.empty()) {
+        return false;
+    }
+    if (context.options.dangles < 0 || context.options.dangles > 2) {
+        return false;
+    }
+    for (const char c : context.normalized_seq) {
+        if (!is_valid_seq_symbol(c)) {
+            return false;
+        }
+    }
+
+    internal_context.api_context = context;
+    return parse_structure(internal_context.api_context.normalized_seq, internal_context.api_context.db_full, internal_context.parsed);
+}
+
 double evaluate_from_parsed(const InternalEvalContext &context, const std::string &db_full, const ParsedStructure &parsed) {
     const std::string &sequence = context.api_context.normalized_seq;
     sparse_tree tree(parsed.tree_structure, static_cast<int>(sequence.size()));
@@ -209,38 +226,38 @@ bool build_energy_eval_context(const std::string &seq,
     return true;
 }
 
-double evaluate_fixed_structure_energy_kcal(const cparty::EnergyEvalContext &context) noexcept {
+double score_fixed_structure_energy_kcal(const cparty::EnergyEvalContext &context) noexcept {
     if (!load_turner_params_once()) {
         return quiet_nan();
     }
     InternalEvalContext internal_context;
-    if (!validate_and_parse(context.normalized_seq, context.db_full, context.options, internal_context)) {
+    if (!parse_context_for_scoring(context, internal_context)) {
         return quiet_nan();
     }
     return evaluate_from_parsed(internal_context, internal_context.api_context.db_full, internal_context.parsed);
 }
 
+double evaluate_fixed_structure_energy_kcal(const cparty::EnergyEvalContext &context) noexcept {
+    return score_fixed_structure_energy_kcal(context);
+}
+
 double evaluate_fixed_structure_energy_kcal(const std::string &seq, const std::string &db_full) noexcept {
-    if (!load_turner_params_once()) {
+    cparty::EnergyEvalContext context;
+    if (!build_energy_eval_context(seq, db_full, cparty::EnergyEvalOptions{}, context)) {
         return quiet_nan();
     }
 
-    InternalEvalContext context;
-    if (!validate_and_parse(seq, db_full, cparty::EnergyEvalOptions{}, context)) {
-        return quiet_nan();
-    }
-
-    return evaluate_from_parsed(context, context.api_context.db_full, context.parsed);
+    return score_fixed_structure_energy_kcal(context);
 }
 
 EnergyBreakdown evaluate_fixed_structure_energy_breakdown_kcal(const std::string &seq, const std::string &db_full) noexcept {
     EnergyBreakdown breakdown = {quiet_nan(), quiet_nan(), quiet_nan(), quiet_nan()};
-    if (!load_turner_params_once()) {
+    cparty::EnergyEvalContext api_context;
+    if (!build_energy_eval_context(seq, db_full, cparty::EnergyEvalOptions{}, api_context)) {
         return breakdown;
     }
-
     InternalEvalContext context;
-    if (!validate_and_parse(seq, db_full, cparty::EnergyEvalOptions{}, context)) {
+    if (!parse_context_for_scoring(api_context, context)) {
         return breakdown;
     }
 

@@ -552,7 +552,7 @@
         "tests/*fixed_energy_e2e*",
         "tests/*api_cli_density2_energy_alignment*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 25,

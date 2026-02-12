@@ -1,6 +1,7 @@
 # Agent Learnings
 
 ## Regression Patterns
+- For shared scorer rollout stages, route both CLI constrained-output reporting and `get_structure_energy(..., options)` through `build_energy_eval_context(...)` plus one internal scorer function so validation/scoring semantics stay aligned.
 - For staged CLI scorer wiring, map runtime `-p/-k/-d` flags once into `EnergyEvalOptions` and use shared fixed-energy evaluation only for constrained output reporting, while keeping PF/min-energy flow unchanged to preserve legacy CLI baselines.
 - For CLI/API fixed-energy alignment stages, parse per-row CLI flags into one shared `EnergyEvalOptions` mapping and call the API overload with that options object so `-p/-k/-d` context is threaded deterministically.
 - For final rollout gates, run one umbrella CTest stage that executes regression plus can-pair integration filters together, then perform representative deterministic smoke runs and emit a markdown report of decision points/limitations.

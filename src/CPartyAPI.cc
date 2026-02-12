@@ -352,7 +352,7 @@ double get_structure_energy(const std::string &seq,
     if (!cparty::internal::build_energy_eval_context(normalized_seq, db_full, options, context)) {
         return std::numeric_limits<double>::quiet_NaN();
     }
-    return cparty::internal::evaluate_fixed_structure_energy_kcal(context);
+    return cparty::internal::score_fixed_structure_energy_kcal(context);
 }
 
 double get_structure_energy(const std::string &seq, const std::string &db_full) {

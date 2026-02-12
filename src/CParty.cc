@@ -3,6 +3,7 @@
 #include "CPartyAPI.hh"
 #include "W_final.hh"
 #include "cmdline.hh"
+#include "fixed_structure_energy_internal.hh"
 #include "h_globals.hh"
 #include "hotspot.hh"
 #include "part_func.hh"
@@ -104,7 +105,11 @@ double evaluate_shared_fixed_energy_or_fallback(const std::string &seq,
                                                 const std::string &db_full,
                                                 const cparty::EnergyEvalOptions &options,
                                                 double fallback_energy) {
-    const double shared_energy = get_structure_energy(seq, db_full, options);
+    cparty::EnergyEvalContext context;
+    if (!cparty::internal::build_energy_eval_context(seq, db_full, options, context)) {
+        return fallback_energy;
+    }
+    const double shared_energy = cparty::internal::score_fixed_structure_energy_kcal(context);
     if (std::isfinite(shared_energy)) {
         return shared_energy;
     }
