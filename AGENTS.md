@@ -1,6 +1,7 @@
 # Agent Learnings
 
 ## Regression Patterns
+- For pseudo-loop can-pair integration stages, guard recurrence/backtracking pair formation with one shared helper (`can_form_allowed_pair`) and route internal `tree.up` emptiness checks through helper predicates so unsupported pairs are blocked consistently.
 - For phase-2 part-function refactors, route every `tree.up` span predicate through a tiny `part_func_can_pair` helper so recurrence and backtracking gates share identical can-pair checks and can be unit-tested.
 - For phase-2 DP refactors, extract `tree.up` can-pair span checks and CP-penalty math into a tiny shared helper so branch gating is unit-testable without full end-to-end folding runs.
 - For CLI baseline datasets that include unstable flag combinations, persist `exit_code` and `status` metadata so deterministic failures (for example SIGSEGV paths) are regression-testable without masking parser checks on successful cases.

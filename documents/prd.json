@@ -402,7 +402,7 @@
         "src/pseudo_loop.cc",
         "tests/*pseudo_loop_can_pair_integration*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 18,

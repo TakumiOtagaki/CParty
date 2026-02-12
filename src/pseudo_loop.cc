@@ -70,6 +70,7 @@ int pseudo_loop::compute_exterior_cases(cand_pos_t l, cand_pos_t j, sparse_tree 
 void pseudo_loop::compute_energies(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t ij = index[i] + j - i;
     const pair_type ptype_closing = pair[S_[i]][S_[j]];
+    const bool allowed_closing_pair = cparty::pseudo_loop_can_pair::can_form_allowed_pair(seq, i, j);
     bool weakly_closed_ij = tree.weakly_closed(i, j);
     // base cases:
     // a) i == j => VP[ij] = INF
@@ -80,7 +81,7 @@ void pseudo_loop::compute_energies(cand_pos_t i, cand_pos_t j, sparse_tree &tree
         VPL[ij] = INF;
         VPR[ij] = INF;
     } else {
-        if (ptype_closing > 0 && tree.tree[i].pair < -1 && tree.tree[j].pair < -1) compute_VP(i, j, tree);
+        if (ptype_closing > 0 && allowed_closing_pair && tree.tree[i].pair < -1 && tree.tree[j].pair < -1) compute_VP(i, j, tree);
 
         if (tree.tree[j].pair < -1) compute_VPL(i, j, tree);
 
@@ -226,7 +227,8 @@ energy_t pseudo_loop::compute_VP_internal_branches(cand_pos_t i, cand_pos_t j, c
     energy_t m4 = INF, m5 = INF;
 
     pair_type ptype_closingip1jm1 = pair[S_[i + 1]][S_[j - 1]];
-    if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 && ptype_closingip1jm1 > 0) {
+    if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 && ptype_closingip1jm1 > 0
+        && cparty::pseudo_loop_can_pair::can_form_allowed_pair(seq, i + 1, j - 1)) {
         m4 = get_e_stP(i, j) + get_VP(i + 1, j - 1);
     }
 
@@ -234,13 +236,14 @@ energy_t pseudo_loop::compute_VP_internal_branches(cand_pos_t i, cand_pos_t j, c
     cand_pos_t edge_i = std::min(i + MAXLOOP + 1, j - TURN - 1);
     min_borders = std::min({min_borders, edge_i});
     for (cand_pos_t k = i + 1; k < min_borders; ++k) {
-        if (tree.tree[k].pair < -1 && (tree.up[(k)-1] >= ((k) - (i)-1))) {
+        if (tree.tree[k].pair < -1 && cparty::pseudo_loop_can_pair::can_use_internal_left_unpaired_span(tree.up, i, k)) {
             cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
             cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
             max_borders = std::max({max_borders, edge_j});
             for (cand_pos_t l = j - 1; l > max_borders; --l) {
                 pair_type ptype_closingkj = pair[S_[k]][S_[l]];
-                if (tree.tree[l].pair < -1 && ptype_closingkj > 0 && (tree.up[(j)-1] >= ((j) - (l)-1))) {
+                if (tree.tree[l].pair < -1 && ptype_closingkj > 0 && cparty::pseudo_loop_can_pair::can_form_allowed_pair(seq, k, l)
+                    && cparty::pseudo_loop_can_pair::can_use_internal_right_unpaired_span(tree.up, l, j)) {
                     energy_t tmp = get_e_intP(i, k, l, j) + get_VP(k, l);
                     m5 = std::min(m5, tmp);
                 }
@@ -446,12 +449,13 @@ void pseudo_loop::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos
             // Hosna June 29, 2007
             // when we pass a stacked pair instead of an internal loop to e_int, it returns underflow,
             // so I am checking explicitely that we won't have stems instead of internal loop
-            bool empty_region_il = (tree.up[(l)-1] >= l - i - 1);       // empty between i+1 and lp-1
-            bool empty_region_lpj = (tree.up[(j)-1] >= j - lp - 1);     // empty between l+1 and ip-1
+            bool empty_region_il = cparty::pseudo_loop_can_pair::can_use_internal_left_unpaired_span(tree.up, i, l);   // empty between i+1 and lp-1
+            bool empty_region_lpj = cparty::pseudo_loop_can_pair::can_use_internal_right_unpaired_span(tree.up, lp, j); // empty between l+1 and ip-1
             bool weakly_closed_il = tree.weakly_closed(i + 1, l - 1);   // weakly closed between i+1 and lp-1
             bool weakly_closed_lpj = tree.weakly_closed(lp + 1, j - 1); // weakly closed between l+1 and ip-1
 
-            if (empty_region_il && empty_region_lpj) { //&& !(ip == (i+1) && jp==(j-1)) && !(l == (i+1) && lp == (j-1))){
+            if (empty_region_il && empty_region_lpj
+                && cparty::pseudo_loop_can_pair::can_form_allowed_pair(seq, l, lp)) { //&& !(ip == (i+1) && jp==(j-1)) && !(l == (i+1) && lp == (j-1))){
                 energy_t tmp = get_e_intP(i, l, lp, j) + get_BE(l, lp, ip, jp, tree);
                 m2 = std::min(m2, tmp);
             }
@@ -552,6 +556,9 @@ energy_t pseudo_loop::get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos
 }
 
 energy_t pseudo_loop::compute_int(cand_pos_t i, cand_pos_t j, cand_pos_t k, cand_pos_t l, const paramT *params) {
+    if (!cparty::pseudo_loop_can_pair::can_form_allowed_pair(seq, i, j) || !cparty::pseudo_loop_can_pair::can_form_allowed_pair(seq, k, l)) {
+        return INF;
+    }
 
     const pair_type ptype_closing = pair[S_[i]][S_[j]];
     return E_IntLoop(k - i - 1, j - l - 1, ptype_closing, rtype[pair[S_[k]][S_[l]]], S1_[i + 1], S1_[j - 1], S1_[k - 1], S1_[l + 1],
@@ -854,7 +861,8 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
         }
         // case 4
         pair_type ptype_closingip1jm1 = pair[S_[i + 1]][S_[j - 1]];
-        if (tree.tree[i + 1].pair < 0 && tree.tree[j - 1].pair < 0 && ptype_closingip1jm1 > 0) {
+        if (tree.tree[i + 1].pair < 0 && tree.tree[j - 1].pair < 0 && ptype_closingip1jm1 > 0
+            && cparty::pseudo_loop_can_pair::can_form_allowed_pair(seq, i + 1, j - 1)) {
             tmp = get_e_stP(i, j) + get_VP(i + 1, j - 1);
             if (tmp < min) {
                 min = tmp;
@@ -869,7 +877,7 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
             // Hosna: April 20, 2007
             // i and ip and j and jp should be in the same arc
             // it should also be the case that [i+1,ip-1] && [jp+1,j-1] are empty regions
-            if (tree.tree[k].pair < -1 && (tree.up[(k)-1] >= ((k) - (i)-1))) {
+            if (tree.tree[k].pair < -1 && cparty::pseudo_loop_can_pair::can_use_internal_left_unpaired_span(tree.up, i, k)) {
                 // Hosna, April 9th, 2007
                 // whenever we use get_borders we have to check for the correct values
                 cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
@@ -877,7 +885,8 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
                 max_borders = std::max({max_borders, edge_j});
                 for (cand_pos_t l = j - 1; l > max_borders; --l) {
                     pair_type ptype_closingkj = pair[S_[k]][S_[l]];
-                    if (tree.tree[l].pair < -1 && ptype_closingkj > 0 && (tree.up[(j)-1] >= ((j) - (l)-1))) {
+                    if (tree.tree[l].pair < -1 && ptype_closingkj > 0 && cparty::pseudo_loop_can_pair::can_form_allowed_pair(seq, k, l)
+                        && cparty::pseudo_loop_can_pair::can_use_internal_right_unpaired_span(tree.up, l, j)) {
                         // Hosna: April 20, 2007
                         // i and ip and j and jp should be in the same arc
                         tmp = get_e_intP(i, k, l, j) + get_VP(k, l);
@@ -1196,12 +1205,12 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
             if (tree.tree[l].pair >= 0 && jp <= tree.tree[l].pair && tree.tree[l].pair < j) {
                 cand_pos_t lp = tree.tree[l].pair;
 
-                bool empty_region_il = (tree.up[(l)-1] >= l - i - 1);       // empty between i+1 and lp-1
-                bool empty_region_lpj = (tree.up[(j)-1] >= j - lp - 1);     // empty between l+1 and ip-1
+                bool empty_region_il = cparty::pseudo_loop_can_pair::can_use_internal_left_unpaired_span(tree.up, i, l);   // empty between i+1 and lp-1
+                bool empty_region_lpj = cparty::pseudo_loop_can_pair::can_use_internal_right_unpaired_span(tree.up, lp, j); // empty between l+1 and ip-1
                 bool weakly_closed_il = tree.weakly_closed(i + 1, l - 1);   // weakly closed between i+1 and lp-1
                 bool weakly_closed_lpj = tree.weakly_closed(lp + 1, j - 1); // weakly closed between l+1 and ip-1
 
-                if (empty_region_il && empty_region_lpj) {
+                if (empty_region_il && empty_region_lpj && cparty::pseudo_loop_can_pair::can_form_allowed_pair(seq, l, lp)) {
                     tmp = get_e_intP(i, l, lp, j) + get_BE(l, lp, ip, jp, tree);
                     if (min > tmp) {
                         min = tmp;

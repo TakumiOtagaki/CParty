@@ -131,6 +131,12 @@ if(BUILD_TESTING)
   target_link_libraries(pseudo_loop_refactor_phase2_test PRIVATE CPartyCore)
 
   add_executable(
+    pseudo_loop_can_pair_integration_test
+    tests/pseudo_loop_can_pair_integration_test.cc
+  )
+  target_link_libraries(pseudo_loop_can_pair_integration_test PRIVATE CPartyCore)
+
+  add_executable(
     part_func_refactor_phase2_test
     tests/part_func_refactor_phase2_test.cc
   )
@@ -215,6 +221,14 @@ if(BUILD_TESTING)
   set_tests_properties(pseudo_loop_refactor_phase2 PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
   add_test(
+    NAME pseudo_loop_can_pair_integration
+    COMMAND ${CMAKE_SOURCE_DIR}/tests/regression_matrix.sh
+            $<TARGET_FILE:CParty>
+            ${CMAKE_SOURCE_DIR}/tests/baselines/regression
+  )
+  set_tests_properties(pseudo_loop_can_pair_integration PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
     NAME part_func_regression
     COMMAND ${CMAKE_SOURCE_DIR}/tests/regression_matrix.sh
             $<TARGET_FILE:CParty>
@@ -248,6 +262,12 @@ if(BUILD_TESTING)
     COMMAND $<TARGET_FILE:pseudo_loop_refactor_phase2_test>
   )
   set_tests_properties(pseudo_loop_refactor_phase2_helpers PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME pseudo_loop_can_pair_integration_helpers
+    COMMAND $<TARGET_FILE:pseudo_loop_can_pair_integration_test>
+  )
+  set_tests_properties(pseudo_loop_can_pair_integration_helpers PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
   add_test(
     NAME part_func_refactor_phase2_helpers
