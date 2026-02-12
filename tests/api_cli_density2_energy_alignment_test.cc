@@ -224,6 +224,7 @@ bool load_baseline(const std::string &path, std::vector<BaselineRow> &rows, std:
 bool write_report(const std::string &path,
                   const std::vector<ComparisonResult> &comparisons,
                   const std::vector<SkippedRow> &skipped,
+                  std::size_t mismatched,
                   std::string &error) {
     std::ofstream out(path);
     if (!out.is_open()) {
@@ -233,6 +234,12 @@ bool write_report(const std::string &path,
 
     out << "# Fixed Energy CLI Alignment Report\n\n";
     out << "Baseline source: `tests/baselines/fixed_energy_cli/density2_mfe.tsv`\n\n";
+    out << "## Summary\n\n";
+    out << "- compared: " << comparisons.size() << "\n";
+    out << "- skipped: " << skipped.size() << "\n";
+    out << "- mismatched: " << mismatched << "\n";
+    out << "- abs_tol: " << kAbsTol << "\n";
+    out << "- rel_tol: " << kRelTol << "\n\n";
     out << "## Compared Rows (`status=ok` and `exit_code=0`)\n\n";
     out << "| fixture_id | flag_id | flags | cli_mfe_energy | api_structure_energy | within_tolerance |\n";
     out << "| --- | --- | --- | --- | --- | --- |\n";
@@ -323,11 +330,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (!write_report(argv[3], comparisons, skipped, error)) {
-        std::cerr << error << std::endl;
-        return 1;
-    }
-
     if (comparisons.empty()) {
         std::cerr << "api_cli_density2_energy_alignment_test: no comparable rows found" << std::endl;
         return 1;
@@ -346,7 +348,19 @@ int main(int argc, char **argv) {
         }
     }
 
+    if (!write_report(argv[3], comparisons, skipped, mismatched, error)) {
+        std::cerr << error << std::endl;
+        return 1;
+    }
+
+    if (mismatched != 0) {
+        std::cerr << "api_cli_density2_energy_alignment_test: compared=" << comparisons.size()
+                  << " skipped=" << skipped.size() << " mismatched=" << mismatched << " abs_tol=" << kAbsTol
+                  << " rel_tol=" << kRelTol << std::endl;
+        return 1;
+    }
+
     std::cout << "api_cli_density2_energy_alignment_test: compared=" << comparisons.size() << " skipped=" << skipped.size()
-              << " mismatched=" << mismatched << std::endl;
+              << " mismatched=" << mismatched << " abs_tol=" << kAbsTol << " rel_tol=" << kRelTol << std::endl;
     return 0;
 }
