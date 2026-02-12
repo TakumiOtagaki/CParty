@@ -157,6 +157,12 @@ if(BUILD_TESTING)
   )
   target_link_libraries(api_structure_energy_compat_test PRIVATE CPartyCore)
 
+  add_executable(
+    fixed_energy_breakdown_test
+    tests/fixed_energy_breakdown_test.cc
+  )
+  target_link_libraries(fixed_energy_breakdown_test PRIVATE CPartyCore)
+
   add_test(
     NAME regression_matrix
     COMMAND ${CMAKE_SOURCE_DIR}/tests/regression_matrix.sh
@@ -230,4 +236,11 @@ if(BUILD_TESTING)
     COMMAND $<TARGET_FILE:api_structure_energy_compat_test>
   )
   set_tests_properties(api_structure_energy_compat PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME breakdown
+    COMMAND $<TARGET_FILE:fixed_energy_breakdown_test>
+            ${CMAKE_SOURCE_DIR}/tests/cparty_fixed_structure_energy/fixtures.tsv
+  )
+  set_tests_properties(breakdown PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()

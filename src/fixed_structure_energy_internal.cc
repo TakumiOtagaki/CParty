@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <filesystem>
 #include <limits>
 #include <string>
@@ -27,6 +28,8 @@ struct ParsedStructure {
     bool uses_pk = false;
     std::vector<std::pair<size_t, size_t>> pairs;
 };
+
+double quiet_nan() { return std::numeric_limits<double>::quiet_NaN(); }
 
 std::string normalize_sequence(std::string seq) {
     std::transform(seq.begin(), seq.end(), seq.begin(), [](unsigned char c) {
@@ -159,28 +162,20 @@ bool parse_structure(const std::string &seq, const std::string &db_full, ParsedS
     return true;
 }
 
-} // namespace
-
-double evaluate_fixed_structure_energy_kcal(const std::string &seq, const std::string &db_full) noexcept {
-    if (!load_turner_params_once()) {
-        return std::numeric_limits<double>::quiet_NaN();
+bool validate_and_parse(const std::string &seq, const std::string &db_full, ParsedStructure &parsed, std::string &normalized_seq) {
+    normalized_seq = normalize_sequence(seq);
+    if (normalized_seq.empty()) {
+        return false;
     }
-
-    std::string sequence = normalize_sequence(seq);
-    if (sequence.empty()) {
-        return std::numeric_limits<double>::quiet_NaN();
-    }
-    for (const char c : sequence) {
+    for (const char c : normalized_seq) {
         if (!is_valid_seq_symbol(c)) {
-            return std::numeric_limits<double>::quiet_NaN();
+            return false;
         }
     }
+    return parse_structure(normalized_seq, db_full, parsed);
+}
 
-    ParsedStructure parsed;
-    if (!parse_structure(sequence, db_full, parsed)) {
-        return std::numeric_limits<double>::quiet_NaN();
-    }
-
+double evaluate_from_parsed(const std::string &sequence, const std::string &db_full, const ParsedStructure &parsed) {
     sparse_tree tree(parsed.tree_structure, static_cast<int>(sequence.size()));
 
     constexpr bool pk_free = false;
@@ -189,6 +184,58 @@ double evaluate_fixed_structure_energy_kcal(const std::string &seq, const std::s
 
     W_final fold(sequence, db_full, pk_free, pk_only, dangles);
     return fold.hfold(tree);
+}
+
+} // namespace
+
+double evaluate_fixed_structure_energy_kcal(const std::string &seq, const std::string &db_full) noexcept {
+    if (!load_turner_params_once()) {
+        return quiet_nan();
+    }
+
+    std::string sequence;
+    ParsedStructure parsed;
+    if (!validate_and_parse(seq, db_full, parsed, sequence)) {
+        return quiet_nan();
+    }
+
+    return evaluate_from_parsed(sequence, db_full, parsed);
+}
+
+EnergyBreakdown evaluate_fixed_structure_energy_breakdown_kcal(const std::string &seq, const std::string &db_full) noexcept {
+    EnergyBreakdown breakdown = {quiet_nan(), quiet_nan(), quiet_nan(), quiet_nan()};
+    if (!load_turner_params_once()) {
+        return breakdown;
+    }
+
+    std::string sequence;
+    ParsedStructure parsed;
+    if (!validate_and_parse(seq, db_full, parsed, sequence)) {
+        return breakdown;
+    }
+
+    const double total = evaluate_from_parsed(sequence, db_full, parsed);
+    if (!std::isfinite(total)) {
+        return breakdown;
+    }
+
+    breakdown.total_kcal = total;
+    breakdown.band_scaled_terms_kcal = 0.0;
+    if (!parsed.uses_pk) {
+        breakdown.pk_free_core_kcal = total;
+        breakdown.pk_penalties_kcal = 0.0;
+        return breakdown;
+    }
+
+    const ParsedStructure pk_free_parsed = {parsed.tree_structure, false, parsed.pairs};
+    const double pk_free_core = evaluate_from_parsed(sequence, parsed.tree_structure, pk_free_parsed);
+    if (!std::isfinite(pk_free_core)) {
+        return {quiet_nan(), quiet_nan(), quiet_nan(), quiet_nan()};
+    }
+
+    breakdown.pk_free_core_kcal = pk_free_core;
+    breakdown.pk_penalties_kcal = total - pk_free_core;
+    return breakdown;
 }
 
 } // namespace internal

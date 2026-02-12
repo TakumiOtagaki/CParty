@@ -1,6 +1,7 @@
 # Agent Learnings
 
 ## Regression Patterns
+- For debug-only diagnostic stages, expose an internal breakdown struct with stable term groups and assert `total == pk_free_core + pk_penalties + band_scaled_terms` within tolerance.
 - CTest matrix tests should set an explicit `WORKING_DIRECTORY` when CLI output depends on runtime paths.
 - For deterministic CLI regression checks, run each case twice and compare exact stdout before baseline comparison.
 - Keep shell test parsers portable across GNU/BSD tools; avoid non-portable awk extensions in default macOS environments.
