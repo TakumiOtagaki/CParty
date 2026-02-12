@@ -1,0 +1,30 @@
+{
+  "project_name": "CParty-Fixed-Structure-Energy",
+  "goal": "Add a CParty API to compute the fixed-structure energy E(G∪G', S) and enable exact logP(G'|G,S).",
+  "user_stories": [
+    {
+      "id": 1,
+      "story": "Investigate CParty internals to locate or derive fixed-structure energy evaluation for a given sequence and dot-bracket structure (G∪G'). Document the chosen approach.",
+      "test_command": "",
+      "passes": false
+    },
+    {
+      "id": 2,
+      "story": "Implement internal function to compute E(G∪G', S) (kcal/mol) for a fixed dot-bracket structure, reusing existing energy routines where possible.",
+      "test_command": "",
+      "passes": false
+    },
+    {
+      "id": 3,
+      "story": "Expose public API in CPartyAPI: get_structure_energy(seq, db_full) returning E(G∪G',S) or NaN on invalid input.",
+      "test_command": "",
+      "passes": false
+    },
+    {
+      "id": 4,
+      "story": "Add tests for the fixed-structure energy API (finite output, deterministic, invalid inputs return NaN).",
+      "test_command": "",
+      "passes": false
+    }
+  ]
+}
