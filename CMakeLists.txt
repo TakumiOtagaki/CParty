@@ -373,4 +373,15 @@ if(BUILD_TESTING)
             ${CMAKE_SOURCE_DIR}/documents/fixed_energy_report.md
   )
   set_tests_properties(fixed_energy_e2e PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME can_pair_rollout_e2e
+    COMMAND ${CMAKE_SOURCE_DIR}/tests/can_pair_rollout_e2e.sh
+            ${CMAKE_CTEST_COMMAND}
+            ${CMAKE_BINARY_DIR}
+            $<TARGET_FILE:CParty>
+            ${CMAKE_SOURCE_DIR}/tests/cparty_fixed_structure_energy/test.multi.fa
+            ${CMAKE_SOURCE_DIR}/documents/can_pair_rollout_report.md
+  )
+  set_tests_properties(can_pair_rollout_e2e PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()

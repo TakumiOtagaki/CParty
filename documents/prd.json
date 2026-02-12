@@ -462,7 +462,7 @@
       "artifacts": [
         "documents/can_pair_rollout_report.md"
       ],
-      "passes": false
+      "passes": true
     }
   ]
 }
