@@ -29,9 +29,11 @@ struct Case {
 
 int main() {
     const std::vector<Case> cases = {
-        {"pkfree_valid", "GCAUGC", "(....)", false, true},
-        {"pkfree_valid_t_normalized", "GCATGC", "(....)", false, true},
-        {"pkfree_invalid_can_pair", "AAAAAA", "(....)", true, false},
+        {"h_type_valid", "GGGCAAAAGGCGAAAAGCCCAAAACGCC", "((((....[[[[....))))....]]]]", false, true},
+        {"h_type_valid_t_normalized", "GGGCTAAAGGCGAAAAGCCCAAAACGCC", "((((....[[[[....))))....]]]]", false, true},
+        {"h_type_invalid_can_pair", "AAAAAAAAAAAAAAAAAAAAAAAAAAAA", "((((....[[[[....))))....]]]]", true, false},
+        {"k_type_staged_out", "GGCGGAAAAACCGGCAAAAACCGCCAAAAACGGGUAAUAAGCUGGAAAAAGCCCG",
+         "(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))", true, false},
     };
 
     size_t failed = 0;
@@ -67,10 +69,10 @@ int main() {
     }
 
     if (failed != 0) {
-        std::cerr << "api_structure_energy_pkfree_test: failed=" << failed << std::endl;
+        std::cerr << "api_structure_energy_h_type_test: failed=" << failed << std::endl;
         return 1;
     }
 
-    std::cout << "api_structure_energy_pkfree_test: checked=" << cases.size() << std::endl;
+    std::cout << "api_structure_energy_h_type_test: checked=" << cases.size() << std::endl;
     return 0;
 }

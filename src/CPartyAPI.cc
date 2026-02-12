@@ -109,10 +109,11 @@ std::string normalize_api_sequence(std::string seq) {
 
 bool is_valid_api_symbol(char c) { return c == 'A' || c == 'C' || c == 'G' || c == 'U'; }
 
-bool has_pk_symbols(const std::string &db_full) {
-    return db_full.find('[') != std::string::npos || db_full.find(']') != std::string::npos || db_full.find('{') != std::string::npos ||
-           db_full.find('}') != std::string::npos || db_full.find('<') != std::string::npos || db_full.find('>') != std::string::npos;
-}
+enum class PkTopology {
+    kNone,
+    kHType,
+    kUnsupported,
+};
 
 bool validate_api_structure(const std::string &seq, const std::string &db_full) {
     if (seq.empty() || db_full.empty() || seq.size() != db_full.size()) {
@@ -185,6 +186,80 @@ bool validate_api_structure(const std::string &seq, const std::string &db_full) 
 
     const int pk_families = static_cast<int>(seen_square) + static_cast<int>(seen_brace) + static_cast<int>(seen_angle);
     return pk_families <= 1;
+}
+
+PkTopology classify_pk_topology(const std::string &db_full) {
+    std::vector<size_t> canonical_stack;
+    std::vector<size_t> square_stack;
+    std::vector<std::pair<size_t, size_t>> canonical_pairs;
+    std::vector<std::pair<size_t, size_t>> square_pairs;
+
+    for (size_t i = 0; i < db_full.size(); ++i) {
+        switch (db_full[i]) {
+        case '.':
+            break;
+        case '(':
+            canonical_stack.push_back(i);
+            break;
+        case ')':
+            if (canonical_stack.empty()) {
+                return PkTopology::kUnsupported;
+            }
+            canonical_pairs.emplace_back(canonical_stack.back(), i);
+            canonical_stack.pop_back();
+            break;
+        case '[':
+            square_stack.push_back(i);
+            break;
+        case ']':
+            if (square_stack.empty()) {
+                return PkTopology::kUnsupported;
+            }
+            square_pairs.emplace_back(square_stack.back(), i);
+            square_stack.pop_back();
+            break;
+        case '{':
+        case '}':
+        case '<':
+        case '>':
+            return PkTopology::kUnsupported;
+        default:
+            return PkTopology::kUnsupported;
+        }
+    }
+
+    if (!canonical_stack.empty() || !square_stack.empty()) {
+        return PkTopology::kUnsupported;
+    }
+    if (square_pairs.empty()) {
+        return PkTopology::kNone;
+    }
+    if (canonical_pairs.empty()) {
+        return PkTopology::kUnsupported;
+    }
+
+    bool has_left_cross = false;
+    bool has_right_cross = false;
+    bool has_crossing = false;
+    for (const auto &canonical : canonical_pairs) {
+        for (const auto &pk : square_pairs) {
+            if (canonical.first < pk.first && pk.first < canonical.second && canonical.second < pk.second) {
+                has_left_cross = true;
+                has_crossing = true;
+            } else if (pk.first < canonical.first && canonical.first < pk.second && pk.second < canonical.second) {
+                has_right_cross = true;
+                has_crossing = true;
+            }
+        }
+    }
+
+    if (!has_crossing) {
+        return PkTopology::kUnsupported;
+    }
+    if (has_left_cross && has_right_cross) {
+        return PkTopology::kUnsupported;
+    }
+    return PkTopology::kHType;
 }
 
 bool load_turner_params_once() {
@@ -266,8 +341,8 @@ double get_structure_energy(const std::string &seq, const std::string &db_full) 
         return std::numeric_limits<double>::quiet_NaN();
     }
 
-    // Stage 6c-1: wire PK-free path first. PK families are staged in later stories.
-    if (has_pk_symbols(db_full)) {
+    const PkTopology topology = classify_pk_topology(db_full);
+    if (topology == PkTopology::kUnsupported) {
         return std::numeric_limits<double>::quiet_NaN();
     }
 

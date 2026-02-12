@@ -199,7 +199,7 @@
         "src/*fixed*energy*",
         "tests/*api_structure_energy_h_type*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 10,
