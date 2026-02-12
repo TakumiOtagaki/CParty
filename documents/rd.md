@@ -108,7 +108,7 @@ Three layers:
 ## 11. Loop Safety Policy (for ralph-loop)
 - Per-story retry policy:
   - default `retry_limit = 2`
-  - Story 9 uses `retry_limit = 1`
+  - Story 13 (final e2e validation) uses `retry_limit = 1`
 - Global stop conditions:
   - stop if the same failure signature occurs 3 times consecutively
   - stop if total failed attempts reaches 12 in one run
