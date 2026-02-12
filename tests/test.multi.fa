@@ -1,0 +1,44 @@
+>01 PK-free (Stem)
+GCAUGC
+(....)
+
+>02 PK-free (Hairpin)
+CGGCAACAGCCG
+((((....))))
+
+>03 PK-free (Bulge)
+CGAGCAACAGCCG
+((.((....))))
+
+>04 PK-free (Internal)
+CGAGCAACAGCACG
+((.((....)).))
+
+>05 H-type PK
+GGGCAAAAGGCGAAAAGCCCAAAACGCC
+((((....[[[[....))))....]]]]
+
+>06 H-type PK
+AUGCAAAAAGUCGAAAAAGCACAAAAACGAU
+((((.....[[[[.....)))).....]]]]
+
+>07 K-type PK
+GGCGGAAAAACCGGCAAAAACCGCCAAAAACGGGUAAUAAGCUGGAAAAAGCCCG
+(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))
+
+>08 K-type PK
+GACGGAAAAACCGGCAAAAAAACCGUCAAAAAAAAGGGUAAUAAGCUGGAAAAAGCCCU
+(((((.....[[[[[.......))))).......(((((.....]]]]].....)))))
+
+
+>09 Density-3 (Error)
+AGGGGAAAAAGGAGGAAAUGGGGAAAAAAACCCCUAAAACCUCCAAAGGCGGAAAAACCCCGAAAAACCGCC
+(((((.....{{{{{...[[[[[.......)))))....}}}}}...(((((.....]]]]].....)))))
+
+>10 Abnormal
+GCAAA
+(...)
+
+>11 Abnormal
+GCAAC
+(....)
