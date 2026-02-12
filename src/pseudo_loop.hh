@@ -76,6 +76,11 @@ class pseudo_loop {
     // Hosna: This function is supposed to fill in the WI array
 
     void compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+    energy_t compute_VP_arc_branches(cand_pos_t i, cand_pos_t j, cand_pos_t Bp_ij, cand_pos_t B_ij, cand_pos_t b_ij, cand_pos_t bp_ij,
+                                     sparse_tree &tree);
+    energy_t compute_VP_internal_branches(cand_pos_t i, cand_pos_t j, cand_pos_t Bp_ij, cand_pos_t B_ij, cand_pos_t b_ij,
+                                          cand_pos_t bp_ij, sparse_tree &tree);
+    energy_t compute_VP_split_branches(cand_pos_t i, cand_pos_t j, sparse_tree &tree);
     // Hosna: this function is supposed to fill the VP array
 
     // Computes the non-redundant recurrence from CParty (replaces VPP from original)

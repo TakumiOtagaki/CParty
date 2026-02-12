@@ -194,45 +194,22 @@ void pseudo_loop::compute_VPR(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     VPR[ij] = std::min(m1, m2);
 }
 
-void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
-    cand_pos_t ij = index[i] + j - i;
+energy_t pseudo_loop::compute_VP_arc_branches(cand_pos_t i, cand_pos_t j, cand_pos_t Bp_ij, cand_pos_t B_ij, cand_pos_t b_ij, cand_pos_t bp_ij,
+                                              sparse_tree &tree) {
+    energy_t m1 = INF, m2 = INF, m3 = INF;
 
-    energy_t m1 = INF, m2 = INF, m3 = INF, m4 = INF, m5 = INF, m6 = INF, m7 = INF, m8 = INF, m9 = INF; // different branches
-
-    // Borders -- added one to i and j to make it fit current bounds but also subtracted 1 from answer as the tree bounds are shifted as well
-    cand_pos_t Bp_ij = tree.Bp(i, j);
-    cand_pos_t B_ij = tree.B(i, j);
-    cand_pos_t b_ij = tree.b(i, j);
-    cand_pos_t bp_ij = tree.bp(i, j);
-
-    // branchs:
-    //  1) inArc(i) and NOT_inArc(j)
-    //  WI(i+1)(B'(i,j)-1)+WI(B(i,j)+1)(j-1)
-
-    // Hosna April 9th, 2007
-    // need to check the borders as they may be negative
     if ((tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) < (tree.tree[i].parent->index) && Bp_ij >= 0 && B_ij >= 0 && bp_ij < 0) {
         energy_t WI_ipus1_BPminus = get_WI(i + 1, Bp_ij - 1);
         energy_t WI_Bplus_jminus = get_WI(B_ij + 1, j - 1);
         m1 = WI_ipus1_BPminus + WI_Bplus_jminus;
     }
 
-    // 2) NOT_inArc(i) and inArc(j)
-    // WI(i+1)(b(i,j)-1)+WI(b'(i,j)+1)(j-1)
-
-    // Hosna April 9th, 2007
-    // checking the borders as they may be negative
     if ((tree.tree[i].parent->index) < (tree.tree[j].parent->index) && (tree.tree[j].parent->index) > 0 && b_ij >= 0 && bp_ij >= 0 && Bp_ij < 0) {
         energy_t WI_i_plus_b_minus = get_WI(i + 1, b_ij - 1);
         energy_t WI_bp_plus_j_minus = get_WI(bp_ij + 1, j - 1);
         m2 = WI_i_plus_b_minus + WI_bp_plus_j_minus;
     }
 
-    // 3) inArc(i) and inArc(j)
-    // WI(i+1)(B'(i,j)-1)+WI(B(i,j)+1)(b(i,j)-1)+WI(b'(i,j)+1)(j-1)
-
-    // Hosna April 9th, 2007
-    // checking the borders as they may be negative
     if ((tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) > 0 && Bp_ij >= 0 && B_ij >= 0 && b_ij >= 0 && bp_ij >= 0) {
         energy_t WI_i_plus_Bp_minus = get_WI(i + 1, Bp_ij - 1);
         energy_t WI_B_plus_b_minus = get_WI(B_ij + 1, b_ij - 1);
@@ -240,38 +217,29 @@ void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
         m3 = WI_i_plus_Bp_minus + WI_B_plus_b_minus + WI_bp_plus_j_minus;
     }
 
-    // 4) NOT_paired(i+1) and NOT_paired(j-1) and they can pair together
-    // e_stP(i,i+1,j-1,j) + VP(i+1)(j-1)
+    return std::min({m1, m2, m3});
+}
+
+energy_t pseudo_loop::compute_VP_internal_branches(cand_pos_t i, cand_pos_t j, cand_pos_t Bp_ij, cand_pos_t B_ij, cand_pos_t b_ij,
+                                                   cand_pos_t bp_ij, sparse_tree &tree) {
+    energy_t m4 = INF, m5 = INF;
+
     pair_type ptype_closingip1jm1 = pair[S_[i + 1]][S_[j - 1]];
     if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 && ptype_closingip1jm1 > 0) {
         m4 = get_e_stP(i, j) + get_VP(i + 1, j - 1);
     }
 
-    // 5) NOT_paired(r) and NOT_paired(rp)
-    //  VP(i,j) = e_intP(i,ip,jp,j) + VP(ip,jp)
-    // Hosna, April 6th, 2007
-    // whenever we use get_borders we have to check for the correct values
     cand_pos_t min_borders = std::min((cand_pos_tu)Bp_ij, (cand_pos_tu)b_ij);
     cand_pos_t edge_i = std::min(i + MAXLOOP + 1, j - TURN - 1);
     min_borders = std::min({min_borders, edge_i});
-    //		printf("B'(%d,%d) = %d, b(%d,%d) = %d, min_borders = %d\n",i,j,get_Bp(i,j),i,j,get_b(i,j), min_borders);
     for (cand_pos_t k = i + 1; k < min_borders; ++k) {
-        // Hosna: April 20, 2007
-        // i and ip and j and jp should be in the same arc
-        // also it should be the case that [i+1,ip-1] && [jp+1,j-1] are empty regions
-
         if (tree.tree[k].pair < -1 && (tree.up[(k)-1] >= ((k) - (i)-1))) {
-            // Hosna, April 6th, 2007
-            // whenever we use get_borders we have to check for the correct values
             cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
             cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
             max_borders = std::max({max_borders, edge_j});
             for (cand_pos_t l = j - 1; l > max_borders; --l) {
-
                 pair_type ptype_closingkj = pair[S_[k]][S_[l]];
                 if (tree.tree[l].pair < -1 && ptype_closingkj > 0 && (tree.up[(j)-1] >= ((j) - (l)-1))) {
-                    // Hosna: April 20, 2007
-                    // i and ip and j and jp should be in the same arc -- If it's unpaired between them, they have to be
                     energy_t tmp = get_e_intP(i, k, l, j) + get_VP(k, l);
                     m5 = std::min(m5, tmp);
                 }
@@ -279,40 +247,49 @@ void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
         }
     }
 
+    return std::min(m4, m5);
+}
+
+energy_t pseudo_loop::compute_VP_split_branches(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    energy_t m6 = INF, m7 = INF, m8 = INF, m9 = INF;
     cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
     cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
 
     for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
         m6 = std::min(m6, get_WIP(i + 1, k - 1) + get_VP(k, j - 1));
     }
-
     m6 += ap_penalty + 2 * bp_penalty;
 
     for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
         m7 = std::min(m7, get_VP(i + 1, k) + get_WIP(k + 1, j - 1));
     }
-
     m7 += ap_penalty + 2 * bp_penalty;
 
     for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
         m8 = std::min(m8, get_WIP(i + 1, k - 1) + get_VPR(k, j - 1));
     }
-
     m8 += ap_penalty + 2 * bp_penalty;
 
     for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
         m9 = std::min(m9, get_VPL(i + 1, k) + get_WIP(k + 1, j - 1));
     }
-
     m9 += ap_penalty + 2 * bp_penalty;
 
-    // finding the min energy
-    energy_t vp_h = std::min({m1, m2, m3});
-    energy_t vp_iloop = std::min({m4, m5});
-    energy_t vp_split = std::min({m6, m7, m8, m9});
-    energy_t min = std::min({vp_h, vp_iloop, vp_split});
+    return std::min({m6, m7, m8, m9});
+}
 
-    VP[ij] = min;
+void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    cand_pos_t ij = index[i] + j - i;
+    cand_pos_t Bp_ij = tree.Bp(i, j);
+    cand_pos_t B_ij = tree.B(i, j);
+    cand_pos_t b_ij = tree.b(i, j);
+    cand_pos_t bp_ij = tree.bp(i, j);
+
+    energy_t vp_h = compute_VP_arc_branches(i, j, Bp_ij, B_ij, b_ij, bp_ij, tree);
+    energy_t vp_iloop = compute_VP_internal_branches(i, j, Bp_ij, B_ij, b_ij, bp_ij, tree);
+    energy_t vp_split = compute_VP_split_branches(i, j, tree);
+
+    VP[ij] = std::min({vp_h, vp_iloop, vp_split});
 }
 
 void pseudo_loop::compute_WMBW(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {

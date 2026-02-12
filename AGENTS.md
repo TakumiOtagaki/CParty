@@ -5,3 +5,4 @@
 - For deterministic CLI regression checks, run each case twice and compare exact stdout before baseline comparison.
 - Keep shell test parsers portable across GNU/BSD tools; avoid non-portable awk extensions in default macOS environments.
 - Fixed-structure fixtures are easier to validate and reuse when normalized in TSV with explicit `expected` and `invalid_reason` columns.
+- For behavior-preserving DP refactors, split large recurrence functions by branch family and keep border computations centralized in the caller.

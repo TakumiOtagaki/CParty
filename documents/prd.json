@@ -92,7 +92,7 @@
         "src/pseudo_loop.cc",
         "tests/*pseudo_loop*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 4,
