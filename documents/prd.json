@@ -502,7 +502,7 @@
         "documents/fixed_energy_cli_alignment_report.md",
         "documents/fixed_energy_cli_mismatch_analysis.md"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 23,
