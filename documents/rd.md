@@ -27,7 +27,7 @@ Out of scope for this stage:
 
 ## 4. API Requirements
 ### Input
-- `seq`: RNA sequence (`ACGU`; accept `T` by normalizing to `U`).
+- `seq`: RNA sequence (`ACGU` only; `T` is treated as invalid input in this phase).
 - `db_full`: dot-bracket for full target (`G union G'`), including PK brackets.
 
 ### Output
@@ -99,11 +99,18 @@ Three layers:
 - If the structure uses unsupported bracket symbols or crossing patterns not representable by current CParty constraints, return `NaN`.
 - Invalid input examples that must return `NaN`:
   - length mismatch between `seq` and `db_full`
-  - invalid sequence symbols after `T -> U` normalization
+  - any non-`ACGU` symbol in `seq` (including `T`)
   - unbalanced bracket counts
   - use of unsupported PK bracket family for the active parser configuration
   - mixing two or more PK bracket families in one structure
   - representability failure under current CParty grammar
+
+## 11.1 Base-Pair Policy
+- Allowed canonical/wobble pairs for hard constraints:
+  - `A-U`, `U-A`
+  - `C-G`, `G-C`
+  - `G-U`, `U-G`
+- Any other forced pair in `db_full` must be rejected as invalid (`NaN`).
 
 ## 11. Loop Safety Policy (for ralph-loop)
 - Per-story retry policy:
@@ -125,6 +132,20 @@ Three layers:
 - After every refactoring and every feature-addition story, run:
   - the story-local test command
   - full regression command
+- Every 3 completed stories in Phase-2, run a checkpoint:
+  - focused code review
+  - refactoring sanity check
+  - full `ctest --output-on-failure`
+
+## 12.1 CLI-MFE Baseline Policy
+- CParty CLI reported density-2 MFE structure/energy may be used as a practical regression baseline source.
+- For baseline generation, always persist:
+  - exact CLI flags (`-p`, `-k`, `-d`, `-r`)
+  - sequence and structure string used
+  - parsed structure/energy fields from stdout
+- Interpretation rule:
+  - treat this baseline as an implementation-consistency oracle for CParty paths
+  - do not treat it as an external physical ground truth oracle
 
 ## 13. Current can-pair Coverage Clarification
 - Current can-pair hard-constraint enforcement is not only a ViennaRNA constraint setting.

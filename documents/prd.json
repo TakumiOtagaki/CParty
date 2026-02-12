@@ -24,6 +24,23 @@
       "full_regression_after_each_story": true,
       "full_regression_command": "ctest --output-on-failure"
     },
+    "checkpoint_policy": {
+      "review_checkpoint_every_completed_stories": 3,
+      "required_at_checkpoint": [
+        "focused_code_review",
+        "refactoring_sanity_check",
+        "ctest --output-on-failure"
+      ]
+    },
+    "sequence_policy": {
+      "allowed_symbols": [
+        "A",
+        "C",
+        "G",
+        "U"
+      ],
+      "t_is_invalid_in_phase2": true
+    },
     "default_retry_limit": 2,
     "global_stop_condition": {
       "max_consecutive_identical_failures": 3,
@@ -301,20 +318,25 @@
     },
     {
       "id": 14,
-      "story": "Phase 2 kickoff: Define a shared can-pair hard-constraint policy layer used consistently by fixed-energy API, pseudo_loop, and part_func paths.",
+      "story": "Phase 2 kickoff: Define a shared can-pair hard-constraint policy layer and add a CLI density2 MFE baseline generator/parser for tests/cparty_fixed_structure_energy/test.multi.fa across flag combinations.",
       "depends_on": [
         13
       ],
-      "test_command": "ctest --output-on-failure -R can_pair_policy",
+      "test_command": "ctest --output-on-failure -R can_pair_policy|fixed_energy_cli_baseline",
       "retry_limit": 2,
       "done_when": [
         "Single shared can-pair policy helper exists and is documented.",
+        "CLI output parser for density2 MFE structure/energy is implemented and tested.",
+        "Baseline dataset is generated from tests/cparty_fixed_structure_energy/test.multi.fa with explicit flag metadata.",
         "Existing get_structure_energy behavior remains unchanged for current fixtures.",
-        "ctest filter 'can_pair_policy' passes.",
+        "ctest filters 'can_pair_policy' and 'fixed_energy_cli_baseline' pass.",
         "Full regression command passes."
       ],
       "artifacts": [
         "src/*can*pair*",
+        "tests/*cli*baseline*",
+        "tests/baselines/fixed_energy_cli/*",
+        "documents/fixed_energy_cli_baseline.md",
         "src/*fixed*energy*",
         "tests/*can_pair_policy*"
       ],
