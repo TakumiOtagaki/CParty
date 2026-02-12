@@ -92,6 +92,7 @@ class pseudo_loop {
 
     // based on discussion with Anne, we changed WMB to case 2 and WMBP(containing the rest of the recurrences)
     void compute_WMBP(cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+    energy_t compute_WMBP_split_branch(cand_pos_t i, cand_pos_t j, sparse_tree &tree, bool use_wmbw_prefix);
     // this is the helper recurrence to fill the WMB array
 
     // Computes the non-redundant recurrence from CParty (replaces WMBP case 2 from original)

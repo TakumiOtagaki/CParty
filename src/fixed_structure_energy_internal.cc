@@ -1,6 +1,7 @@
 #include "fixed_structure_energy_internal.hh"
 
 #include "W_final.hh"
+#include "can_pair_policy.hh"
 #include "sparse_tree.hh"
 
 #include <algorithm>
@@ -44,11 +45,6 @@ std::string normalize_sequence(std::string seq) {
 }
 
 bool is_valid_seq_symbol(char c) { return c == 'A' || c == 'C' || c == 'G' || c == 'U'; }
-
-bool can_pair(char left, char right) {
-    return (left == 'A' && right == 'U') || (left == 'U' && right == 'A') || (left == 'C' && right == 'G') || (left == 'G' && right == 'C') ||
-           (left == 'G' && right == 'U') || (left == 'U' && right == 'G');
-}
 
 bool load_turner_params_once() {
     static bool loaded = false;
@@ -154,7 +150,7 @@ bool parse_structure(const std::string &seq, const std::string &db_full, ParsedS
     }
 
     for (const auto &pair : parsed.pairs) {
-        if (!can_pair(seq[pair.first], seq[pair.second])) {
+        if (!cparty::can_pair_policy::is_allowed_base_pair(seq[pair.first], seq[pair.second])) {
             return false;
         }
     }

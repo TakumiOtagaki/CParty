@@ -1,6 +1,7 @@
 #include "CPartyAPI.hh"
 
 #include "W_final.hh"
+#include "can_pair_policy.hh"
 #include "fixed_structure_energy_internal.hh"
 #include "part_func.hh"
 #include "sparse_tree.hh"
@@ -75,9 +76,7 @@ bool validate_structure(const std::string &seq, const std::string &structure) {
             stack.pop_back();
             const char left = seq[static_cast<size_t>(i)];
             const char right = seq[j];
-            const bool can_pair = (left == 'A' && right == 'U') || (left == 'U' && right == 'A') || (left == 'C' && right == 'G') ||
-                                  (left == 'G' && right == 'C') || (left == 'G' && right == 'U') || (left == 'U' && right == 'G');
-            if (!can_pair) {
+            if (!cparty::can_pair_policy::is_allowed_base_pair(left, right)) {
                 std::cerr << "Error: invalid base pair " << left << "-" << right << " at positions " << i << " and " << j << std::endl;
                 return false;
             }

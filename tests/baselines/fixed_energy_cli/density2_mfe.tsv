@@ -1,0 +1,25 @@
+fixture_id	flag_id	flags	constraint_mode	exit_code	status	mfe_structure	mfe_energy
+pkfree_stem	r1_p0_k0_d2		r	0	ok	......	0
+pkfree_stem	r1_p0_k0_d0	-d0	r	0	ok	......	0
+pkfree_stem	r1_p1_k0_d2	-p	r	0	ok	......	0
+pkfree_stem	r1_p1_k0_d0	-p -d0	r	0	ok	......	0
+pkfree_stem	r1_p0_k1_d2	-k	r	0	ok	......	0
+pkfree_stem	r1_p0_k1_d0	-k -d0	r	0	ok	......	0
+pkfree_hairpin	r1_p0_k0_d2		r	0	ok	((((....))))	-3.45
+pkfree_hairpin	r1_p0_k0_d0	-d0	r	0	ok	((((....))))	-3.45
+pkfree_hairpin	r1_p1_k0_d2	-p	r	0	ok	((((....))))	-3.45
+pkfree_hairpin	r1_p1_k0_d0	-p -d0	r	0	ok	((((....))))	-3.45
+pkfree_hairpin	r1_p0_k1_d2	-k	r	139	error		
+pkfree_hairpin	r1_p0_k1_d0	-k -d0	r	139	error		
+h_type_1	r1_p0_k0_d2		r	0	ok	((((....[[[[....))))....]]]]	-6.69
+h_type_1	r1_p0_k0_d0	-d0	r	0	ok	((((....[[[[....))))....]]]]	-6.69
+h_type_1	r1_p1_k0_d2	-p	r	0	ok	((((............))))........	-4.71
+h_type_1	r1_p1_k0_d0	-p -d0	r	0	ok	((((............))))........	-3.84
+h_type_1	r1_p0_k1_d2	-k	r	0	ok	((((....[[[[....))))....]]]]	-6.69
+h_type_1	r1_p0_k1_d0	-k -d0	r	0	ok	((((....[[[[....))))....]]]]	-6.69
+k_type_1	r1_p0_k0_d2		r	0	ok	(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))	-12.05
+k_type_1	r1_p0_k0_d0	-d0	r	0	ok	(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))	-12.05
+k_type_1	r1_p1_k0_d2	-p	r	0	ok	(((((...............))))).....(((((...............)))))	-9.37
+k_type_1	r1_p1_k0_d0	-p -d0	r	0	ok	(((((...............))))).....(((((...............)))))	-8.41
+k_type_1	r1_p0_k1_d2	-k	r	0	ok	(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))	-12.05
+k_type_1	r1_p0_k1_d0	-k -d0	r	0	ok	(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))	-12.05

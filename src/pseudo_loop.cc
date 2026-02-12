@@ -1,4 +1,5 @@
 #include "pseudo_loop.hh"
+#include "pseudo_loop_can_pair.hh"
 #include "h_externs.hh"
 #include <algorithm>
 #include <iostream>
@@ -141,14 +142,14 @@ void pseudo_loop::compute_WIP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     // branch 1:
     for (cand_pos_t k = i + 1; k < j - TURN - 1; ++k) {
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = cparty::pseudo_loop_can_pair::can_use_left_unpaired_span(tree.up, i, k);
         energy_t wi_1 = get_WIP(i, k - 1);
         energy_t v_energy = V->get_energy(k, j);
         energy_t wmb_energy = get_WMB(k, j);
         m1 = std::min(m1, wi_1 + v_energy);
         m2 = std::min(m2, wi_1 + wmb_energy);
-        if (can_pair) m3 = std::min(m3, static_cast<energy_t>((k - i) * cp_penalty) + v_energy);
-        if (can_pair) m4 = std::min(m4, static_cast<energy_t>((k - i) * cp_penalty) + wmb_energy);
+        if (can_pair) m3 = std::min(m3, cparty::pseudo_loop_can_pair::cp_branch_penalty(k - i) + v_energy);
+        if (can_pair) m4 = std::min(m4, cparty::pseudo_loop_can_pair::cp_branch_penalty(k - i) + wmb_energy);
     }
     m1 += bp_penalty;
     m2 += PSM_penalty + bp_penalty;
@@ -169,8 +170,8 @@ void pseudo_loop::compute_VPL(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
     for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
-        bool can_pair = tree.up[k - 1] >= (k - i);
-        if (can_pair) m1 = std::min(m1, static_cast<energy_t>((k - i) * cp_penalty) + get_VP(k, j));
+        bool can_pair = cparty::pseudo_loop_can_pair::can_use_left_unpaired_span(tree.up, i, k);
+        if (can_pair) m1 = std::min(m1, cparty::pseudo_loop_can_pair::cp_branch_penalty(k - i) + get_VP(k, j));
     }
 
     VPL[ij] = m1;
@@ -185,10 +186,10 @@ void pseudo_loop::compute_VPR(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
         energy_t VP_energy = get_VP(i, k);
-        bool can_pair = tree.up[j - 1] >= (j - k);
+        bool can_pair = cparty::pseudo_loop_can_pair::can_use_right_unpaired_span(tree.up, k, j);
 
         m1 = std::min(m1, VP_energy + get_WIP(k + 1, j));
-        if (can_pair) m2 = std::min(m2, VP_energy + static_cast<energy_t>((j - k) * cp_penalty));
+        if (can_pair) m2 = std::min(m2, VP_energy + cparty::pseudo_loop_can_pair::cp_branch_penalty(j - k));
     }
 
     VPR[ij] = std::min(m1, m2);
@@ -314,64 +315,8 @@ void pseudo_loop::compute_WMBP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     energy_t m1 = INF, m2 = INF, m4 = INF;
 
-    // 1)
-    if (tree.tree[j].pair < 0) {
-        energy_t tmp = INF;
-        cand_pos_t b_ij = tree.b(i, j);
-        for (cand_pos_t l = i + 1; l < j; l++) {
-            // Hosna: April 19th, 2007
-            // the chosen l should be less than border_b(i,j) -- should be greater than border_b(i,l)
-            // Mateo Jan 2025 Added exterior cases to consider when looking at band borders. Solved case of [.(.].[.).]
-            int ext_case = compute_exterior_cases(l, j, tree);
-            if ((b_ij > 0 && l < b_ij) || (b_ij < 0 && ext_case == 0)) {
-                cand_pos_t bp_il = tree.bp(i, l);
-                cand_pos_t Bp_lj = tree.Bp(l, j);
-                if (bp_il >= 0 && l > bp_il && Bp_lj > 0 && l < Bp_lj) { // bp(i,l) < l < Bp(l,j)
-                    cand_pos_t B_lj = tree.B(l, j);
-
-                    // Hosna: July 5th, 2007:
-                    // as long as we have i <= arc(l)< j we are fine
-                    if (i <= tree.tree[l].parent->index && tree.tree[l].parent->index < j && l + TURN <= j) {
-                        energy_t sum = get_BE(tree.tree[B_lj].pair, B_lj, tree.tree[Bp_lj].pair, Bp_lj, tree) + get_WMBP(i, l - 1) + get_VP(l, j);
-                        tmp = std::min(tmp, sum);
-                    }
-                }
-            }
-
-            m1 = 2 * PB_penalty + tmp;
-        }
-    }
-    // 2) WMB(i,j) = min_{i<l<j}{WMB(i,l)+WI(l+1,j)} if bp(j)<j
-    // Hosna: Feb 5, 2007
-    if (tree.tree[j].pair < 0) {
-        energy_t tmp = INF;
-        cand_pos_t b_ij = tree.b(i, j);
-        for (cand_pos_t l = i + 1; l < j; l++) {
-            // Hosna, April 6th, 2007
-            // whenever we use get_borders we have to check for the correct values
-            cand_pos_t bp_il = tree.bp(i, l);
-            cand_pos_t Bp_lj = tree.Bp(l, j);
-            // Hosna: April 19th, 2007
-            // the chosen l should be less than border_b(i,j) -- should be greater than border_b(i,l)
-            // Mateo Jan 2025 Added exterior cases to consider when looking at band borders. Solved case of [.(.].[.).]
-            // Mateo May 2025 I'm adding to this -- exterior cases are for [.(.]..[.).] where b_ij = -2 when it should be inf and allow
-            // the for loop to happen. If b_ij>0 though, the exterior cases shouldn't play a role.
-            int ext_case = compute_exterior_cases(l, j, tree);
-            if ((b_ij > 0 && l < b_ij) || (b_ij < 0 && ext_case == 0)) {
-                if (bp_il >= 0 && l > bp_il && Bp_lj > 0 && l < Bp_lj) { // bp(i,l) < l < Bp(l,j)
-                    cand_pos_t B_lj = tree.B(l, j);
-
-                    // Hosna: July 5th, 2007:
-                    // as long as we have i <= arc(l)< j we are fine
-                    if (i <= tree.tree[l].parent->index && tree.tree[l].parent->index < j && l + TURN <= j) {
-                        energy_t sum = get_BE(tree.tree[B_lj].pair, B_lj, tree.tree[Bp_lj].pair, Bp_lj, tree) + get_WMBW(i, l - 1) + get_VP(l, j);
-                        tmp = std::min(tmp, sum);
-                    }
-                }
-            }
-            m2 = 2 * PB_penalty + tmp;
-        }
-    }
+    if (tree.tree[j].pair < 0) m1 = 2 * PB_penalty + compute_WMBP_split_branch(i, j, tree, false);
+    if (tree.tree[j].pair < 0) m2 = 2 * PB_penalty + compute_WMBP_split_branch(i, j, tree, true);
     // 3) WMB(i,j) = VP(i,j) + P_b
     energy_t m3 = get_VP(i, j) + PB_penalty;
 
@@ -401,6 +346,27 @@ void pseudo_loop::compute_WMBP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     // get the min for WMB
     WMBP[ij] = std::min({m1, m2, m3, m4});
+}
+
+energy_t pseudo_loop::compute_WMBP_split_branch(cand_pos_t i, cand_pos_t j, sparse_tree &tree, bool use_wmbw_prefix) {
+    energy_t best = INF;
+    cand_pos_t b_ij = tree.b(i, j);
+    for (cand_pos_t l = i + 1; l < j; l++) {
+        int ext_case = compute_exterior_cases(l, j, tree);
+        if (!((b_ij > 0 && l < b_ij) || (b_ij < 0 && ext_case == 0))) continue;
+
+        cand_pos_t bp_il = tree.bp(i, l);
+        cand_pos_t Bp_lj = tree.Bp(l, j);
+        if (!(bp_il >= 0 && l > bp_il && Bp_lj > 0 && l < Bp_lj)) continue;
+
+        cand_pos_t B_lj = tree.B(l, j);
+        if (!(i <= tree.tree[l].parent->index && tree.tree[l].parent->index < j && l + TURN <= j)) continue;
+
+        energy_t prefix = use_wmbw_prefix ? get_WMBW(i, l - 1) : get_WMBP(i, l - 1);
+        energy_t sum = get_BE(tree.tree[B_lj].pair, B_lj, tree.tree[Bp_lj].pair, Bp_lj, tree) + prefix + get_VP(l, j);
+        best = std::min(best, sum);
+    }
+    return best;
 }
 
 void pseudo_loop::compute_WMB(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
@@ -1047,8 +1013,8 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
 
         cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
         for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
-            bool can_pair = tree.up[k - 1] >= (k - i);
-            if (can_pair) tmp = static_cast<energy_t>((k - i) * cp_penalty) + get_VP(k, j);
+            bool can_pair = cparty::pseudo_loop_can_pair::can_use_left_unpaired_span(tree.up, i, k);
+            if (can_pair) tmp = cparty::pseudo_loop_can_pair::cp_branch_penalty(k - i) + get_VP(k, j);
             if (tmp < min) {
                 best_k = k;
                 min = tmp;
@@ -1081,8 +1047,8 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
 
         for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
             energy_t VP_energy = get_VP(i, k);
-            bool can_pair = tree.up[j - 1] >= (j - k);
-            if (can_pair) tmp = VP_energy + static_cast<energy_t>((j - k) * cp_penalty);
+            bool can_pair = cparty::pseudo_loop_can_pair::can_use_right_unpaired_span(tree.up, k, j);
+            if (can_pair) tmp = VP_energy + cparty::pseudo_loop_can_pair::cp_branch_penalty(j - k);
             if (tmp < min) {
                 best_k = k;
                 best_row = 2;
@@ -1368,8 +1334,8 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
             }
         }
         for (cand_pos_t k = i + 1; k < j - TURN - 1; ++k) {
-            bool can_pair = tree.up[k - 1] >= (k - i);
-            if (can_pair) tmp = static_cast<energy_t>((k - i) * cp_penalty) + V->get_energy(k, j);
+            bool can_pair = cparty::pseudo_loop_can_pair::can_use_left_unpaired_span(tree.up, i, k);
+            if (can_pair) tmp = cparty::pseudo_loop_can_pair::cp_branch_penalty(k - i) + V->get_energy(k, j);
             if (tmp < min) {
                 min = tmp;
                 best_row = 5;
@@ -1377,8 +1343,8 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
             }
         }
         for (cand_pos_t k = i + 1; k < j - TURN - 1; ++k) {
-            bool can_pair = tree.up[k - 1] >= (k - i);
-            if (can_pair) tmp = static_cast<energy_t>((k - i) * cp_penalty) + get_WMB(k, j);
+            bool can_pair = cparty::pseudo_loop_can_pair::can_use_left_unpaired_span(tree.up, i, k);
+            if (can_pair) tmp = cparty::pseudo_loop_can_pair::cp_branch_penalty(k - i) + get_WMB(k, j);
             if (tmp < min) {
                 min = tmp;
                 best_row = 6;
@@ -1458,5 +1424,6 @@ void pseudo_loop::insert_node(int i, int j, char type) {
     tmp->next = stack_interval;
     stack_interval = tmp;
 }
+
 
 void pseudo_loop::set_stack_interval(seq_interval *stack_interval) { this->stack_interval = stack_interval; }
