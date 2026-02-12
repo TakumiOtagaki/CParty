@@ -105,7 +105,7 @@ Three layers:
   - mixing two or more PK bracket families in one structure
   - representability failure under current CParty grammar
 
-## 11.1 Base-Pair Policy
+## 10.1 Base-Pair Policy
 - Allowed canonical/wobble pairs for hard constraints:
   - `A-U`, `U-A`
   - `C-G`, `G-C`

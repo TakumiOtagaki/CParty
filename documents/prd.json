@@ -322,7 +322,7 @@
       "depends_on": [
         13
       ],
-      "test_command": "ctest --output-on-failure -R can_pair_policy|fixed_energy_cli_baseline",
+      "test_command": "ctest --output-on-failure -R '(can_pair_policy|fixed_energy_cli_baseline)'",
       "retry_limit": 2,
       "done_when": [
         "Single shared can-pair policy helper exists and is documented.",
