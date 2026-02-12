@@ -1,6 +1,9 @@
 # Agent Learnings
 
 ## Regression Patterns
+- For phase-2 part-function refactors, route every `tree.up` span predicate through a tiny `part_func_can_pair` helper so recurrence and backtracking gates share identical can-pair checks and can be unit-tested.
+- For phase-2 DP refactors, extract `tree.up` can-pair span checks and CP-penalty math into a tiny shared helper so branch gating is unit-testable without full end-to-end folding runs.
+- For CLI baseline datasets that include unstable flag combinations, persist `exit_code` and `status` metadata so deterministic failures (for example SIGSEGV paths) are regression-testable without masking parser checks on successful cases.
 - For debug-only diagnostic stages, expose an internal breakdown struct with stable term groups and assert `total == pk_free_core + pk_penalties + band_scaled_terms` within tolerance.
 - CTest matrix tests should set an explicit `WORKING_DIRECTORY` when CLI output depends on runtime paths.
 - For deterministic CLI regression checks, run each case twice and compare exact stdout before baseline comparison.

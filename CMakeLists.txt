@@ -16,7 +16,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
 SET(CPARTY_CORE_SOURCES
   src/W_final.cc
   src/pseudo_loop.cc
+  src/pseudo_loop_can_pair.cc
+  src/part_func_can_pair.cc
   src/part_func.cc
+  src/can_pair_policy.cc
   src/fixed_structure_energy_internal.cc
   src/Result.cc
   src/s_energy_matrix.cc
@@ -116,6 +119,24 @@ include_directories(src)
 include(CTest)
 if(BUILD_TESTING)
   add_executable(
+    can_pair_policy_test
+    tests/can_pair_policy_test.cc
+  )
+  target_link_libraries(can_pair_policy_test PRIVATE CPartyCore)
+
+  add_executable(
+    pseudo_loop_refactor_phase2_test
+    tests/pseudo_loop_refactor_phase2_test.cc
+  )
+  target_link_libraries(pseudo_loop_refactor_phase2_test PRIVATE CPartyCore)
+
+  add_executable(
+    part_func_refactor_phase2_test
+    tests/part_func_refactor_phase2_test.cc
+  )
+  target_link_libraries(part_func_refactor_phase2_test PRIVATE CPartyCore)
+
+  add_executable(
     fixed_energy_internal_test
     tests/fixed_energy_internal_test.cc
   )
@@ -186,6 +207,14 @@ if(BUILD_TESTING)
   set_tests_properties(pseudo_loop_regression PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
   add_test(
+    NAME pseudo_loop_refactor_phase2
+    COMMAND ${CMAKE_SOURCE_DIR}/tests/regression_matrix.sh
+            $<TARGET_FILE:CParty>
+            ${CMAKE_SOURCE_DIR}/tests/baselines/regression
+  )
+  set_tests_properties(pseudo_loop_refactor_phase2 PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
     NAME part_func_regression
     COMMAND ${CMAKE_SOURCE_DIR}/tests/regression_matrix.sh
             $<TARGET_FILE:CParty>
@@ -194,11 +223,46 @@ if(BUILD_TESTING)
   set_tests_properties(part_func_regression PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
   add_test(
+    NAME part_func_refactor_phase2
+    COMMAND ${CMAKE_SOURCE_DIR}/tests/regression_matrix.sh
+            $<TARGET_FILE:CParty>
+            ${CMAKE_SOURCE_DIR}/tests/baselines/regression
+  )
+  set_tests_properties(part_func_refactor_phase2 PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
     NAME fixtures_schema
     COMMAND ${CMAKE_SOURCE_DIR}/tests/fixed_energy_fixtures.sh
             ${CMAKE_SOURCE_DIR}/tests/cparty_fixed_structure_energy/fixtures.tsv
   )
   set_tests_properties(fixtures_schema PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME can_pair_policy
+    COMMAND $<TARGET_FILE:can_pair_policy_test>
+  )
+  set_tests_properties(can_pair_policy PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME pseudo_loop_refactor_phase2_helpers
+    COMMAND $<TARGET_FILE:pseudo_loop_refactor_phase2_test>
+  )
+  set_tests_properties(pseudo_loop_refactor_phase2_helpers PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME part_func_refactor_phase2_helpers
+    COMMAND $<TARGET_FILE:part_func_refactor_phase2_test>
+  )
+  set_tests_properties(part_func_refactor_phase2_helpers PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  add_test(
+    NAME fixed_energy_cli_baseline
+    COMMAND ${CMAKE_SOURCE_DIR}/tests/fixed_energy_cli_baseline.sh
+            $<TARGET_FILE:CParty>
+            ${CMAKE_SOURCE_DIR}/tests/cparty_fixed_structure_energy/test.multi.fa
+            ${CMAKE_SOURCE_DIR}/tests/baselines/fixed_energy_cli/density2_mfe.tsv
+  )
+  set_tests_properties(fixed_energy_cli_baseline PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
   add_test(
     NAME fixed_energy_internal

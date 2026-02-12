@@ -340,7 +340,7 @@
         "src/*fixed*energy*",
         "tests/*can_pair_policy*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 15,
@@ -361,7 +361,7 @@
         "src/pseudo_loop.hh",
         "tests/*pseudo_loop_refactor_phase2*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 16,
@@ -382,7 +382,7 @@
         "src/part_func.hh",
         "tests/*part_func_refactor_phase2*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 17,

@@ -1,4 +1,5 @@
 #include "part_func.hh"
+#include "part_func_can_pair.hh"
 #include "dot_plot.hh"
 #include "h_externs.hh"
 #include "pf_globals.hh"
@@ -285,10 +286,10 @@ pf_t W_final_pf::compute_internal_restricted(cand_pos_t i, cand_pos_t j, std::ve
     cand_pos_t max_k = std::min(j - TURN - 2, i + MAXLOOP + 1);
     const pair_type ptype_closing = pair[S_[i]][S_[j]];
     for (cand_pos_t k = i + 1; k <= max_k; ++k) {
-        if ((up[k - 1] >= (k - i - 1))) {
+        if (cparty::part_func_can_pair::can_use_internal_left_unpaired_span(up, i, k)) {
             cand_pos_t min_l = std::max(k + TURN + 1 + MAXLOOP + 2, k + j - i) - MAXLOOP - 2;
             for (cand_pos_t l = j - 1; l >= min_l; --l) {
-                if (up[j - 1] >= (j - l - 1)) {
+                if (cparty::part_func_can_pair::can_use_internal_right_unpaired_span(up, l, j)) {
                     pf_t v_iloop_kl = get_energy(k, l)
                                       * exp_E_IntLoop(k - i - 1, j - l - 1, ptype_closing, rtype[pair[S_[k]][S_[l]]], S1_[i + 1], S1_[j - 1],
                                                       S1_[k - 1], S1_[l + 1], exp_params_);
@@ -330,7 +331,7 @@ void W_final_pf::compute_energy_WM_restricted(cand_pos_t i, cand_pos_t j, sparse
     for (cand_pos_t k = i; k < j - TURN; ++k) {
         pf_t qbt1 = get_energy(k, j) * exp_MLstem(k, j);
         pf_t qbt2 = get_energy_WMB(k, j) * expPSM_penalty * expb_penalty;
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = cparty::part_func_can_pair::can_use_left_unpaired_span(tree.up, i, k);
         if (can_pair) contributions += (static_cast<pf_t>(expMLbase[k - i]) * qbt1);
         if (can_pair) contributions += (static_cast<pf_t>(expMLbase[k - i]) * qbt2);
         contributions += (get_energy_WM(i, k - 1) * qbt1);
@@ -346,7 +347,7 @@ pf_t W_final_pf::compute_energy_VM_restricted(cand_pos_t i, cand_pos_t j, std::v
     for (cand_pos_t k = i + 1; k <= j - TURN - 1; ++k) {
         contributions += (get_energy_WM(i + 1, k - 1) * get_energy_WMv(k, j - 1) * exp_Mbloop(i, j) * exp_params_->expMLclosing);
         contributions += (get_energy_WM(i + 1, k - 1) * get_energy_WMp(k, j - 1) * exp_Mbloop(i, j) * exp_params_->expMLclosing);
-        if (up[k - 1] >= (k - (i + 1)))
+        if (cparty::part_func_can_pair::can_use_left_unpaired_span(up, i + 1, k))
             contributions += (expMLbase[k - i - 1] * get_energy_WMp(k, j - 1) * exp_Mbloop(i, j) * exp_params_->expMLclosing);
     }
 
@@ -366,7 +367,7 @@ void W_final_pf::compute_energy_restricted(cand_pos_t i, cand_pos_t j, sparse_tr
 
     if (paired || unpaired) // if i and j can pair
     {
-        bool canH = !(tree.up[j - 1] < (j - i - 1));
+        bool canH = cparty::part_func_can_pair::can_use_hairpin_unpaired_span(tree.up, i, j);
         if (canH) contributions += HairpinE(i, j);
 
         contributions += compute_internal_restricted(i, j, tree.up);
@@ -435,7 +436,7 @@ void W_final_pf::compute_WIP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     contributions += get_energy(i, j) * expbp_penalty;
     contributions += get_energy_WMB(i, j) * expbp_penalty * expPSM_penalty;
     for (cand_pos_t k = i + 1; k < j - TURN - 1; ++k) {
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = cparty::part_func_can_pair::can_use_left_unpaired_span(tree.up, i, k);
 
         contributions += (get_energy_WIP(i, k - 1) * get_energy(k, j) * expbp_penalty);
         contributions += (get_energy_WIP(i, k - 1) * get_energy_WMB(k, j) * expbp_penalty * expPSM_penalty);
@@ -453,7 +454,7 @@ void W_final_pf::compute_VPL(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
     for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = cparty::part_func_can_pair::can_use_left_unpaired_span(tree.up, i, k);
         if (can_pair) contributions += (expcp_pen[k - i] * get_energy_VP(k, j));
     }
     VPL[ij] = contributions;
@@ -465,7 +466,7 @@ void W_final_pf::compute_VPR(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     pf_t contributions = 0;
     cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
     for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
-        bool can_pair = tree.up[j - 1] >= (j - k);
+        bool can_pair = cparty::part_func_can_pair::can_use_right_unpaired_span(tree.up, k, j);
         contributions += (get_energy_VP(i, k) * get_energy_WIP(k + 1, j));
         if (can_pair) contributions += (get_energy_VP(i, k) * expcp_pen[k - i]);
     }
@@ -512,14 +513,15 @@ void W_final_pf::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t edge_i = std::min(i + MAXLOOP + 1, j - TURN - 1);
     min_borders = std::min(min_borders, edge_i);
     for (cand_pos_t k = i + 1; k < min_borders; ++k) {
-        if (tree.tree[k].pair < -1 && (tree.up[(k)-1] >= ((k) - (i)-1))) {
+        if (tree.tree[k].pair < -1 && cparty::part_func_can_pair::can_use_internal_left_unpaired_span(tree.up, i, k)) {
             cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
             cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
             max_borders = std::max(max_borders, edge_j);
             for (cand_pos_t l = j - 1; l > max_borders; --l) {
                 pair_type ptype_closingkj = pair[S_[k]][S_[l]];
                 if (k == i + 1 && l == j - 1) continue; // I have to add or else it will add a stP version and an eintP version to the sum
-                if (tree.tree[l].pair < -1 && ptype_closingkj > 0 && (tree.up[(j)-1] >= ((j) - (l)-1))) {
+                if (tree.tree[l].pair < -1 && ptype_closingkj > 0
+                    && cparty::part_func_can_pair::can_use_internal_right_unpaired_span(tree.up, l, j)) {
                     pf_t vp_iloop_kl = (get_e_intP(i, k, l, j) * get_energy_VP(k, l));
                     cand_pos_t u1 = k - i - 1;
                     cand_pos_t u2 = j - l - 1;
@@ -721,8 +723,8 @@ void W_final_pf::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_
 
             cand_pos_t lp = tree.tree[l].pair;
 
-            bool empty_region_il = (tree.up[(l)-1] >= l - i - 1);       // empty between i+1 and l-1
-            bool empty_region_lpj = (tree.up[(j)-1] >= j - lp - 1);     // empty between lp+1 and j-1
+            bool empty_region_il = (cparty::part_func_can_pair::can_use_internal_left_unpaired_span(tree.up, i, l));       // empty between i+1 and l-1
+            bool empty_region_lpj = (cparty::part_func_can_pair::can_use_internal_right_unpaired_span(tree.up, lp, j));     // empty between lp+1 and j-1
             bool weakly_closed_il = tree.weakly_closed(i + 1, l - 1);   // weakly closed between i+1 and l-1
             bool weakly_closed_lpj = tree.weakly_closed(lp + 1, j - 1); // weakly closed between lp+1 and j-1
 
@@ -856,7 +858,7 @@ void W_final_pf::Sample_V(cand_pos_t i, cand_pos_t j, std::string &structure,
 
     pf_t r = vrna_urn() * qbr;
     pf_t qbt1 = 0;
-    bool canH = !(tree.up[j - 1] < (j - i - 1));
+    bool canH = cparty::part_func_can_pair::can_use_hairpin_unpaired_span(tree.up, i, j);
 
     if (canH) V_temp = HairpinE(i, j);
 
@@ -865,10 +867,10 @@ void W_final_pf::Sample_V(cand_pos_t i, cand_pos_t j, std::string &structure,
     cand_pos_t max_k = std::min(j - TURN - 2, i + MAXLOOP + 1); // i+1+tree.up[i+1]?
     const pair_type ptype_closing = pair[S_[i]][S_[j]];
     for (k = i + 1; k <= max_k; k++) {
-        if (tree.up[k - 1] >= (k - i - 1)) {
+        if (cparty::part_func_can_pair::can_use_internal_left_unpaired_span(tree.up, i, k)) {
             cand_pos_t min_l = std::max(k + TURN + 1 + MAXLOOP + 2, k + j - i) - MAXLOOP - 2;
             for (l = j - 1; l >= min_l; --l) {
-                if (tree.up[j - 1] >= (j - l - 1)) {
+                if (cparty::part_func_can_pair::can_use_internal_right_unpaired_span(tree.up, l, j)) {
                     cand_pos_t u1 = k - i - 1;
                     cand_pos_t u2 = j - l - 1;
                     V_temp = get_energy(k, l)
@@ -926,7 +928,7 @@ void W_final_pf::Sample_VM(cand_pos_t i, cand_pos_t j, std::string &structure,
             break;
         }
 
-        if (tree.up[k - 1] >= (k - (i + 1))) {
+        if (cparty::part_func_can_pair::can_use_left_unpaired_span(tree.up, i + 1, k)) {
             V_temp = (expMLbase[k - i - 1] * get_energy_WMp(k, j - 1) * exp_Mbloop(i, j) * exp_params_->expMLclosing);
             qt += V_temp;
             if (qt > r) {
@@ -993,7 +995,7 @@ void W_final_pf::Sample_WM(cand_pos_t i, cand_pos_t j, std::string &structure,
     for (k = i; k < j - TURN; ++k) {
         qbt1 = get_energy(k, j) * exp_MLstem(k, j);
         qbt2 = get_energy_WMB(k, j) * expPSM_penalty * expb_penalty;
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = cparty::part_func_can_pair::can_use_left_unpaired_span(tree.up, i, k);
         if (can_pair) {
 
             V_temp = static_cast<pf_t>(expMLbase[k - i]) * qbt1;
@@ -1228,7 +1230,7 @@ void W_final_pf::Sample_WIP(cand_pos_t i, cand_pos_t j, std::string &structure,
         qbt1 = get_energy(k, j) * expbp_penalty;
         qbt2 = get_energy_WMB(k, j) * expbp_penalty * expPSM_penalty;
 
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = cparty::part_func_can_pair::can_use_left_unpaired_span(tree.up, i, k);
         if (can_pair) {
             V_temp = qbt1 * expcp_pen[k - i];
             qt += V_temp;
@@ -1477,14 +1479,15 @@ void W_final_pf::Sample_VP(cand_pos_t i, cand_pos_t j, std::string &structure,
     cand_pos_t edge_i = std::min(i + MAXLOOP + 1, j - TURN - 1);
     min_borders = std::min(min_borders, edge_i);
     for (k = i + 1; k < min_borders; ++k) {
-        if (tree.tree[k].pair < -1 && (tree.up[(k)-1] >= ((k) - (i)-1))) {
+        if (tree.tree[k].pair < -1 && cparty::part_func_can_pair::can_use_internal_left_unpaired_span(tree.up, i, k)) {
             cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
             cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
             max_borders = std::max(max_borders, edge_j);
             for (l = j - 1; l > max_borders; --l) {
                 pair_type ptype_closingkj = pair[S_[k]][S_[l]];
                 if (k == i + 1 && l == j - 1) continue; // I have to add or else it will add a stP version and an eintP version to the sum
-                if (tree.tree[l].pair < -1 && ptype_closingkj > 0 && (tree.up[(j)-1] >= ((j) - (l)-1))) {
+                if (tree.tree[l].pair < -1 && ptype_closingkj > 0
+                    && cparty::part_func_can_pair::can_use_internal_right_unpaired_span(tree.up, l, j)) {
                     cand_pos_t u1 = k - i - 1;
                     cand_pos_t u2 = j - l - 1;
                     V_temp = (get_e_intP(i, k, l, j) * get_energy_VP(k, l));
@@ -1575,7 +1578,7 @@ void W_final_pf::Sample_VPL(cand_pos_t i, cand_pos_t j, std::string &structure,
     pf_t r = vrna_urn() * (get_energy_VPL(i, j) - fbd);
     cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
     for (k = i + 1; k < min_Bp_j; ++k) {
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = cparty::part_func_can_pair::can_use_left_unpaired_span(tree.up, i, k);
         if (can_pair) {
             V_temp = (expcp_pen[k - i] * get_energy_VP(k, j));
             qt += V_temp;
@@ -1605,7 +1608,7 @@ void W_final_pf::Sample_VPR(cand_pos_t i, cand_pos_t j, std::string &structure,
 
     cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
     for (k = max_i_bp + 1; k < j; ++k) {
-        bool can_pair = tree.up[j - 1] >= (j - k);
+        bool can_pair = cparty::part_func_can_pair::can_use_right_unpaired_span(tree.up, k, j);
         V_temp = (get_energy_VP(i, k) * get_energy_WIP(k + 1, j));
         qt += V_temp;
         if (qt >= r) {
@@ -1675,8 +1678,8 @@ void W_final_pf::Sample_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t
         if (tree.tree[l].pair >= -1 && jp <= tree.tree[l].pair && tree.tree[l].pair < j) {
             lp = tree.tree[l].pair;
 
-            bool empty_region_il = (tree.up[(l)-1] >= l - i - 1);       // empty between i+1 and l-1
-            bool empty_region_lpj = (tree.up[(j)-1] >= j - lp - 1);     // empty between lp+1 and j-1
+            bool empty_region_il = (cparty::part_func_can_pair::can_use_internal_left_unpaired_span(tree.up, i, l));       // empty between i+1 and l-1
+            bool empty_region_lpj = (cparty::part_func_can_pair::can_use_internal_right_unpaired_span(tree.up, lp, j));     // empty between lp+1 and j-1
             bool weakly_closed_il = tree.weakly_closed(i + 1, l - 1);   // weakly closed between i+1 and l-1
             bool weakly_closed_lpj = tree.weakly_closed(lp + 1, j - 1); // weakly closed between lp+1 and j-1
             if (empty_region_il && empty_region_lpj) {
