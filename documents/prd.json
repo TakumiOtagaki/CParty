@@ -520,7 +520,9 @@
         "Flags/policy knobs relevant to can-pair and density behavior are represented explicitly in the shared context.",
         "Invoking shared fixed-energy evaluation from CLI does not mutate or invalidate the parameter set used by subsequent CLI MFE/PF computations in the same run.",
         "At least one regression/integration test explicitly guards against CLI parameter-state side effects introduced by shared evaluation wiring.",
-        "No behavior regression is introduced for existing fixed-energy API validation and compatibility tests."
+        "The CLI parameter-state guard is validated under a Dirks-loaded execution condition, not only default/global parameter state.",
+        "No behavior regression is introduced for existing fixed-energy API validation and compatibility tests.",
+        "Full regression command `ctest --output-on-failure` passes."
       ],
       "artifacts": [
         "src/CPartyAPI.hh",
