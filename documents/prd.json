@@ -463,6 +463,27 @@
         "documents/can_pair_rollout_report.md"
       ],
       "passes": true
+    },
+    {
+      "id": 21,
+      "story": "Add direct numeric alignment checks between CParty CLI density2 MFE energy and get_structure_energy(seq, mfe_structure) using parsed CLI baselines.",
+      "depends_on": [
+        20
+      ],
+      "test_command": "ctest --output-on-failure -R api_cli_density2_energy_alignment",
+      "retry_limit": 2,
+      "done_when": [
+        "Test loads tests/baselines/fixed_energy_cli/density2_mfe.tsv and reconstructs (seq, mfe_structure, mfe_energy) cases.",
+        "For rows with status=ok, get_structure_energy(seq, mfe_structure) is finite and compared to CLI mfe_energy with abs_tol/rel_tol.",
+        "Rows with CLI nonzero exit status are skipped with explicit reason logging.",
+        "ctest filter 'api_cli_density2_energy_alignment' passes.",
+        "Full regression command passes."
+      ],
+      "artifacts": [
+        "tests/*api_cli_density2_energy_alignment*",
+        "documents/fixed_energy_cli_alignment_report.md"
+      ],
+      "passes": false
     }
   ]
 }
