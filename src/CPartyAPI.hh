@@ -1,6 +1,8 @@
 #ifndef CPARTY_API_HH
 #define CPARTY_API_HH
 
+#include "energy_eval_context.hh"
+
 #include <string>
 
 // Return the conditional log probability ln P(G' | G, S) based on CParty's
@@ -11,5 +13,8 @@ double get_cond_log_prob(const std::string &seq, const std::string &db_base);
 // Stage 6a declaration for fixed-structure energy.
 // Implementation is added in later stages.
 double get_structure_energy(const std::string &seq, const std::string &db_full);
+double get_structure_energy(const std::string &seq,
+                            const std::string &db_full,
+                            const cparty::EnergyEvalOptions &options);
 
 #endif

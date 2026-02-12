@@ -1,6 +1,7 @@
 # Agent Learnings
 
 ## Regression Patterns
+- For CLI/API fixed-energy alignment stages, parse per-row CLI flags into one shared `EnergyEvalOptions` mapping and call the API overload with that options object so `-p/-k/-d` context is threaded deterministically.
 - For final rollout gates, run one umbrella CTest stage that executes regression plus can-pair integration filters together, then perform representative deterministic smoke runs and emit a markdown report of decision points/limitations.
 - For can-pair cross-path consistency stages, define one shared acceptance/rejection matrix with explicit `(seq, db_full, pair indices)` rows and assert the same decision across API finite/`NaN` outcomes plus pseudo-loop/part-function pair helpers.
 - For part-function can-pair integration stages, route pair-formation checks through `part_func_can_pair::can_form_allowed_pair` and keep `tree.up` span checks delegated to shared policy helpers so recurrence and backtracking stay semantically aligned.

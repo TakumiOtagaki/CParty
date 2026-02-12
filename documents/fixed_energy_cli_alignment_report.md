@@ -18,14 +18,14 @@ Baseline source: `tests/baselines/fixed_energy_cli/density2_mfe.tsv`
 | pkfree_hairpin | r1_p1_k0_d0 | -p -d0 | -3.45 | -5 | no |
 | h_type_1 | r1_p0_k0_d2 |  | -6.69 | -12.76 | no |
 | h_type_1 | r1_p0_k0_d0 | -d0 | -6.69 | -12.76 | no |
-| h_type_1 | r1_p1_k0_d2 | -p | -4.71 | -12.76 | no |
-| h_type_1 | r1_p1_k0_d0 | -p -d0 | -3.84 | -12.76 | no |
+| h_type_1 | r1_p1_k0_d2 | -p | -4.71 | -6.5 | no |
+| h_type_1 | r1_p1_k0_d0 | -p -d0 | -3.84 | -4.8 | no |
 | h_type_1 | r1_p0_k1_d2 | -k | -6.69 | -12.76 | no |
 | h_type_1 | r1_p0_k1_d0 | -k -d0 | -6.69 | -12.76 | no |
 | k_type_1 | r1_p0_k0_d2 |  | -12.05 | -22.88 | no |
 | k_type_1 | r1_p0_k0_d0 | -d0 | -12.05 | -22.88 | no |
-| k_type_1 | r1_p1_k0_d2 | -p | -9.37 | -22.88 | no |
-| k_type_1 | r1_p1_k0_d0 | -p -d0 | -8.41 | -22.88 | no |
+| k_type_1 | r1_p1_k0_d2 | -p | -9.37 | -13.9 | no |
+| k_type_1 | r1_p1_k0_d0 | -p -d0 | -8.41 | -11.7 | no |
 | k_type_1 | r1_p0_k1_d2 | -k | -12.05 | -22.88 | no |
 | k_type_1 | r1_p0_k1_d0 | -k -d0 | -12.05 | -22.88 | no |
 

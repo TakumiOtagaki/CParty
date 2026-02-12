@@ -524,7 +524,7 @@
         "tests/*api_structure_energy*",
         "tests/*api_cli_density2_energy_alignment*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 24,

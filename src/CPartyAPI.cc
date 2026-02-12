@@ -327,7 +327,9 @@ double get_cond_log_prob(const std::string &seq, const std::string &db_base) {
     return -ensemble_energy / kRT;
 }
 
-double get_structure_energy(const std::string &seq, const std::string &db_full) {
+double get_structure_energy(const std::string &seq,
+                            const std::string &db_full,
+                            const cparty::EnergyEvalOptions &options) {
     const std::string normalized_seq = normalize_api_sequence(seq);
     if (normalized_seq.empty()) {
         return std::numeric_limits<double>::quiet_NaN();
@@ -346,5 +348,13 @@ double get_structure_energy(const std::string &seq, const std::string &db_full) 
         return std::numeric_limits<double>::quiet_NaN();
     }
 
-    return cparty::internal::evaluate_fixed_structure_energy_kcal(normalized_seq, db_full);
+    cparty::EnergyEvalContext context;
+    if (!cparty::internal::build_energy_eval_context(normalized_seq, db_full, options, context)) {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    return cparty::internal::evaluate_fixed_structure_energy_kcal(context);
+}
+
+double get_structure_energy(const std::string &seq, const std::string &db_full) {
+    return get_structure_energy(seq, db_full, cparty::EnergyEvalOptions{});
 }

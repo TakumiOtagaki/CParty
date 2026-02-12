@@ -30,6 +30,11 @@ struct ParsedStructure {
     std::vector<std::pair<size_t, size_t>> pairs;
 };
 
+struct InternalEvalContext {
+    cparty::EnergyEvalContext api_context;
+    ParsedStructure parsed;
+};
+
 double quiet_nan() { return std::numeric_limits<double>::quiet_NaN(); }
 
 std::string normalize_sequence(std::string seq) {
@@ -158,44 +163,74 @@ bool parse_structure(const std::string &seq, const std::string &db_full, ParsedS
     return true;
 }
 
-bool validate_and_parse(const std::string &seq, const std::string &db_full, ParsedStructure &parsed, std::string &normalized_seq) {
-    normalized_seq = normalize_sequence(seq);
-    if (normalized_seq.empty()) {
+bool validate_and_parse(const std::string &seq,
+                        const std::string &db_full,
+                        const cparty::EnergyEvalOptions &options,
+                        InternalEvalContext &context) {
+    if (options.dangles < 0 || options.dangles > 2) {
         return false;
     }
-    for (const char c : normalized_seq) {
+    context.api_context.normalized_seq = normalize_sequence(seq);
+    if (context.api_context.normalized_seq.empty()) {
+        return false;
+    }
+    for (const char c : context.api_context.normalized_seq) {
         if (!is_valid_seq_symbol(c)) {
             return false;
         }
     }
-    return parse_structure(normalized_seq, db_full, parsed);
+    context.api_context.db_full = db_full;
+    context.api_context.options = options;
+    return parse_structure(context.api_context.normalized_seq, db_full, context.parsed);
 }
 
-double evaluate_from_parsed(const std::string &sequence, const std::string &db_full, const ParsedStructure &parsed) {
+double evaluate_from_parsed(const InternalEvalContext &context, const std::string &db_full, const ParsedStructure &parsed) {
+    const std::string &sequence = context.api_context.normalized_seq;
     sparse_tree tree(parsed.tree_structure, static_cast<int>(sequence.size()));
-
-    constexpr bool pk_free = false;
-    constexpr bool pk_only = false;
-    constexpr int dangles = 2;
-
-    W_final fold(sequence, db_full, pk_free, pk_only, dangles);
+    const cparty::EnergyEvalOptions &options = context.api_context.options;
+    W_final fold(sequence, db_full, options.pk_free, options.pk_only, options.dangles);
     return fold.hfold(tree);
 }
 
 } // namespace
+
+bool build_energy_eval_context(const std::string &seq,
+                               const std::string &db_full,
+                               const cparty::EnergyEvalOptions &options,
+                               cparty::EnergyEvalContext &context) noexcept {
+    if (!load_turner_params_once()) {
+        return false;
+    }
+    InternalEvalContext internal_context;
+    if (!validate_and_parse(seq, db_full, options, internal_context)) {
+        return false;
+    }
+    context = internal_context.api_context;
+    return true;
+}
+
+double evaluate_fixed_structure_energy_kcal(const cparty::EnergyEvalContext &context) noexcept {
+    if (!load_turner_params_once()) {
+        return quiet_nan();
+    }
+    InternalEvalContext internal_context;
+    if (!validate_and_parse(context.normalized_seq, context.db_full, context.options, internal_context)) {
+        return quiet_nan();
+    }
+    return evaluate_from_parsed(internal_context, internal_context.api_context.db_full, internal_context.parsed);
+}
 
 double evaluate_fixed_structure_energy_kcal(const std::string &seq, const std::string &db_full) noexcept {
     if (!load_turner_params_once()) {
         return quiet_nan();
     }
 
-    std::string sequence;
-    ParsedStructure parsed;
-    if (!validate_and_parse(seq, db_full, parsed, sequence)) {
+    InternalEvalContext context;
+    if (!validate_and_parse(seq, db_full, cparty::EnergyEvalOptions{}, context)) {
         return quiet_nan();
     }
 
-    return evaluate_from_parsed(sequence, db_full, parsed);
+    return evaluate_from_parsed(context, context.api_context.db_full, context.parsed);
 }
 
 EnergyBreakdown evaluate_fixed_structure_energy_breakdown_kcal(const std::string &seq, const std::string &db_full) noexcept {
@@ -204,27 +239,26 @@ EnergyBreakdown evaluate_fixed_structure_energy_breakdown_kcal(const std::string
         return breakdown;
     }
 
-    std::string sequence;
-    ParsedStructure parsed;
-    if (!validate_and_parse(seq, db_full, parsed, sequence)) {
+    InternalEvalContext context;
+    if (!validate_and_parse(seq, db_full, cparty::EnergyEvalOptions{}, context)) {
         return breakdown;
     }
 
-    const double total = evaluate_from_parsed(sequence, db_full, parsed);
+    const double total = evaluate_from_parsed(context, context.api_context.db_full, context.parsed);
     if (!std::isfinite(total)) {
         return breakdown;
     }
 
     breakdown.total_kcal = total;
     breakdown.band_scaled_terms_kcal = 0.0;
-    if (!parsed.uses_pk) {
+    if (!context.parsed.uses_pk) {
         breakdown.pk_free_core_kcal = total;
         breakdown.pk_penalties_kcal = 0.0;
         return breakdown;
     }
 
-    const ParsedStructure pk_free_parsed = {parsed.tree_structure, false, parsed.pairs};
-    const double pk_free_core = evaluate_from_parsed(sequence, parsed.tree_structure, pk_free_parsed);
+    const ParsedStructure pk_free_parsed = {context.parsed.tree_structure, false, context.parsed.pairs};
+    const double pk_free_core = evaluate_from_parsed(context, context.parsed.tree_structure, pk_free_parsed);
     if (!std::isfinite(pk_free_core)) {
         return {quiet_nan(), quiet_nan(), quiet_nan(), quiet_nan()};
     }

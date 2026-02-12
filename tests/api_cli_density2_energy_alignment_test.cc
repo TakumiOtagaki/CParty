@@ -49,6 +49,28 @@ struct SkippedRow {
     std::string reason;
 };
 
+bool has_flag(const std::string &flags, const std::string &flag) {
+    if (flags.empty()) {
+        return false;
+    }
+    std::istringstream iss(flags);
+    std::string token;
+    while (iss >> token) {
+        if (token == flag) {
+            return true;
+        }
+    }
+    return false;
+}
+
+cparty::EnergyEvalOptions options_from_flags(const std::string &flags) {
+    cparty::EnergyEvalOptions options;
+    options.pk_free = has_flag(flags, "-p");
+    options.pk_only = has_flag(flags, "-k");
+    options.dangles = has_flag(flags, "-d0") ? 0 : 2;
+    return options;
+}
+
 std::string trim(const std::string &input) {
     const std::string spaces = " \t\r\n";
     const std::size_t start = input.find_first_not_of(spaces);
@@ -283,7 +305,8 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        const double api_energy = get_structure_energy(seq_it->second, row.mfe_structure);
+        const cparty::EnergyEvalOptions options = options_from_flags(row.flags);
+        const double api_energy = get_structure_energy(seq_it->second, row.mfe_structure, options);
         if (!std::isfinite(api_energy)) {
             std::cerr << row.fixture_id << "/" << row.flag_id
                       << ": expected finite get_structure_energy for status=ok row, got " << api_energy << std::endl;
