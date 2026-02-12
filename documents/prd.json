@@ -1,29 +1,64 @@
 {
-  "project_name": "CParty-Fixed-Structure-Energy",
-  "goal": "Add a CParty API to compute the fixed-structure energy E(G∪G', S) and enable exact logP(G'|G,S).",
+  "project_name": "CParty Fixed-Structure Energy",
+  "goal": "Refactor CParty safely with regression-first TDD, then add a fixed-structure energy API E(G union G', S) for exact conditional probability workflows.",
+  "notes": [
+    "This PRD is CParty-only and intentionally excludes parent-repo workflow noise.",
+    "Use small, behavior-preserving commits for refactoring steps.",
+    "Do not treat CParty CLI -r output as fixed-structure energy ground truth."
+  ],
   "user_stories": [
     {
       "id": 1,
-      "story": "Investigate CParty internals to locate or derive fixed-structure energy evaluation for a given sequence and dot-bracket structure (G∪G'). Document the chosen approach.",
-      "test_command": "",
+      "story": "Add a regression test matrix for existing CParty behavior (with combinations of -p, -k, -d, with/without -r). Focus on non-regression, finite outputs, and deterministic behavior.",
+      "test_command": "ctest --output-on-failure -R regression",
       "passes": false
     },
     {
       "id": 2,
-      "story": "Implement internal function to compute E(G∪G', S) (kcal/mol) for a fixed dot-bracket structure, reusing existing energy routines where possible.",
-      "test_command": "",
+      "story": "Create/normalize fixed-energy fixtures in tests/cparty_fixed_structure_energy/, including PK-free, H-type, K-type, and invalid cases. Ensure every valid case has consistent lengths and parseable structures.",
+      "test_command": "ctest --output-on-failure -R fixtures",
       "passes": false
     },
     {
       "id": 3,
-      "story": "Expose public API in CPartyAPI: get_structure_energy(seq, db_full) returning E(G∪G',S) or NaN on invalid input.",
-      "test_command": "",
+      "story": "Refactor src/pseudo_loop.cc into smaller helper functions (behavior-preserving only). Add tests to prove no numeric regressions on the regression matrix.",
+      "test_command": "ctest --output-on-failure -R pseudo_loop",
       "passes": false
     },
     {
       "id": 4,
-      "story": "Add tests for the fixed-structure energy API (finite output, deterministic, invalid inputs return NaN).",
-      "test_command": "",
+      "story": "Refactor src/part_func.cc to isolate partition-function path from future fixed-structure path, without changing existing outputs.",
+      "test_command": "ctest --output-on-failure -R part_func",
+      "passes": false
+    },
+    {
+      "id": 5,
+      "story": "Introduce an internal fixed-structure evaluator that computes E(db_full, seq) in kcal/mol and returns NaN on invalid input. Keep it internal first.",
+      "test_command": "ctest --output-on-failure -R fixed_energy_internal",
+      "passes": false
+    },
+    {
+      "id": 6,
+      "story": "Expose public API get_structure_energy(seq, db_full) in CPartyAPI backed by the internal evaluator. Preserve all existing public APIs.",
+      "test_command": "ctest --output-on-failure -R api_structure_energy",
+      "passes": false
+    },
+    {
+      "id": 7,
+      "story": "Add deterministic and error-handling tests for get_structure_energy: valid finite outputs, repeated-call equality, and NaN on invalid input.",
+      "test_command": "ctest --output-on-failure -R api_structure_energy_validation",
+      "passes": false
+    },
+    {
+      "id": 8,
+      "story": "Add optional internal EnergyBreakdown diagnostics (debug-only) to help validate term composition (pk-free core, PK penalties, band-scaled terms, total) without changing default API behavior.",
+      "test_command": "ctest --output-on-failure -R breakdown",
+      "passes": false
+    },
+    {
+      "id": 9,
+      "story": "Run end-to-end fixed-energy validation on tests/cparty_fixed_structure_energy/test.multi.fa and produce a short markdown report with observed energies and any unsupported cases.",
+      "test_command": "ctest --output-on-failure -R fixed_energy_e2e",
       "passes": false
     }
   ]
