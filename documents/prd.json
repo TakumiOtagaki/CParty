@@ -145,7 +145,7 @@
         "include/*",
         "tests/*api_structure_energy_decl*"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": 7,
