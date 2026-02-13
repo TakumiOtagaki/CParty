@@ -35,6 +35,24 @@ void expect_contains_rule(const std::vector<cparty::internal::RuleTraceStep> &tr
   expect(false, "trace missing rule: " + rule);
 }
 
+void expect_missing_state(const std::vector<cparty::internal::RuleTraceStep> &trace,
+                          const std::string &state) {
+  for (const auto &step : trace) {
+    if (step.state == state) {
+      expect(false, "trace unexpectedly contains state: " + state);
+    }
+  }
+}
+
+void expect_missing_rule(const std::vector<cparty::internal::RuleTraceStep> &trace,
+                         const std::string &rule) {
+  for (const auto &step : trace) {
+    if (step.rule == rule) {
+      expect(false, "trace unexpectedly contains rule: " + rule);
+    }
+  }
+}
+
 void expect_invalid(const std::string &seq, const std::string &db_full) {
   bool threw = false;
   try {
@@ -60,7 +78,8 @@ int main() {
     expect_contains_rule(trace, "VM_TO_WM");
     expect_contains_rule(trace, "WM_TO_WMv");
     expect_contains_rule(trace, "WMv_TO_WMp");
-    expect_contains_rule(trace, "WMp_TO_WIP");
+    expect_missing_state(trace, "WIP");
+    expect_missing_rule(trace, "WMp_TO_WIP");
   }
 
   expect(cparty::get_structure_energy("AUGCUA", "((..))") == -2.0,

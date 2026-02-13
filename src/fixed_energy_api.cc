@@ -56,6 +56,7 @@ enum class SharedRuleKind {
 
 struct SharedParseMode {
   bool include_slice_b = false;
+  bool include_slice_c = false;
   bool include_slice_d = false;
 };
 
@@ -205,7 +206,7 @@ std::vector<SharedRuleKind> rules_for(const SharedStateKind state_kind, const Sh
     if (mode.include_slice_d) {
       return {SharedRuleKind::kWMpToWMB};
     }
-    if (mode.include_slice_b) {
+    if (mode.include_slice_c) {
       return {SharedRuleKind::kWMpToWIP};
     }
     return {};
@@ -245,11 +246,14 @@ bool rule_is_applicable(const SharedRuleKind rule,
     return true;
   }
 
-  if (rule == SharedRuleKind::kVMToWM || rule == SharedRuleKind::kWMToWMv || rule == SharedRuleKind::kWMvToWMp ||
-      rule == SharedRuleKind::kWMpToWIP || rule == SharedRuleKind::kWIPToVP ||
+  if (rule == SharedRuleKind::kVMToWM || rule == SharedRuleKind::kWMToWMv || rule == SharedRuleKind::kWMvToWMp) {
+    return mode.include_slice_b;
+  }
+
+  if (rule == SharedRuleKind::kWMpToWIP || rule == SharedRuleKind::kWIPToVP ||
       rule == SharedRuleKind::kVPToVPL || rule == SharedRuleKind::kVPLToVPR ||
       rule == SharedRuleKind::kVPRToV) {
-    return mode.include_slice_b;
+    return mode.include_slice_c;
   }
 
   if (rule == SharedRuleKind::kWMpToWMB || rule == SharedRuleKind::kWMBToWMBP ||
@@ -532,23 +536,23 @@ SharedEvaluationResult evaluate_shared_from_normalized(const NormalizedInput &ct
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_from_normalized(const NormalizedInput &ctx) {
-  return evaluate_shared_from_normalized(ctx, SharedParseMode{false, false}).trace;
+  return evaluate_shared_from_normalized(ctx, SharedParseMode{false, false, false}).trace;
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_b_from_normalized(const NormalizedInput &ctx) {
-  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, false}).trace;
+  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, false, false}).trace;
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_c_from_normalized(const NormalizedInput &ctx) {
-  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, false}).trace;
+  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, true, false}).trace;
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_from_normalized(const NormalizedInput &ctx) {
-  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, true}).trace;
+  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, true, true}).trace;
 }
 
 EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput &ctx) {
-  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, true}).breakdown;
+  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, true, true}).breakdown;
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(const NormalizedInput &ctx) {
