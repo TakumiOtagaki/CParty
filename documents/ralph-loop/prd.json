@@ -164,7 +164,7 @@
       "commands": [
         "test/tools/parse_cparty_stdout_test.sh"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "Parsing framework is separate from random generation."
     },
     {
