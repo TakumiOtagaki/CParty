@@ -395,8 +395,18 @@
       ],
       "done_when": [
         "API evaluation uses SCFG core/rule path (not duplicate ad-hoc path)",
+        "Structure parsing path is deterministic for valid input (same input -> same rule chain)",
+        "Parser rejects invalid structures via invalid_input_contract",
         "EnergyBreakdown fields are populated consistently",
         "Internal tests cover pk_free/h_type/k_type smoke cases"
+      ],
+      "micro_steps": [
+        "12.1 Add parser entry: db_full -> normalized internal representation",
+        "12.2 Build deterministic rule-chain selection for one narrow family (pk_free first)",
+        "12.3 Evaluate energy along selected rule chain and populate minimal EnergyBreakdown",
+        "12.4 Extend parser/evaluator to h_type and k_type incrementally",
+        "12.5 Enforce invalid_input_contract on parser/evaluator boundary",
+        "12.6 Fill remaining EnergyBreakdown terms and run full regression/alignment gate"
       ],
       "artifacts": [
         "src/fixed_energy_breakdown.hh",
@@ -410,7 +420,7 @@
         "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "This is the main functional convergence step."
+      "notes": "This is the main functional convergence step. Keep parsing deterministic and extend family-by-family (pk_free -> h_type -> k_type)."
     },
     {
       "id": "013",
