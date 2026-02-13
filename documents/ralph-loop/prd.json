@@ -101,7 +101,7 @@
         "ctest --test-dir build -N"
       ],
       "passes": false,
-      "notes": "No algorithm change. Build/test plumbing only."
+      "notes": "No algorithm change. Build/test plumbing only. Caution: do not confuse stale build-cache tests with source-defined tests; validate using fresh build + ctest -N output."
     },
     {
       "id": "002",

@@ -17,17 +17,18 @@ CParty の非曖昧な密度2分解ロジックを、次の3用途で共通利�
 ### 2.2 機械的DoD (厳格)
 以下を `ctest` で自動判定する。
 - `compared >= 100`
-- `mismatched = 0` (X=0)
+- early phase: `mismatched` を必ず報告し、比較が機械的に実行されること
+- final strict gate: `mismatched = 0` (X=0)
 - `finite_rate == 100%` (valid density-2 ケースのみ)
 - invalidケース契約: 不正入力は単一の失敗契約（固定エラーコード or 例外型）で決定論的に失敗する
 - 数値比較は `abs_tol` と `rel_tol` を明記する
 
-### 2.4 生成データの数学的前提
+### 2.3 生成データの数学的前提
 - ランダム生成は「解析用文法」ではなく「テストデータ生成器」として扱う。
 - input 二次構造 G の生成規則は `S -> S '.' | S '(' S ')' | epsilon`（PK-free）とし、塩基対は `AU/GC/GU` のみ許容する。
 - 生成器は固定seedで再現可能にし、同一seed・同一設定で同一データを再生成できることを保証する。
 
-### 2.3 反チート実行規約
+### 2.4 反チート実行規約
 - テストは必ず fresh build で実行する (`rm -rf build && cmake -S . -B build && cmake --build build`)。
 - `ctest` は `build/CTestTestfile.cmake` の生成時刻が当該コミット後であることを確認してから実行する。
 - `api_cli_density2_energy_alignment` は「比較件数0件」で pass してはならない。`compared` を標準出力またはレポートに必ず出力し、`compared >= 100` を機械判定する。
