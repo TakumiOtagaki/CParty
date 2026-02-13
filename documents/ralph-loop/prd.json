@@ -83,7 +83,8 @@
       "Do not modify baselines only to force green unless the story explicitly says baseline refresh.",
       "Do not claim refactor-only completion if refactor_compared/refactor_strict_mismatched are missing.",
       "Do not claim alignment completion if alignment_compared/alignment_mismatched are missing."
-    ]
+    ],
+    "dirty_state_policy": "If unrelated modified/untracked files pre-exist, continue current story without modifying them; record them in audit log."
   },
   "global_stop_condition": {
     "type": "all_stories_pass",

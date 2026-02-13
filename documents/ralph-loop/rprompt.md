@@ -31,6 +31,7 @@ Loop memory is in `documents/ralph-loop/progress.txt`.
 - In refactor stories, prioritize extraction of repeated concrete operations (>=3 occurrences); avoid broad abstraction-first helpers.
 - Do not mark pass unless `documents/ralph-loop/audit/{story_id}.md` is updated in the same run.
 - If required files/directories are missing (e.g., `documents/ralph-loop/prd.json`, `test/`), stop and report the blocker.
+- If unrelated dirty/untracked files already exist, continue the target story without touching them (no revert, no cleanup), and mention them in the audit log.
 
 ## Progress Format
 
