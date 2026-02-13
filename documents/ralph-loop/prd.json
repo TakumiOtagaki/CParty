@@ -426,7 +426,7 @@
         "ctest --test-dir build --output-on-failure -R fixed_energy_internal",
         "ctest --test-dir build --output-on-failure"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "Parser-first story. Focus on deterministic rule-chain selection and invalid contract, not full breakdown completeness."
     },
     {

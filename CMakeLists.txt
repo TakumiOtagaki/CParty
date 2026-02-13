@@ -123,6 +123,11 @@ if(BUILD_TESTING)
     src/fixed_energy_api.cc
   )
   add_executable(
+    fixed_energy_internal_test
+    test/fixed_energy_internal_test.cc
+    src/fixed_energy_api.cc
+  )
+  add_executable(
     can_pair_policy_test
     test/can_pair_policy_test.cc
     src/sparse_tree.cc
@@ -155,6 +160,11 @@ if(BUILD_TESTING)
   add_test(
     NAME api_structure_energy_validation
     COMMAND api_structure_energy_validation_test
+  )
+
+  add_test(
+    NAME fixed_energy_internal
+    COMMAND fixed_energy_internal_test
   )
 
   add_test(
