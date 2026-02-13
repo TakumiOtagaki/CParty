@@ -1,58 +1,321 @@
 {
-	"branchName": "feat/mini-wc-cli",
-	"userStories": [
-		{
-			"id": "US-001",
-			"title": "Initialize Rust project and Basic Setup",
-			"acceptanceCriteria": [
-				"Initialize a new binary project with cargo init if Cargo.toml doesn't exist",
-				"Create a main.rs that prints 'Hello, mini-wc!'",
-				"cargo run executes successfully",
-				"cargo check passes"
-			],
-			"priority": 1,
-			"passes": false,
-			"notes": ""
-		},
-		{
-			"id": "US-002",
-			"title": "Add Argument Parsing",
-			"acceptanceCriteria": [
-				"Add clap dependency to Cargo.toml",
-				"Update main.rs to accept a file path as an argument",
-				"If no argument is provided, print usage help",
-				"cargo check passes"
-			],
-			"priority": 2,
-			"passes": false,
-			"notes": ""
-		},
-		{
-			"id": "US-003",
-			"title": "Implement Line Counting",
-			"acceptanceCriteria": [
-				"Read the file specified by the argument",
-				"Count the number of lines in the file",
-				"Print the line count to stdout (e.g., 'Lines: 10')",
-				"Handle file not found errors gracefully",
-				"cargo test passes (add a unit test for counting logic if possible)"
-			],
-			"priority": 3,
-			"passes": false,
-			"notes": ""
-		},
-		{
-			"id": "US-004",
-			"title": "Implement Word and Byte Counting",
-			"acceptanceCriteria": [
-				"Extend logic to count words and bytes as well",
-				"Print all three stats: Lines, Words, Bytes",
-				"Ensure format is readable",
-				"cargo test passes"
-			],
-			"priority": 4,
-			"passes": false,
-			"notes": ""
-		}
-	]
+  "project": "CParty fixed-structure energy alignment (density-2, strict)",
+  "branchName": "feature/scfg-refactor-fixed-energy",
+  "owner": "ootagakitakumi",
+  "id_policy": "Stories must be processed in ascending id order.",
+  "constraints": {
+    "mode": "-d2 only",
+    "sequence_alphabet": "A,U,G,C only",
+    "reject_T": true,
+    "allow_GU": true,
+    "numeric_tolerance": {
+      "abs_tol": 1e-7,
+      "rel_tol": 1e-7
+    }
+  },
+  "execution_policy": {
+    "fresh_build_required": true,
+    "fresh_build_command": "rm -rf build && cmake -S . -B build && cmake --build build",
+    "required_metrics": [
+      "compared",
+      "mismatched",
+      "skipped",
+      "finite_rate"
+    ],
+    "forbidden_shortcuts": [
+      "Do not set passes=true without command evidence in same iteration.",
+      "Do not treat compared=0 as success.",
+      "Do not rely on stale build artifacts.",
+      "Do not update baselines only to force green unless story explicitly requires baseline refresh."
+    ]
+  },
+  "global_stop_condition": {
+    "type": "all_stories_pass",
+    "strict_requirements": [
+      "All userStories.passes == true",
+      "Story 012 gate satisfied",
+      "No blocker listed in notes"
+    ]
+  },
+  "retry_limit": {
+    "per_story": 2,
+    "on_exceed": "Stop loop, append blocker analysis to documents/ralph-loop/progress.txt, keep story passes=false."
+  },
+  "userStories": [
+    {
+      "id": "001",
+      "title": "Restore test harness in source-controlled paths",
+      "priority": 1,
+      "depends_on": [],
+      "done_when": [
+        "tests/ directory exists with executable helper scripts committed",
+        "CMakeLists.txt enables testing from source (not only pre-existing build cache)",
+        "ctest -N from fresh build lists at least one source-defined test"
+      ],
+      "artifacts": [
+        "CMakeLists.txt",
+        "tests/README.md"
+      ],
+      "commands": [
+        "rm -rf build && cmake -S . -B build && cmake --build build",
+        "ctest --test-dir build -N"
+      ],
+      "passes": false,
+      "notes": "No energy logic change in this story."
+    },
+    {
+      "id": "002",
+      "title": "Add deterministic CLI baseline collector (-d2 fixed)",
+      "priority": 2,
+      "depends_on": [
+        "001"
+      ],
+      "done_when": [
+        "Script to run CParty on fixture FASTA and capture density-2 MFE structure/energy exists",
+        "Output format is TSV with stable columns and headers",
+        "Script exits non-zero on parse failure"
+      ],
+      "artifacts": [
+        "tests/fixed_energy_cli_baseline.sh",
+        "tests/baselines/fixed_energy_cli/README.md"
+      ],
+      "commands": [
+        "tests/fixed_energy_cli_baseline.sh build/CParty tests/cparty_fixed_structure_energy/test.multi.fa tests/baselines/fixed_energy_cli/density2_mfe.tsv"
+      ],
+      "passes": false,
+      "notes": "Single source of truth for initial alignment is current CLI output under -d2."
+    },
+    {
+      "id": "003",
+      "title": "Create initial fixture set and schema checks",
+      "priority": 3,
+      "depends_on": [
+        "002"
+      ],
+      "done_when": [
+        "Fixture dataset exists with at least PK-free, H-type, K-type examples",
+        "Fixture schema validator test exists",
+        "Each fixture row has stable id and expected validity flag"
+      ],
+      "artifacts": [
+        "tests/cparty_fixed_structure_energy/test.multi.fa",
+        "tests/cparty_fixed_structure_energy/fixtures.tsv",
+        "tests/fixed_energy_fixtures.sh"
+      ],
+      "commands": [
+        "tests/fixed_energy_fixtures.sh tests/cparty_fixed_structure_energy/fixtures.tsv"
+      ],
+      "passes": false,
+      "notes": "IDs must remain stable for diff-friendly updates."
+    },
+    {
+      "id": "004",
+      "title": "Install anti-cheat alignment gate with explicit metrics",
+      "priority": 4,
+      "depends_on": [
+        "003"
+      ],
+      "done_when": [
+        "api_cli_density2_energy_alignment test target exists in source CMake",
+        "Test prints compared/mismatched/skipped/finite_rate",
+        "Test fails when compared=0"
+      ],
+      "artifacts": [
+        "tests/api_cli_density2_energy_alignment_test.cc",
+        "documents/fixed_energy_cli_alignment_report.md",
+        "CMakeLists.txt"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment"
+      ],
+      "passes": false,
+      "notes": "This story is about gate correctness, not API correctness yet."
+    },
+    {
+      "id": "005",
+      "title": "Add API declaration and explicit NotImplemented path",
+      "priority": 5,
+      "depends_on": [
+        "004"
+      ],
+      "done_when": [
+        "Public API declaration for get_structure_energy exists",
+        "Calling path compiles and returns explicit not-implemented error/status",
+        "No silent fallback to unrelated energy path"
+      ],
+      "artifacts": [
+        "src/fixed_energy_api.hh",
+        "src/fixed_energy_api.cc",
+        "tests/api_structure_energy_decl_test.cc"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R api_structure_energy_decl"
+      ],
+      "passes": false,
+      "notes": "Intentional scaffold only."
+    },
+    {
+      "id": "006",
+      "title": "Implement strict input validation contract (AUGC only)",
+      "priority": 6,
+      "depends_on": [
+        "005"
+      ],
+      "done_when": [
+        "API rejects T and non-AUGC bases",
+        "Structure parser enforces allowed bracket sets and balanced pairs",
+        "Invalid inputs map to deterministic error contract (error code/exception/NaN)"
+      ],
+      "artifacts": [
+        "src/fixed_energy_validation.hh",
+        "src/fixed_energy_validation.cc",
+        "tests/api_structure_energy_validation_test.cc"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R api_structure_energy_validation"
+      ],
+      "passes": false,
+      "notes": "Keep CLI legacy behavior unchanged; enforce strictness in API path first."
+    },
+    {
+      "id": "007",
+      "title": "Extract can-pair oracle module from core loops",
+      "priority": 7,
+      "depends_on": [
+        "006"
+      ],
+      "done_when": [
+        "Reusable oracle function/class exists for pair admissibility",
+        "At least one part_func path and one pseudo_loop path call shared oracle",
+        "Regression helper tests pass with no numeric drift beyond tolerance"
+      ],
+      "artifacts": [
+        "src/can_pair_oracle.hh",
+        "src/can_pair_oracle.cc",
+        "tests/can_pair_policy_test.cc"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R can_pair_policy"
+      ],
+      "passes": false,
+      "notes": "Behavior-preserving extraction only."
+    },
+    {
+      "id": "008",
+      "title": "Refactor pseudo_loop into named rule helpers (phase-1)",
+      "priority": 8,
+      "depends_on": [
+        "007"
+      ],
+      "done_when": [
+        "pseudo_loop helper functions are introduced with clear rule naming",
+        "No recurrence formula change in this step",
+        "Regression test matrix remains green"
+      ],
+      "artifacts": [
+        "src/pseudo_loop.cc",
+        "tests/pseudo_loop_refactor_phase2_test.cc"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R pseudo_loop"
+      ],
+      "passes": false,
+      "notes": "Pure readability/maintainability step."
+    },
+    {
+      "id": "009",
+      "title": "Refactor part_func into named rule helpers (phase-1)",
+      "priority": 9,
+      "depends_on": [
+        "008"
+      ],
+      "done_when": [
+        "part_func helper functions are introduced with clear rule naming",
+        "No recurrence formula change in this step",
+        "Regression test matrix remains green"
+      ],
+      "artifacts": [
+        "src/part_func.cc",
+        "tests/part_func_refactor_phase2_test.cc"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R part_func"
+      ],
+      "passes": false,
+      "notes": "Pure readability/maintainability step."
+    },
+    {
+      "id": "010",
+      "title": "Wire fixed-structure evaluator to extracted rule/oracle path",
+      "priority": 10,
+      "depends_on": [
+        "009"
+      ],
+      "done_when": [
+        "get_structure_energy executes non-placeholder path",
+        "EnergyBreakdown fields are populated consistently (no constant 0.0 placeholders unless explicitly N/A)",
+        "Internal unit tests cover PK-free/H-type/K-type smoke cases"
+      ],
+      "artifacts": [
+        "src/fixed_energy_api.cc",
+        "src/fixed_energy_breakdown.hh",
+        "tests/fixed_energy_internal_test.cc",
+        "tests/fixed_energy_breakdown_test.cc"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R fixed_energy_internal",
+        "ctest --test-dir build --output-on-failure -R breakdown"
+      ],
+      "passes": false,
+      "notes": "First functional evaluator milestone."
+    },
+    {
+      "id": "011",
+      "title": "Align API energy against CLI density-2 MFE baselines",
+      "priority": 11,
+      "depends_on": [
+        "010"
+      ],
+      "done_when": [
+        "Alignment test runs on valid density-2 fixtures",
+        "compared >= 100",
+        "mismatched = 0",
+        "finite_rate = 100%"
+      ],
+      "artifacts": [
+        "tests/api_cli_density2_energy_alignment_test.cc",
+        "tests/baselines/fixed_energy_cli/density2_mfe.tsv",
+        "documents/fixed_energy_cli_alignment_report.md"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment"
+      ],
+      "passes": false,
+      "notes": "Strict gate (X=0)."
+    },
+    {
+      "id": "012",
+      "title": "Final strict rollout gate and documentation sync",
+      "priority": 12,
+      "depends_on": [
+        "011"
+      ],
+      "done_when": [
+        "Full regression gate passes on fresh build",
+        "rd.md and progress log reflect actual implemented state (no future-tense claims)",
+        "Final report includes command transcript and four required metrics"
+      ],
+      "artifacts": [
+        "documents/rd.md",
+        "documents/ralph-loop/progress.txt",
+        "documents/can_pair_rollout_report.md"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure",
+        "ctest --test-dir build --output-on-failure -R can_pair_rollout_e2e"
+      ],
+      "passes": false,
+      "notes": "Only this story can flip project to COMPLETE."
+    }
+  ]
 }
