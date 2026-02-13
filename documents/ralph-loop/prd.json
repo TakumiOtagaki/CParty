@@ -237,7 +237,7 @@
       "commands": [
         "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "Gate correctness first, then algorithm convergence."
     },
     {

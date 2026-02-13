@@ -110,6 +110,7 @@ include_directories(src)
 include(CTest)
 if(BUILD_TESTING)
   add_executable(multi_secstruct_schema_test test/multi_secstruct_schema_test.cc)
+  add_executable(api_cli_density2_energy_alignment_test test/api_cli_density2_energy_alignment_test.cc)
 
   # Source-controlled smoke checks so ctest registration is reproducible from a fresh build.
   add_test(
@@ -127,5 +128,12 @@ if(BUILD_TESTING)
     COMMAND multi_secstruct_schema_test
             "${CMAKE_SOURCE_DIR}/test/multi.secstruct"
             "${CMAKE_SOURCE_DIR}/test/fixtures/seed_from_multi_secstruct.tsv"
+  )
+
+  add_test(
+    NAME api_cli_density2_energy_alignment
+    COMMAND api_cli_density2_energy_alignment_test
+            "${CMAKE_SOURCE_DIR}/test/baselines/fixed_energy_cli/density2_mfe.tsv"
+            "$<TARGET_FILE:CParty>"
   )
 endif()

@@ -43,3 +43,11 @@ Started: 2026-02-13
   - Grammar-random structures can trigger frequent CLI crashes in this codebase; using random sequence assignment over known valid `pk_free` seed structures provides stable, reproducible coverage for baseline expansion.
   - Baseline capture should explicitly enforce `compared >= 100` in-script so data sufficiency is guaranteed before downstream alignment gates run.
 ---
+
+## 2026-02-13 - 006
+- What was implemented: Added source-registered alignment gate test `api_cli_density2_energy_alignment` that replays baseline rows through `CParty -d2 -r`, compares structure/energy with tolerances, prints `alignment_compared/alignment_mismatched/skipped/finite_rate`, and fails when `alignment_compared=0`.
+- Files changed: `CMakeLists.txt`, `test/api_cli_density2_energy_alignment_test.cc`, `documents/fixed_energy_cli_alignment_report.md`, `documents/ralph-loop/prd.json`, `documents/ralph-loop/audit/006.md`, `documents/ralph-loop/progress.txt`
+- **Learnings:**
+  - Registering the gate as a compiled CTest target keeps anti-cheat checks source-controlled and reproducible in fresh-build runs.
+  - Early-phase alignment gate value comes from reliable metric emission and zero-compare fail-fast, even before convergence to `alignment_mismatched=0`.
+---
