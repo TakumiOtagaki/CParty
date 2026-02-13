@@ -83,7 +83,7 @@
     "type": "all_stories_pass",
     "strict_requirements": [
       "All userStories.passes == true",
-      "Story 014 strict gate satisfied",
+      "Story 015 strict gate satisfied",
       "No unresolved blocker in notes"
     ]
   },
@@ -388,48 +388,68 @@
     },
     {
       "id": "012",
-      "title": "Connect API evaluator to SCFG core rule path",
+      "title": "Implement mechanical SCFG parser path for fixed-structure input",
       "priority": 12,
       "depends_on": [
         "011"
       ],
       "done_when": [
-        "API evaluation uses SCFG core/rule path (not duplicate ad-hoc path)",
         "SCFG parser interfaces (rules_for/applicable_rules/rule_score/expand) exist and are exercised by fixed-structure path",
         "Structure parsing path is deterministic for valid input (same input -> same rule chain)",
         "Parser rejects invalid structures via invalid_input_contract",
-        "EnergyBreakdown fields are populated consistently",
-        "Internal tests cover pk_free/h_type/k_type smoke cases"
+        "API evaluation path calls parser-selected rule chain on shared DP core (no duplicate ad-hoc path)"
       ],
       "micro_steps": [
         "12.1 Add parser entry: db_full -> normalized internal representation",
         "12.2 Implement rules_for(state) and connect one ZW path",
         "12.3 Implement applicable_rules(...) using empty-region/pair-type/transition checks",
-        "12.4 Implement rule_score(...) and aggregate minimal EnergyBreakdown on chosen rule chain",
-        "12.5 Implement expand(...) with deterministic child ordering and enforce invalid_input_contract when rule is non-unique",
-        "12.6 Validate same parser/evaluator path on pk_free/h_type/k_type and run full regression/alignment gate"
+        "12.4 Implement expand(...) with deterministic child ordering",
+        "12.5 Enforce invalid_input_contract when applicable rule is non-unique or missing",
+        "12.6 Wire parser-selected rule chain into API execution path and validate determinism on representative cases"
       ],
       "artifacts": [
-        "src/fixed_energy_breakdown.hh",
+        "src/fixed_energy_api.cc",
         "test/fixed_energy_internal_test.cc",
-        "test/fixed_energy_breakdown_test.cc",
         "documents/scfg_fixed_structure_parsing_pseudocode.md",
         "documents/ralph-loop/audit/012.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R fixed_energy_internal",
+        "ctest --test-dir build --output-on-failure"
+      ],
+      "passes": false,
+      "notes": "Parser-first story. Focus on deterministic rule-chain selection and invalid contract, not full breakdown completeness."
+    },
+    {
+      "id": "013",
+      "title": "Integrate rule scoring and EnergyBreakdown consistency",
+      "priority": 13,
+      "depends_on": [
+        "012"
+      ],
+      "done_when": [
+        "rule_score(...) is active on parser-selected rule chain",
+        "EnergyBreakdown fields are populated consistently (no placeholder-only path)",
+        "Internal tests cover pk_free/h_type/k_type smoke cases on the same shared DP core"
+      ],
+      "artifacts": [
+        "src/fixed_energy_breakdown.hh",
+        "test/fixed_energy_breakdown_test.cc",
+        "documents/ralph-loop/audit/013.md"
+      ],
+      "commands": [
         "ctest --test-dir build --output-on-failure -R breakdown",
         "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "This is the main functional convergence step. Implement mechanical parsing via rules_for/applicable_rules/rule_score/expand as documented in documents/scfg_fixed_structure_parsing_pseudocode.md."
+      "notes": "Scoring/breakdown convergence story after deterministic parsing is in place."
     },
     {
-      "id": "013",
+      "id": "014",
       "title": "Reach strict CLI alignment target (X=0)",
-      "priority": 13,
+      "priority": 14,
       "depends_on": [
-        "012"
+        "013"
       ],
       "done_when": [
         "Alignment gate on valid density-2 dataset reports alignment_compared >= 100",
@@ -441,7 +461,7 @@
         "test/api_cli_density2_energy_alignment_test.cc",
         "test/baselines/fixed_energy_cli/density2_mfe.tsv",
         "documents/fixed_energy_cli_alignment_report.md",
-        "documents/ralph-loop/audit/013.md"
+        "documents/ralph-loop/audit/014.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
@@ -451,11 +471,11 @@
       "notes": "Strict completion gate for numerical agreement."
     },
     {
-      "id": "014",
+      "id": "015",
       "title": "Final rollout gate and document truth sync",
-      "priority": 14,
+      "priority": 15,
       "depends_on": [
-        "013"
+        "014"
       ],
       "done_when": [
         "All ctest passes on fresh build",
@@ -466,7 +486,7 @@
         "documents/rd.md",
         "documents/ralph-loop/progress.txt",
         "documents/constraint_rollout_report.md",
-        "documents/ralph-loop/audit/014.md"
+        "documents/ralph-loop/audit/015.md"
       ],
       "commands": [
         "rm -rf build && cmake -S . -B build && cmake --build build",
