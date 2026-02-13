@@ -38,3 +38,6 @@ bashConstraint.sh
 
 # pdf
 SI.pdf
+
+# build story
+build_story*
