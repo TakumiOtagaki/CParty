@@ -17,6 +17,8 @@ SET(SOURCE
   src/W_final.cc 
   src/pseudo_loop.cc 
   src/part_func.cc
+  src/scfg/core.cc
+  src/scfg/legacy_adapter.cc
   src/CParty.cc
   src/cmdline.cc
   src/Result.cc	

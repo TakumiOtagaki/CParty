@@ -221,7 +221,11 @@ int main(int argc, char **argv) {
     const double finite_rate = (alignment_compared == 0)
                                    ? 0.0
                                    : (static_cast<double>(finite_count) * 100.0) / alignment_compared;
+    const int refactor_compared = alignment_compared;
+    const int refactor_strict_mismatched = alignment_mismatched;
 
+    std::cout << "refactor_compared=" << refactor_compared << "\n";
+    std::cout << "refactor_strict_mismatched=" << refactor_strict_mismatched << "\n";
     std::cout << "alignment_compared=" << alignment_compared << "\n";
     std::cout << "alignment_mismatched=" << alignment_mismatched << "\n";
     std::cout << "skipped=" << skipped << "\n";

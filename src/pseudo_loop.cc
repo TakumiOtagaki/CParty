@@ -1,5 +1,6 @@
 #include "pseudo_loop.hh"
 #include "h_externs.hh"
+#include "scfg/legacy_adapter.hh"
 #include <algorithm>
 #include <iostream>
 #include <math.h>
@@ -141,7 +142,7 @@ void pseudo_loop::compute_WIP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     // branch 1:
     for (cand_pos_t k = i + 1; k < j - TURN - 1; ++k) {
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = scfg::can_pair_left_span(tree, i, k);
         energy_t wi_1 = get_WIP(i, k - 1);
         energy_t v_energy = V->get_energy(k, j);
         energy_t wmb_energy = get_WMB(k, j);
@@ -169,7 +170,7 @@ void pseudo_loop::compute_VPL(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
     for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = scfg::can_pair_left_span(tree, i, k);
         if (can_pair) m1 = std::min(m1, static_cast<energy_t>((k - i) * cp_penalty) + get_VP(k, j));
     }
 
@@ -185,7 +186,7 @@ void pseudo_loop::compute_VPR(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
         energy_t VP_energy = get_VP(i, k);
-        bool can_pair = tree.up[j - 1] >= (j - k);
+        bool can_pair = scfg::can_pair_right_span(tree, k, j);
 
         m1 = std::min(m1, VP_energy + get_WIP(k + 1, j));
         if (can_pair) m2 = std::min(m2, VP_energy + static_cast<energy_t>((j - k) * cp_penalty));
@@ -1070,7 +1071,7 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
 
         cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
         for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
-            bool can_pair = tree.up[k - 1] >= (k - i);
+            bool can_pair = scfg::can_pair_left_span(tree, i, k);
             if (can_pair) tmp = static_cast<energy_t>((k - i) * cp_penalty) + get_VP(k, j);
             if (tmp < min) {
                 best_k = k;
@@ -1104,7 +1105,7 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
 
         for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
             energy_t VP_energy = get_VP(i, k);
-            bool can_pair = tree.up[j - 1] >= (j - k);
+            bool can_pair = scfg::can_pair_right_span(tree, k, j);
             if (can_pair) tmp = VP_energy + static_cast<energy_t>((j - k) * cp_penalty);
             if (tmp < min) {
                 best_k = k;
@@ -1391,7 +1392,7 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
             }
         }
         for (cand_pos_t k = i + 1; k < j - TURN - 1; ++k) {
-            bool can_pair = tree.up[k - 1] >= (k - i);
+            bool can_pair = scfg::can_pair_left_span(tree, i, k);
             if (can_pair) tmp = static_cast<energy_t>((k - i) * cp_penalty) + V->get_energy(k, j);
             if (tmp < min) {
                 min = tmp;
@@ -1400,7 +1401,7 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
             }
         }
         for (cand_pos_t k = i + 1; k < j - TURN - 1; ++k) {
-            bool can_pair = tree.up[k - 1] >= (k - i);
+            bool can_pair = scfg::can_pair_left_span(tree, i, k);
             if (can_pair) tmp = static_cast<energy_t>((k - i) * cp_penalty) + get_WMB(k, j);
             if (tmp < min) {
                 min = tmp;

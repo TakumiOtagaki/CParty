@@ -2,6 +2,7 @@
 #include "dot_plot.hh"
 #include "h_externs.hh"
 #include "pf_globals.hh"
+#include "scfg/legacy_adapter.hh"
 
 #include <algorithm>
 #include <iostream>
@@ -320,7 +321,7 @@ void W_final_pf::compute_energy_WM_restricted(cand_pos_t i, cand_pos_t j, sparse
     for (cand_pos_t k = i; k < j - TURN; ++k) {
         pf_t qbt1 = get_energy(k, j) * exp_MLstem(k, j);
         pf_t qbt2 = get_energy_WMB(k, j) * expPSM_penalty * expb_penalty;
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = scfg::can_pair_left_span(tree, i, k);
         if (can_pair) contributions += (static_cast<pf_t>(expMLbase[k - i]) * qbt1);
         if (can_pair) contributions += (static_cast<pf_t>(expMLbase[k - i]) * qbt2);
         contributions += (get_energy_WM(i, k - 1) * qbt1);
@@ -425,7 +426,7 @@ void W_final_pf::compute_WIP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     contributions += get_energy(i, j) * expbp_penalty;
     contributions += get_energy_WMB(i, j) * expbp_penalty * expPSM_penalty;
     for (cand_pos_t k = i + 1; k < j - TURN - 1; ++k) {
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = scfg::can_pair_left_span(tree, i, k);
 
         contributions += (get_energy_WIP(i, k - 1) * get_energy(k, j) * expbp_penalty);
         contributions += (get_energy_WIP(i, k - 1) * get_energy_WMB(k, j) * expbp_penalty * expPSM_penalty);
@@ -443,7 +444,7 @@ void W_final_pf::compute_VPL(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
     for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = scfg::can_pair_left_span(tree, i, k);
         if (can_pair) contributions += (expcp_pen[k - i] * get_energy_VP(k, j));
     }
     VPL[ij] = contributions;
@@ -455,7 +456,7 @@ void W_final_pf::compute_VPR(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     pf_t contributions = 0;
     cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
     for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
-        bool can_pair = tree.up[j - 1] >= (j - k);
+        bool can_pair = scfg::can_pair_right_span(tree, k, j);
         contributions += (get_energy_VP(i, k) * get_energy_WIP(k + 1, j));
         if (can_pair) contributions += (get_energy_VP(i, k) * expcp_pen[k - i]);
     }
@@ -916,7 +917,7 @@ void W_final_pf::Sample_VM(cand_pos_t i, cand_pos_t j, std::string &structure,
             break;
         }
 
-        if (tree.up[k - 1] >= (k - (i + 1))) {
+        if (scfg::can_pair_left_span(tree, i + 1, k)) {
             V_temp = (expMLbase[k - i - 1] * get_energy_WMp(k, j - 1) * exp_Mbloop(i, j) * exp_params_->expMLclosing);
             qt += V_temp;
             if (qt > r) {
@@ -983,7 +984,7 @@ void W_final_pf::Sample_WM(cand_pos_t i, cand_pos_t j, std::string &structure,
     for (k = i; k < j - TURN; ++k) {
         qbt1 = get_energy(k, j) * exp_MLstem(k, j);
         qbt2 = get_energy_WMB(k, j) * expPSM_penalty * expb_penalty;
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = scfg::can_pair_left_span(tree, i, k);
         if (can_pair) {
 
             V_temp = static_cast<pf_t>(expMLbase[k - i]) * qbt1;
@@ -1218,7 +1219,7 @@ void W_final_pf::Sample_WIP(cand_pos_t i, cand_pos_t j, std::string &structure,
         qbt1 = get_energy(k, j) * expbp_penalty;
         qbt2 = get_energy_WMB(k, j) * expbp_penalty * expPSM_penalty;
 
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = scfg::can_pair_left_span(tree, i, k);
         if (can_pair) {
             V_temp = qbt1 * expcp_pen[k - i];
             qt += V_temp;
@@ -1565,7 +1566,7 @@ void W_final_pf::Sample_VPL(cand_pos_t i, cand_pos_t j, std::string &structure,
     pf_t r = vrna_urn() * (get_energy_VPL(i, j) - fbd);
     cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
     for (k = i + 1; k < min_Bp_j; ++k) {
-        bool can_pair = tree.up[k - 1] >= (k - i);
+        bool can_pair = scfg::can_pair_left_span(tree, i, k);
         if (can_pair) {
             V_temp = (expcp_pen[k - i] * get_energy_VP(k, j));
             qt += V_temp;
@@ -1595,7 +1596,7 @@ void W_final_pf::Sample_VPR(cand_pos_t i, cand_pos_t j, std::string &structure,
 
     cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
     for (k = max_i_bp + 1; k < j; ++k) {
-        bool can_pair = tree.up[j - 1] >= (j - k);
+        bool can_pair = scfg::can_pair_right_span(tree, k, j);
         V_temp = (get_energy_VP(i, k) * get_energy_WIP(k + 1, j));
         qt += V_temp;
         if (qt >= r) {

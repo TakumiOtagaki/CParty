@@ -51,3 +51,11 @@ Started: 2026-02-13
   - Registering the gate as a compiled CTest target keeps anti-cheat checks source-controlled and reproducible in fresh-build runs.
   - Early-phase alignment gate value comes from reliable metric emission and zero-compare fail-fast, even before convergence to `alignment_mismatched=0`.
 ---
+
+## 2026-02-13 - 007
+- What was implemented: Added initial SCFG core interface (`Core`) and a `LegacyAdapter` layer, then routed repeated legacy pair-span checks in `part_func` and `pseudo_loop` through the adapter to preserve formulas while compiling through the new SCFG path. Also updated the alignment gate output to emit `refactor_compared` and `refactor_strict_mismatched` alongside alignment metrics.
+- Files changed: `CMakeLists.txt`, `src/scfg/core.hh`, `src/scfg/core.cc`, `src/scfg/legacy_adapter.hh`, `src/scfg/legacy_adapter.cc`, `src/part_func.cc`, `src/pseudo_loop.cc`, `test/api_cli_density2_energy_alignment_test.cc`, `documents/ralph-loop/prd.json`, `documents/ralph-loop/audit/007.md`, `documents/ralph-loop/progress.txt`
+- **Learnings:**
+  - A thin adapter that mirrors existing `tree.up` span predicates is a low-risk way to introduce SCFG interfaces before deeper recurrence extraction.
+  - Emitting `refactor_*` and `alignment_*` metrics from the same source-controlled gate simplifies refactor-story evidence while keeping metric semantics explicit.
+---
