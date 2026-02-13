@@ -130,3 +130,11 @@ Started: 2026-02-13
   - Slice rollouts can preserve scoring behavior by inserting deterministic state-chain transitions on the same span and keeping pair contribution scoring anchored to the existing wrapped-pair rule.
   - Introducing a new rollout slice can invalidate prior slice-specific rule-name assertions; those tests should assert the intended slice ownership while tolerating downstream-chain extension in later stories.
 ---
+
+## 2026-02-13 - 017
+- What was implemented: Extended the shared fixed-energy parser path with slice-D states (`WMB`, `WMBP`, `WMBW`, `BE`) by inserting deterministic transitions between `WMp` and `WIP`, switched `get_structure_energy` to execute that slice-D chain, and added a dedicated source-registered `fixed_energy_slice_d` behavioral test.
+- Files changed: `CMakeLists.txt`, `src/fixed_energy_api.hh`, `src/fixed_energy_api.cc`, `test/fixed_energy_slice_d_test.cc`, `documents/ralph-loop/prd.json`, `documents/ralph-loop/audit/017.md`, `documents/ralph-loop/progress.txt`
+- **Learnings:**
+  - Inserting rollout states as explicit deterministic no-score transitions preserves current scoring semantics while advancing shared-path coverage.
+  - Keeping slice-level traces callable independently (`trace_rule_chain_slice_c` vs `trace_rule_chain_slice_d`) helps extend rollout depth without regressing earlier slice tests.
+---

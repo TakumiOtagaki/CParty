@@ -40,6 +40,10 @@ std::vector<RuleTraceStep> trace_rule_chain_slice_b(const std::string &seq,
 std::vector<RuleTraceStep> trace_rule_chain_slice_c(const std::string &seq,
                                                     const std::string &db_full);
 
+// Story 017 slice-D shared parser trace: WMB/WMBP/WMBW/BE are traversed on pair paths.
+std::vector<RuleTraceStep> trace_rule_chain_slice_d(const std::string &seq,
+                                                    const std::string &db_full);
+
 // Story 013 registry: canonical fixed-energy target states and rollout mapping.
 const std::vector<std::string> &fixed_energy_target_states();
 const std::vector<RolloutStatePlanEntry> &fixed_energy_rollout_plan();

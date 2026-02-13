@@ -23,6 +23,10 @@ enum class SharedStateKind {
   kWM,
   kWMv,
   kWMp,
+  kWMB,
+  kWMBP,
+  kWMBW,
+  kBE,
   kWIP,
   kVP,
   kVPL,
@@ -38,11 +42,21 @@ enum class SharedRuleKind {
   kVMToWM,
   kWMToWMv,
   kWMvToWMp,
+  kWMpToWMB,
+  kWMBToWMBP,
+  kWMBPToWMBW,
+  kWMBWToBE,
+  kBEToWIP,
   kWMpToWIP,
   kWIPToVP,
   kVPToVPL,
   kVPLToVPR,
   kVPRToV,
+};
+
+struct SharedParseMode {
+  bool include_slice_b = false;
+  bool include_slice_d = false;
 };
 
 struct SharedState {
@@ -134,7 +148,7 @@ NormalizedInput normalize_input(const std::string &seq, const std::string &db_fu
   return out;
 }
 
-std::vector<SharedRuleKind> rules_for(const SharedStateKind state_kind, const bool include_slice_b_states) {
+std::vector<SharedRuleKind> rules_for(const SharedStateKind state_kind, const SharedParseMode mode) {
   if (state_kind == SharedStateKind::kW) {
     return {SharedRuleKind::kWToWI};
   }
@@ -142,7 +156,7 @@ std::vector<SharedRuleKind> rules_for(const SharedStateKind state_kind, const bo
     return {SharedRuleKind::kWIToV};
   }
   if (state_kind == SharedStateKind::kV) {
-    if (include_slice_b_states) {
+    if (mode.include_slice_b) {
       return {SharedRuleKind::kEmpty, SharedRuleKind::kUnpaired, SharedRuleKind::kPairWrapped};
     }
     return {SharedRuleKind::kEmpty, SharedRuleKind::kUnpaired, SharedRuleKind::kPairWrapped};
@@ -157,10 +171,25 @@ std::vector<SharedRuleKind> rules_for(const SharedStateKind state_kind, const bo
     return {SharedRuleKind::kWMvToWMp};
   }
   if (state_kind == SharedStateKind::kWMp) {
-    if (include_slice_b_states) {
+    if (mode.include_slice_d) {
+      return {SharedRuleKind::kWMpToWMB};
+    }
+    if (mode.include_slice_b) {
       return {SharedRuleKind::kWMpToWIP};
     }
     return {};
+  }
+  if (state_kind == SharedStateKind::kWMB) {
+    return {SharedRuleKind::kWMBToWMBP};
+  }
+  if (state_kind == SharedStateKind::kWMBP) {
+    return {SharedRuleKind::kWMBPToWMBW};
+  }
+  if (state_kind == SharedStateKind::kWMBW) {
+    return {SharedRuleKind::kWMBWToBE};
+  }
+  if (state_kind == SharedStateKind::kBE) {
+    return {SharedRuleKind::kBEToWIP};
   }
   if (state_kind == SharedStateKind::kWIP) {
     return {SharedRuleKind::kWIPToVP};
@@ -180,16 +209,22 @@ std::vector<SharedRuleKind> rules_for(const SharedStateKind state_kind, const bo
 bool rule_is_applicable(const SharedRuleKind rule,
                         const SharedState state,
                         const NormalizedInput &ctx,
-                        const bool include_slice_b_states) {
+                        const SharedParseMode mode) {
   if (rule == SharedRuleKind::kWToWI || rule == SharedRuleKind::kWIToV) {
     return true;
   }
 
-  if (rule == SharedRuleKind::kVMToWM || rule == SharedRuleKind::kWMToWMv ||
-      rule == SharedRuleKind::kWMvToWMp || rule == SharedRuleKind::kWMpToWIP ||
-      rule == SharedRuleKind::kWIPToVP || rule == SharedRuleKind::kVPToVPL ||
-      rule == SharedRuleKind::kVPLToVPR || rule == SharedRuleKind::kVPRToV) {
-    return include_slice_b_states;
+  if (rule == SharedRuleKind::kVMToWM || rule == SharedRuleKind::kWMToWMv || rule == SharedRuleKind::kWMvToWMp ||
+      rule == SharedRuleKind::kWMpToWIP || rule == SharedRuleKind::kWIPToVP ||
+      rule == SharedRuleKind::kVPToVPL || rule == SharedRuleKind::kVPLToVPR ||
+      rule == SharedRuleKind::kVPRToV) {
+    return mode.include_slice_b;
+  }
+
+  if (rule == SharedRuleKind::kWMpToWMB || rule == SharedRuleKind::kWMBToWMBP ||
+      rule == SharedRuleKind::kWMBPToWMBW || rule == SharedRuleKind::kWMBWToBE ||
+      rule == SharedRuleKind::kBEToWIP) {
+    return mode.include_slice_d;
   }
 
   if (rule == SharedRuleKind::kEmpty) {
@@ -215,12 +250,12 @@ bool rule_is_applicable(const SharedRuleKind rule,
 
 std::vector<SharedRuleKind> applicable_rules(const SharedState state,
                                              const NormalizedInput &ctx,
-                                             const bool include_slice_b_states) {
-  const auto candidates = rules_for(state.kind, include_slice_b_states);
+                                             const SharedParseMode mode) {
+  const auto candidates = rules_for(state.kind, mode);
   std::vector<SharedRuleKind> out;
   out.reserve(candidates.size());
   for (const SharedRuleKind rule : candidates) {
-    if (rule_is_applicable(rule, state, ctx, include_slice_b_states)) {
+    if (rule_is_applicable(rule, state, ctx, mode)) {
       out.push_back(rule);
     }
   }
@@ -236,7 +271,7 @@ double rule_score(const SharedRuleKind rule) {
 
 std::vector<SharedState> expand(const SharedRuleKind rule,
                                 const SharedState state,
-                                const bool include_slice_c_states) {
+                                const SharedParseMode mode) {
   if (rule == SharedRuleKind::kWToWI) {
     return {SharedState{SharedStateKind::kWI, state.i, state.j}};
   }
@@ -247,7 +282,7 @@ std::vector<SharedState> expand(const SharedRuleKind rule,
     return {SharedState{SharedStateKind::kV, state.i + 1, state.j}};
   }
   if (rule == SharedRuleKind::kPairWrapped) {
-    if (include_slice_c_states) {
+    if (mode.include_slice_b) {
       return {SharedState{SharedStateKind::kVM, state.i + 1, state.j - 1}};
     }
     return {SharedState{SharedStateKind::kV, state.i + 1, state.j - 1}};
@@ -260,6 +295,21 @@ std::vector<SharedState> expand(const SharedRuleKind rule,
   }
   if (rule == SharedRuleKind::kWMvToWMp) {
     return {SharedState{SharedStateKind::kWMp, state.i, state.j}};
+  }
+  if (rule == SharedRuleKind::kWMpToWMB) {
+    return {SharedState{SharedStateKind::kWMB, state.i, state.j}};
+  }
+  if (rule == SharedRuleKind::kWMBToWMBP) {
+    return {SharedState{SharedStateKind::kWMBP, state.i, state.j}};
+  }
+  if (rule == SharedRuleKind::kWMBPToWMBW) {
+    return {SharedState{SharedStateKind::kWMBW, state.i, state.j}};
+  }
+  if (rule == SharedRuleKind::kWMBWToBE) {
+    return {SharedState{SharedStateKind::kBE, state.i, state.j}};
+  }
+  if (rule == SharedRuleKind::kBEToWIP) {
+    return {SharedState{SharedStateKind::kWIP, state.i, state.j}};
   }
   if (rule == SharedRuleKind::kWMpToWIP) {
     return {SharedState{SharedStateKind::kWIP, state.i, state.j}};
@@ -301,6 +351,18 @@ std::string state_name(const SharedStateKind state_kind) {
   if (state_kind == SharedStateKind::kWMp) {
     return "WMp";
   }
+  if (state_kind == SharedStateKind::kWMB) {
+    return "WMB";
+  }
+  if (state_kind == SharedStateKind::kWMBP) {
+    return "WMBP";
+  }
+  if (state_kind == SharedStateKind::kWMBW) {
+    return "WMBW";
+  }
+  if (state_kind == SharedStateKind::kBE) {
+    return "BE";
+  }
   if (state_kind == SharedStateKind::kWIP) {
     return "WIP";
   }
@@ -338,6 +400,21 @@ std::string rule_name(const SharedRuleKind rule) {
   if (rule == SharedRuleKind::kWMvToWMp) {
     return "WMv_TO_WMp";
   }
+  if (rule == SharedRuleKind::kWMpToWMB) {
+    return "WMp_TO_WMB";
+  }
+  if (rule == SharedRuleKind::kWMBToWMBP) {
+    return "WMB_TO_WMBP";
+  }
+  if (rule == SharedRuleKind::kWMBPToWMBW) {
+    return "WMBP_TO_WMBW";
+  }
+  if (rule == SharedRuleKind::kWMBWToBE) {
+    return "WMBW_TO_BE";
+  }
+  if (rule == SharedRuleKind::kBEToWIP) {
+    return "BE_TO_WIP";
+  }
   if (rule == SharedRuleKind::kWMpToWIP) {
     return "WMp_TO_WIP";
   }
@@ -355,7 +432,7 @@ std::string rule_name(const SharedRuleKind rule) {
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_shared_from_normalized(
     const NormalizedInput &ctx,
-    const bool include_slice_b_states) {
+    const SharedParseMode mode) {
   std::vector<internal::RuleTraceStep> trace;
   std::vector<SharedState> stack;
   stack.push_back(SharedState{SharedStateKind::kW, 1, static_cast<int>(ctx.db_full.size())});
@@ -363,7 +440,7 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_shared_from_normalized(
   while (!stack.empty()) {
     const SharedState state = stack.back();
     stack.pop_back();
-    const auto candidates = applicable_rules(state, ctx, include_slice_b_states);
+    const auto candidates = applicable_rules(state, ctx, mode);
     if (candidates.size() != 1) {
       fail_invalid_input("deterministic shared rule selection failed at state " +
                          state_name(state.kind) + "[" + std::to_string(state.i) + "," +
@@ -374,7 +451,7 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_shared_from_normalized(
     const SharedRuleKind selected = candidates.front();
     trace.push_back(internal::RuleTraceStep{state_name(state.kind), state.i, state.j, rule_name(selected)});
 
-    const auto children = expand(selected, state, include_slice_b_states);
+    const auto children = expand(selected, state, mode);
     for (auto it = children.rbegin(); it != children.rend(); ++it) {
       stack.push_back(*it);
     }
@@ -384,15 +461,19 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_shared_from_normalized(
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_from_normalized(const NormalizedInput &ctx) {
-  return trace_rule_chain_shared_from_normalized(ctx, false);
+  return trace_rule_chain_shared_from_normalized(ctx, SharedParseMode{false, false});
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_b_from_normalized(const NormalizedInput &ctx) {
-  return trace_rule_chain_shared_from_normalized(ctx, true);
+  return trace_rule_chain_shared_from_normalized(ctx, SharedParseMode{true, false});
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_c_from_normalized(const NormalizedInput &ctx) {
-  return trace_rule_chain_shared_from_normalized(ctx, true);
+  return trace_rule_chain_shared_from_normalized(ctx, SharedParseMode{true, false});
+}
+
+std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_from_normalized(const NormalizedInput &ctx) {
+  return trace_rule_chain_shared_from_normalized(ctx, SharedParseMode{true, true});
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(const NormalizedInput &ctx) {
@@ -422,7 +503,7 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(co
 
 double get_structure_energy(const std::string &seq, const std::string &db_full) {
   const NormalizedInput normalized = normalize_input(seq, db_full);
-  const auto trace = trace_rule_chain_slice_c_from_normalized(normalized);
+  const auto trace = trace_rule_chain_slice_d_from_normalized(normalized);
 
   double total = 0.0;
   for (const auto &step : trace) {
@@ -455,6 +536,11 @@ std::vector<RuleTraceStep> trace_rule_chain_slice_b(const std::string &seq,
 std::vector<RuleTraceStep> trace_rule_chain_slice_c(const std::string &seq,
                                                     const std::string &db_full) {
   return trace_rule_chain_slice_c_from_normalized(normalize_input(seq, db_full));
+}
+
+std::vector<RuleTraceStep> trace_rule_chain_slice_d(const std::string &seq,
+                                                    const std::string &db_full) {
+  return trace_rule_chain_slice_d_from_normalized(normalize_input(seq, db_full));
 }
 
 const std::vector<std::string> &fixed_energy_target_states() {

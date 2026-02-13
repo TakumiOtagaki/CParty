@@ -17,8 +17,8 @@
     "reject_T": true,
     "allow_GU": true,
     "numeric_tolerance": {
-      "abs_tol": 1e-7,
-      "rel_tol": 1e-7
+      "abs_tol": 1E-7,
+      "rel_tol": 1E-7
     },
     "mandatory_seed_dataset": "test/multi.secstruct"
   },
@@ -554,7 +554,7 @@
         "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
         "ctest --test-dir build --output-on-failure"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "No broad jump: only slice-D states in this story."
     },
     {
