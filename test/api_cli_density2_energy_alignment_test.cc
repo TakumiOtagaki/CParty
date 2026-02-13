@@ -158,14 +158,15 @@ bool almost_equal(double lhs, double rhs) {
 }  // namespace
 
 int main(int argc, char **argv) {
-  if (argc != 3) {
-    std::cerr << "usage: api_cli_density2_energy_alignment_test <baseline_tsv> <cparty_bin>\n";
+  if (argc != 4) {
+    std::cerr << "usage: api_cli_density2_energy_alignment_test <baseline_tsv> <cparty_bin> <param_file>\n";
     return EXIT_FAILURE;
   }
 
   try {
     const std::string baseline_path = argv[1];
     const std::string cparty_bin = argv[2];
+    const std::string param_file = argv[3];
     const auto baseline = load_baseline(baseline_path);
 
     int alignment_compared = 0;
@@ -182,7 +183,8 @@ int main(int argc, char **argv) {
       }
       std::fclose(fdopen(fd, "w"));
 
-      const std::string cmd = "'" + escape_single_quotes(cparty_bin) + "' -d2 -r '" + escape_single_quotes(row.g) +
+      const std::string cmd = "'" + escape_single_quotes(cparty_bin) + "' -d2 -P '" + escape_single_quotes(param_file) +
+                              "' -r '" + escape_single_quotes(row.g) +
                               "' '" + escape_single_quotes(row.seq) + "' > '" + escape_single_quotes(tmp_name) +
                               "' 2>/dev/null";
       const int rc = std::system(cmd.c_str());

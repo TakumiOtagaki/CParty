@@ -151,5 +151,6 @@ if(BUILD_TESTING)
     COMMAND api_cli_density2_energy_alignment_test
             "${CMAKE_SOURCE_DIR}/test/baselines/fixed_energy_cli/density2_mfe.tsv"
             "$<TARGET_FILE:CParty>"
+            "${CMAKE_SOURCE_DIR}/params/rna_DirksPierce09.par"
   )
 endif()

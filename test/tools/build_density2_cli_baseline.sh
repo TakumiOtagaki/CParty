@@ -28,6 +28,7 @@ CPARTY_BIN="$1"
 SEED_DATASET="$2"
 OUT_TSV="$3"
 PARSER="$ROOT_DIR/test/tools/parse_cparty_stdout.sh"
+PARAM_FILE="$ROOT_DIR/params/rna_DirksPierce09.par"
 
 RANDOM_COUNT="${BASELINE_RANDOM_COUNT:-140}"
 RANDOM_SEED="${BASELINE_RANDOM_SEED:-20260213}"
@@ -42,6 +43,10 @@ if [[ ! -f "$SEED_DATASET" ]]; then
 fi
 if [[ ! -x "$PARSER" ]]; then
   echo "error: missing parser script: $PARSER" >&2
+  exit 1
+fi
+if [[ ! -f "$PARAM_FILE" ]]; then
+  echo "error: missing parameter file: $PARAM_FILE" >&2
   exit 1
 fi
 
@@ -176,7 +181,7 @@ while IFS=$'\t' read -r case_id seq g; do
   fi
   total_cases=$((total_cases + 1))
 
-  if ! "$CPARTY_BIN" -d2 -r "$g" "$seq" > "$stdout_file" 2>/dev/null; then
+  if ! "$CPARTY_BIN" -d2 -P "$PARAM_FILE" -r "$g" "$seq" > "$stdout_file" 2>/dev/null; then
     skipped=$((skipped + 1))
     continue
   fi
