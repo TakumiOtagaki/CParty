@@ -72,7 +72,7 @@
     },
     "forbidden_shortcuts": [
       "Do not set passes=true without command evidence in same iteration.",
-      "Do not treat compared=0 as success.",
+      "Do not treat alignment_compared=0 as success.",
       "Do not rely on stale build artifacts.",
       "Do not modify baselines only to force green unless the story explicitly says baseline refresh.",
       "Do not claim refactor-only completion if refactor_compared/refactor_strict_mismatched are missing.",
