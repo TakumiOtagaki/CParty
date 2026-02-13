@@ -64,7 +64,9 @@ CParty の非曖昧な密度2分解ロジックを、次の3用途で共通利�
 Rule Object + Constraint Oracle を使って単一パス評価を実装する。
 - 入力構造から決定論的にルール列を特定
 - `estP=0.89`, `eintP=0.74` などの係数適用を一貫化
-- 導入順は `pk_free -> h_type -> k_type` の段階展開とし、各段階で parser の決定性と invalid契約を確認する
+- 実装は同一DPテーブル/同一コア上で行い、適用範囲（pk_free/h_type/k_type）を段階的に検証する
+- パーサ実装は `rules_for`, `applicable_rules`, `rule_score`, `expand` の分離インターフェースで進める
+- 詳細擬似コードは `documents/scfg_fixed_structure_parsing_pseudocode.md` を参照
 
 ## 6. 実行制約
 - 当面は `-d2` のみを対象に実装・検証する
