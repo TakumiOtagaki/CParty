@@ -285,7 +285,7 @@
         "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "Do not over-abstract to a single broad helper label; extract concrete duplicated checks first."
+      "notes": "Do not over-abstract to a single broad helper label; extract concrete duplicated checks first. (Legacy test target name may still include can_pair.)"
     },
     {
       "id": "009",
