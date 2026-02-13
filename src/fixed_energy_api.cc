@@ -65,6 +65,11 @@ struct SharedState {
   int j = 0;  // 1-based inclusive
 };
 
+struct SharedEvaluationResult {
+  std::vector<internal::RuleTraceStep> trace;
+  EnergyBreakdown breakdown;
+};
+
 [[noreturn]] void fail_invalid_input(const std::string &reason) {
   throw std::invalid_argument("invalid fixed-structure input: " + reason);
 }
@@ -94,8 +99,10 @@ void validate_structure(const std::string &db_full, const size_t expected_length
     fail_invalid_input("sequence/structure length mismatch");
   }
 
-  std::vector<size_t> stack;
-  stack.reserve(db_full.size());
+  std::vector<size_t> round_stack;
+  std::vector<size_t> square_stack;
+  round_stack.reserve(db_full.size());
+  square_stack.reserve(db_full.size());
 
   for (size_t i = 0; i < db_full.size(); ++i) {
     const char c = db_full[i];
@@ -103,20 +110,31 @@ void validate_structure(const std::string &db_full, const size_t expected_length
       continue;
     }
     if (c == '(') {
-      stack.push_back(i);
+      round_stack.push_back(i);
+      continue;
+    }
+    if (c == '[') {
+      square_stack.push_back(i);
       continue;
     }
     if (c == ')') {
-      if (stack.empty()) {
+      if (round_stack.empty()) {
         fail_invalid_input("unbalanced structure: closing bracket without opener");
       }
-      stack.pop_back();
+      round_stack.pop_back();
+      continue;
+    }
+    if (c == ']') {
+      if (square_stack.empty()) {
+        fail_invalid_input("unbalanced structure: closing bracket without opener");
+      }
+      square_stack.pop_back();
       continue;
     }
     fail_invalid_input("structure contains unsupported symbol at position " + std::to_string(i + 1));
   }
 
-  if (!stack.empty()) {
+  if (!round_stack.empty() || !square_stack.empty()) {
     fail_invalid_input("unbalanced structure: missing closing bracket");
   }
 }
@@ -130,17 +148,30 @@ NormalizedInput normalize_input(const std::string &seq, const std::string &db_fu
   out.db_full = db_full;
   out.pair_map.assign(static_cast<size_t>(db_full.size()), -1);
 
-  std::vector<int> stack;
-  stack.reserve(db_full.size());
+  std::vector<int> round_stack;
+  std::vector<int> square_stack;
+  round_stack.reserve(db_full.size());
+  square_stack.reserve(db_full.size());
   for (size_t idx = 0; idx < db_full.size(); ++idx) {
     const char c = db_full[idx];
     if (c == '(') {
-      stack.push_back(static_cast<int>(idx));
+      round_stack.push_back(static_cast<int>(idx));
+      continue;
+    }
+    if (c == '[') {
+      square_stack.push_back(static_cast<int>(idx));
       continue;
     }
     if (c == ')') {
-      const int left = stack.back();
-      stack.pop_back();
+      const int left = round_stack.back();
+      round_stack.pop_back();
+      out.pair_map[static_cast<size_t>(left)] = static_cast<int>(idx);
+      out.pair_map[idx] = left;
+      continue;
+    }
+    if (c == ']') {
+      const int left = square_stack.back();
+      square_stack.pop_back();
       out.pair_map[static_cast<size_t>(left)] = static_cast<int>(idx);
       out.pair_map[idx] = left;
     }
@@ -239,7 +270,8 @@ bool rule_is_applicable(const SharedRuleKind rule,
     return ctx.db_full[left] == '.';
   }
   if (rule == SharedRuleKind::kPairWrapped) {
-    if (ctx.db_full[left] != '(') {
+    const char left_bracket = ctx.db_full[left];
+    if (left_bracket != '(' && left_bracket != '[') {
       return false;
     }
     const int partner = ctx.pair_map[left];
@@ -267,6 +299,44 @@ double rule_score(const SharedRuleKind rule) {
     return -1.0;
   }
   return 0.0;
+}
+
+std::string topology_family_for_structure(const std::string &db_full) {
+  bool has_round = false;
+  bool has_square = false;
+  for (const char c : db_full) {
+    has_round = has_round || c == '(' || c == ')';
+    has_square = has_square || c == '[' || c == ']';
+  }
+  if (has_round && has_square) {
+    return "k_type";
+  }
+  if (has_square) {
+    return "h_type";
+  }
+  return "pk_free";
+}
+
+void accumulate_breakdown(const SharedRuleKind rule, EnergyBreakdown &breakdown) {
+  ++breakdown.rule_evaluated_count;
+  if (rule == SharedRuleKind::kEmpty) {
+    ++breakdown.empty_rule_count;
+  } else if (rule == SharedRuleKind::kUnpaired) {
+    ++breakdown.unpaired_rule_count;
+  } else if (rule == SharedRuleKind::kPairWrapped) {
+    ++breakdown.pair_wrapped_rule_count;
+  } else {
+    ++breakdown.transition_rule_count;
+  }
+
+  breakdown.total_energy += rule_score(rule);
+  if (breakdown.topology_family == "pk_free") {
+    ++breakdown.family_pk_free_rules;
+  } else if (breakdown.topology_family == "h_type") {
+    ++breakdown.family_h_type_rules;
+  } else if (breakdown.topology_family == "k_type") {
+    ++breakdown.family_k_type_rules;
+  }
 }
 
 std::vector<SharedState> expand(const SharedRuleKind rule,
@@ -430,10 +500,10 @@ std::string rule_name(const SharedRuleKind rule) {
   return "VPR_TO_V";
 }
 
-std::vector<internal::RuleTraceStep> trace_rule_chain_shared_from_normalized(
-    const NormalizedInput &ctx,
-    const SharedParseMode mode) {
-  std::vector<internal::RuleTraceStep> trace;
+SharedEvaluationResult evaluate_shared_from_normalized(const NormalizedInput &ctx,
+                                                       const SharedParseMode mode) {
+  SharedEvaluationResult out;
+  out.breakdown.topology_family = topology_family_for_structure(ctx.db_full);
   std::vector<SharedState> stack;
   stack.push_back(SharedState{SharedStateKind::kW, 1, static_cast<int>(ctx.db_full.size())});
 
@@ -449,7 +519,8 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_shared_from_normalized(
     }
 
     const SharedRuleKind selected = candidates.front();
-    trace.push_back(internal::RuleTraceStep{state_name(state.kind), state.i, state.j, rule_name(selected)});
+    out.trace.push_back(internal::RuleTraceStep{state_name(state.kind), state.i, state.j, rule_name(selected)});
+    accumulate_breakdown(selected, out.breakdown);
 
     const auto children = expand(selected, state, mode);
     for (auto it = children.rbegin(); it != children.rend(); ++it) {
@@ -457,23 +528,27 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_shared_from_normalized(
     }
   }
 
-  return trace;
+  return out;
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_from_normalized(const NormalizedInput &ctx) {
-  return trace_rule_chain_shared_from_normalized(ctx, SharedParseMode{false, false});
+  return evaluate_shared_from_normalized(ctx, SharedParseMode{false, false}).trace;
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_b_from_normalized(const NormalizedInput &ctx) {
-  return trace_rule_chain_shared_from_normalized(ctx, SharedParseMode{true, false});
+  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, false}).trace;
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_c_from_normalized(const NormalizedInput &ctx) {
-  return trace_rule_chain_shared_from_normalized(ctx, SharedParseMode{true, false});
+  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, false}).trace;
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_from_normalized(const NormalizedInput &ctx) {
-  return trace_rule_chain_shared_from_normalized(ctx, SharedParseMode{true, true});
+  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, true}).trace;
+}
+
+EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput &ctx) {
+  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, true}).breakdown;
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(const NormalizedInput &ctx) {
@@ -503,17 +578,7 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(co
 
 double get_structure_energy(const std::string &seq, const std::string &db_full) {
   const NormalizedInput normalized = normalize_input(seq, db_full);
-  const auto trace = trace_rule_chain_slice_d_from_normalized(normalized);
-
-  double total = 0.0;
-  for (const auto &step : trace) {
-    if (step.rule == "V_PAIR_WRAPPED") {
-      total += rule_score(SharedRuleKind::kPairWrapped);
-    } else {
-      total += 0.0;
-    }
-  }
-  return total;
+  return structure_energy_breakdown_from_normalized(normalized).total_energy;
 }
 
 namespace internal {
@@ -541,6 +606,11 @@ std::vector<RuleTraceStep> trace_rule_chain_slice_c(const std::string &seq,
 std::vector<RuleTraceStep> trace_rule_chain_slice_d(const std::string &seq,
                                                     const std::string &db_full) {
   return trace_rule_chain_slice_d_from_normalized(normalize_input(seq, db_full));
+}
+
+EnergyBreakdown get_structure_energy_breakdown(const std::string &seq,
+                                               const std::string &db_full) {
+  return structure_energy_breakdown_from_normalized(normalize_input(seq, db_full));
 }
 
 const std::vector<std::string> &fixed_energy_target_states() {

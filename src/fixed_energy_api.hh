@@ -1,6 +1,8 @@
 #ifndef CPARTY_FIXED_ENERGY_API_HH
 #define CPARTY_FIXED_ENERGY_API_HH
 
+#include "fixed_energy_breakdown.hh"
+
 #include <string>
 #include <vector>
 
@@ -43,6 +45,10 @@ std::vector<RuleTraceStep> trace_rule_chain_slice_c(const std::string &seq,
 // Story 017 slice-D shared parser trace: WMB/WMBP/WMBW/BE are traversed on pair paths.
 std::vector<RuleTraceStep> trace_rule_chain_slice_d(const std::string &seq,
                                                     const std::string &db_full);
+
+// Story 018 scoring/breakdown convergence on the shared parser path.
+EnergyBreakdown get_structure_energy_breakdown(const std::string &seq,
+                                               const std::string &db_full);
 
 // Story 013 registry: canonical fixed-energy target states and rollout mapping.
 const std::vector<std::string> &fixed_energy_target_states();

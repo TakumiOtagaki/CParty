@@ -138,3 +138,10 @@ Started: 2026-02-13
   - Inserting rollout states as explicit deterministic no-score transitions preserves current scoring semantics while advancing shared-path coverage.
   - Keeping slice-level traces callable independently (`trace_rule_chain_slice_c` vs `trace_rule_chain_slice_d`) helps extend rollout depth without regressing earlier slice tests.
 ---
+## 2026-02-13 - 018
+- What was implemented: Integrated shared-route `rule_score` accumulation into `get_structure_energy`, introduced concrete `EnergyBreakdown` fields and internal accessor on the active path, and added source-registered `fixed_energy_breakdown` smoke tests for `pk_free`, `h_type`, and `k_type` representative structures.
+- Files changed: `CMakeLists.txt`, `src/fixed_energy_api.hh`, `src/fixed_energy_api.cc`, `src/fixed_energy_breakdown.hh`, `test/fixed_energy_breakdown_test.cc`, `documents/ralph-loop/prd.json`, `documents/ralph-loop/audit/018.md`, `documents/ralph-loop/progress.txt`
+- **Learnings:**
+  - Reusing the deterministic shared parser walk as the single source for both trace and scoring prevents drift between test-only traces and API energy totals.
+  - A breakdown contract is most robust when rule-category counters (`empty/unpaired/pair/transition`) are incremented directly at rule-selection time instead of post-processing trace strings.
+---
