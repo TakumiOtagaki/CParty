@@ -114,3 +114,11 @@ Started: 2026-02-13
   - A stack-based deterministic parser loop lets rollout slices add state transitions (`W/WI`) without duplicating scoring logic outside the shared traversal.
   - Keeping a compatibility trace shim for prior `ZW`-only tests allows incremental rollout while preserving earlier-story test intent.
 ---
+
+## 2026-02-13 - 015
+- What was implemented: Extended the shared fixed-energy parser path to include slice-B states (`VM`, `WM`, `WMv`, `WMp`) on wrapped-pair recursion, switched `get_structure_energy` to execute that slice-B chain, and added a dedicated source-registered `fixed_energy_slice_b` behavioral test.
+- Files changed: `CMakeLists.txt`, `src/fixed_energy_api.hh`, `src/fixed_energy_api.cc`, `test/fixed_energy_slice_b_test.cc`, `documents/ralph-loop/prd.json`, `documents/ralph-loop/audit/015.md`, `documents/ralph-loop/progress.txt`
+- **Learnings:**
+  - Slice rollouts that add intermediate states on recursive pair paths must keep empty-span behavior explicit, otherwise deterministic selection can fail on innermost pairs.
+  - Keeping pair contribution scoring attached to the original wrapped-pair rule allows state-chain expansion without changing story-014 energy expectations.
+---
