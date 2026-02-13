@@ -80,3 +80,17 @@ Rule Object + Constraint Oracle を使って単一パス評価を実装する。
 - invalidケース契約テストが全件 pass
 - 既存回帰テストを全通過
 - 実行ログに `alignment_compared`, `alignment_mismatched`, `skipped`, `finite_rate`, `refactor_strict_mismatched` を出力し、レビューで再計算可能であること
+
+## 8. 現在の実測ステータス (2026-02-13, Story 020)
+- Fresh build directory: `build_story020_fresh_20260213_run1`
+- Full regression: `ctest --test-dir build_story020_fresh_20260213_run1 --output-on-failure` は `13/13` pass
+- Alignment gate metrics (`ctest -V -R api_cli_density2_energy_alignment`):
+  - `refactor_compared=152`
+  - `refactor_strict_mismatched=0`
+  - `alignment_compared=152`
+  - `alignment_mismatched=0`
+  - `skipped=0`
+  - `finite_rate=100%`
+  - `max_abs_diff=0`
+  - `max_rel_diff=0`
+- 補足: 実行環境ポリシーで `rm -rf build` が拒否されるため、ストーリー実行では一意な fresh build ディレクトリを使用して anti-stale 条件を満たした。

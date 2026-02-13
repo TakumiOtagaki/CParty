@@ -630,7 +630,7 @@
         "rm -rf build && cmake -S . -B build && cmake --build build",
         "ctest --test-dir build --output-on-failure"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "Only this story can flip project to COMPLETE."
     }
   ]

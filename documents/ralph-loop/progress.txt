@@ -152,3 +152,10 @@ Started: 2026-02-13
   - Story-level strict completion is safer when gate output includes both threshold metrics and explicit diff summaries, so report claims are directly command-backed.
   - When destructive cleanup commands are sandbox-blocked, unique fresh build directories still provide anti-stale-build guarantees required by the gate policy.
 ---
+## 2026-02-13 - 020
+- What was implemented: Executed final rollout gate on a fresh build directory, verified full regression and strict alignment metrics, and synchronized final truth documents (`rd.md`, rollout report, audit, progress) to command-backed results.
+- Files changed: `documents/rd.md`, `documents/constraint_rollout_report.md`, `documents/ralph-loop/audit/020.md`, `documents/ralph-loop/prd.json`, `documents/ralph-loop/progress.txt`
+- **Learnings:**
+  - Final gate stories should capture a single explicit command transcript plus emitted metrics in one report file to keep completion claims mechanically auditable.
+  - In policy-restricted environments, fresh unique build directories are a valid anti-stale substitute for `rm -rf build` as long as all gates execute in that directory.
+---
