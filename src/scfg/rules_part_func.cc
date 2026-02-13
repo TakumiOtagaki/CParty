@@ -89,4 +89,26 @@ void compute_WI_restricted(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, s
     ctx.set_WI(ij, contributions);
 }
 
+void compute_W_restricted(PartFuncWContext &ctx, sparse_tree &tree) {
+    const cand_pos_t n = ctx.n();
+    const cand_pos_t turn = ctx.turn();
+
+    for (cand_pos_t j = turn + 1; j <= n; j++) {
+        pf_t contributions = 0;
+        if (tree.tree[j].pair < 0) contributions += ctx.get_W(j - 1) * ctx.scale1();
+        if (tree.weakly_closed(1, j)) {
+            for (cand_pos_t k = 1; k <= j - turn - 1; ++k) {
+                if (tree.weakly_closed(1, k - 1)) {
+                    pf_t acc = (k > 1) ? ctx.get_W(k - 1) : 1;
+                    contributions += acc * ctx.get_energy(k, j) * ctx.exp_Extloop(k, j);
+                    if (k == 1 || tree.weakly_closed(k, j)) {
+                        contributions += acc * ctx.get_energy_WMB(k, j) * ctx.expPS_penalty();
+                    }
+                }
+            }
+        }
+        ctx.set_W(j, contributions);
+    }
+}
+
 } // namespace scfg

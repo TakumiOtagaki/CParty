@@ -72,6 +72,23 @@ class PartFuncWIContext {
 
 void compute_WI_restricted(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
+class PartFuncWContext {
+  public:
+    virtual ~PartFuncWContext() = default;
+
+    virtual cand_pos_t n() const = 0;
+    virtual pf_t scale1() const = 0;
+    virtual pf_t get_W(cand_pos_t j) const = 0;
+    virtual pf_t get_energy(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t exp_Extloop(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t expPS_penalty() const = 0;
+    virtual void set_W(cand_pos_t j, pf_t value) = 0;
+    virtual cand_pos_t turn() const = 0;
+};
+
+void compute_W_restricted(PartFuncWContext &ctx, sparse_tree &tree);
+
 } // namespace scfg
 
 #endif

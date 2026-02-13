@@ -173,20 +173,52 @@ pf_t W_final_pf::hfold_pf(sparse_tree &tree) {
             compute_energy_WM_restricted(i, j, tree);
         }
     }
-    for (cand_pos_t j = TURN + 1; j <= n; j++) {
-        pf_t contributions = 0;
-        if (tree.tree[j].pair < 0) contributions += W[j - 1] * scale[1];
-        if (tree.weakly_closed(1, j)) {
-            for (cand_pos_t k = 1; k <= j - TURN - 1; ++k) {
-                if (tree.weakly_closed(1, k - 1)) {
-                    pf_t acc = (k > 1) ? W[k - 1] : 1; // keep as 0 or 1?
-                    contributions += acc * get_energy(k, j) * exp_Extloop(k, j);
-                    if (k == 1 || tree.weakly_closed(k, j)) contributions += acc * get_energy_WMB(k, j) * expPS_penalty;
-                }
-            }
+    class LocalWContext final : public scfg::PartFuncWContext {
+      public:
+        explicit LocalWContext(W_final_pf &owner) : owner_(owner) {}
+
+        cand_pos_t n() const override {
+            return owner_.n;
         }
-        W[j] = contributions;
-    }
+
+        pf_t scale1() const override {
+            return owner_.scale[1];
+        }
+
+        pf_t get_W(cand_pos_t j) const override {
+            return owner_.W[j];
+        }
+
+        pf_t get_energy(cand_pos_t i, cand_pos_t j) override {
+            return owner_.get_energy(i, j);
+        }
+
+        pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) override {
+            return owner_.get_energy_WMB(i, j);
+        }
+
+        pf_t exp_Extloop(cand_pos_t i, cand_pos_t j) override {
+            return owner_.exp_Extloop(i, j);
+        }
+
+        pf_t expPS_penalty() const override {
+            return ::expPS_penalty;
+        }
+
+        void set_W(cand_pos_t j, pf_t value) override {
+            owner_.W[j] = value;
+        }
+
+        cand_pos_t turn() const override {
+            return TURN;
+        }
+
+      private:
+        W_final_pf &owner_;
+    };
+
+    LocalWContext ctx(*this);
+    scfg::compute_W_restricted(ctx, tree);
     pf_t energy = to_Energy(W[n], n);
 
     // Base pair probability
