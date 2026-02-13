@@ -10,6 +10,7 @@ extern double expPSM_penalty;
 extern double expb_penalty;
 extern double expap_penalty;
 extern double expbp_penalty;
+extern double expPB_penalty;
 
 namespace scfg {
 
@@ -32,6 +33,7 @@ struct PartFuncAdapterAccess {
     static std::vector<pf_t> &VPL(W_final_pf &owner) { return owner.VPL; }
     static std::vector<pf_t> &VPR(W_final_pf &owner) { return owner.VPR; }
     static std::vector<pf_t> &WMBW(W_final_pf &owner) { return owner.WMBW; }
+    static std::vector<pf_t> &WMBP(W_final_pf &owner) { return owner.WMBP; }
     static short *S(W_final_pf &owner) { return owner.S_; }
     static pf_t exp_Extloop(W_final_pf &owner, cand_pos_t i, cand_pos_t j) { return owner.exp_Extloop(i, j); }
     static pf_t exp_MLstem(W_final_pf &owner, cand_pos_t i, cand_pos_t j) { return owner.exp_MLstem(i, j); }
@@ -48,6 +50,9 @@ struct PartFuncAdapterAccess {
     }
     static pf_t get_e_intP(W_final_pf &owner, cand_pos_t i, cand_pos_t k, cand_pos_t l, cand_pos_t j) {
         return owner.get_e_intP(i, k, l, j);
+    }
+    static int compute_exterior_cases(W_final_pf &owner, cand_pos_t l, cand_pos_t j, sparse_tree &tree) {
+        return owner.compute_exterior_cases(l, j, tree);
     }
 };
 
@@ -277,6 +282,32 @@ class LocalWMBWContext final : public PartFuncWMBWContext {
     W_final_pf &owner_;
 };
 
+class LocalWMBPContext final : public PartFuncWMBPContext {
+  public:
+    explicit LocalWMBPContext(W_final_pf &owner) : owner_(owner) {}
+
+    cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
+        return PartFuncAdapterAccess::index(owner_)[i] + j - i;
+    }
+    pf_t get_energy_WMBP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMBP(i, j); }
+    pf_t get_energy_WMBW(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMBW(i, j); }
+    pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_VP(i, j); }
+    pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WI(i, j); }
+    pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) override {
+        return owner_.get_BE(i, j, ip, jp, tree);
+    }
+    pf_t expPB_penalty() const override { return ::expPB_penalty; }
+    pf_t expPB_penalty_sq() const override { return ::expPB_penalty * ::expPB_penalty; }
+    cand_pos_t n() const override { return PartFuncAdapterAccess::n(owner_); }
+    int compute_exterior_cases(cand_pos_t l, cand_pos_t j, sparse_tree &tree) override {
+        return PartFuncAdapterAccess::compute_exterior_cases(owner_, l, j, tree);
+    }
+    void set_WMBP(cand_pos_t ij, pf_t value) override { PartFuncAdapterAccess::WMBP(owner_)[ij] = value; }
+
+  private:
+    W_final_pf &owner_;
+};
+
 } // namespace
 
 void compute_W_restricted(W_final_pf &owner, sparse_tree &tree) {
@@ -332,6 +363,11 @@ void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse
 void compute_WMBW_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWMBWContext ctx(owner);
     compute_WMBW_restricted(ctx, i, j, tree);
+}
+
+void compute_WMBP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    LocalWMBPContext ctx(owner);
+    compute_WMBP_restricted(ctx, i, j, tree);
 }
 
 } // namespace scfg

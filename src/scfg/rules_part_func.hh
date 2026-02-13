@@ -224,6 +224,25 @@ class PartFuncWMBWContext {
 
 void compute_WMBW_restricted(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
+class PartFuncWMBPContext {
+  public:
+    virtual ~PartFuncWMBPContext() = default;
+
+    virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
+    virtual pf_t get_energy_WMBP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WMBW(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) = 0;
+    virtual pf_t expPB_penalty() const = 0;
+    virtual pf_t expPB_penalty_sq() const = 0;
+    virtual cand_pos_t n() const = 0;
+    virtual int compute_exterior_cases(cand_pos_t l, cand_pos_t j, sparse_tree &tree) = 0;
+    virtual void set_WMBP(cand_pos_t ij, pf_t value) = 0;
+};
+
+void compute_WMBP_restricted(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+
 } // namespace scfg
 
 #endif

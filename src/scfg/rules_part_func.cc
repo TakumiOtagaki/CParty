@@ -324,4 +324,68 @@ void compute_WMBW_restricted(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t 
     ctx.set_WMBW(ij, contributions);
 }
 
+void compute_WMBP_restricted(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    const cand_pos_t ij = ctx.index_of(i, j);
+    pf_t contributions = 0;
+    const scfg::PartFuncModeConfig mode_config{ctx.expPB_penalty(), TURN};
+    scfg::PartFuncRuleHelpers rules(tree, mode_config);
+    rules.on_traceback_hook(i, j);
+    rules.on_fixed_parse_hook(i, j);
+
+    if (rules.pair_at(j) < 0) {
+        const cand_pos_t b_ij = rules.border_b(i, j);
+        rules.for_each_split(i, j, [&](cand_pos_t l) {
+            int ext_case = ctx.compute_exterior_cases(l, j, tree);
+            if (rules.allow_exterior_split(l, j, b_ij, ext_case)) {
+                if (rules.has_valid_band_borders(i, l, j)) {
+                    const cand_pos_t B_lj = rules.border_B(l, j);
+                    const cand_pos_t Bp_lj = rules.border_Bp(l, j);
+                    if (rules.parent_within_interval_and_turn(i, l, j)) {
+                        pf_t m1 = ctx.get_BE(tree.tree[B_lj].pair, B_lj, tree.tree[Bp_lj].pair, Bp_lj, tree) *
+                                  ctx.get_energy_WMBP(i, l - 1) * ctx.get_energy_VP(l, j);
+                        m1 = rules.apply_double_pb_penalty(m1);
+                        contributions += m1;
+                    }
+                }
+            }
+        });
+    }
+
+    if (rules.pair_at(j) < 0) {
+        const cand_pos_t b_ij = rules.border_b(i, j);
+        rules.for_each_split(i, j, [&](cand_pos_t l) {
+            int ext_case = ctx.compute_exterior_cases(l, j, tree);
+            if (rules.allow_exterior_split(l, j, b_ij, ext_case)) {
+                if (rules.has_valid_band_borders(i, l, j)) {
+                    const cand_pos_t B_lj = rules.border_B(l, j);
+                    const cand_pos_t Bp_lj = rules.border_Bp(l, j);
+                    if (rules.parent_within_interval_and_turn(i, l, j)) {
+                        pf_t m2 = ctx.get_BE(tree.tree[B_lj].pair, B_lj, tree.tree[Bp_lj].pair, Bp_lj, tree) *
+                                  ctx.get_energy_WMBW(i, l - 1) * ctx.get_energy_VP(l, j);
+                        m2 = rules.apply_double_pb_penalty(m2);
+                        contributions += m2;
+                    }
+                }
+            }
+        });
+    }
+
+    pf_t m3 = ctx.get_energy_VP(i, j) * ctx.expPB_penalty();
+    contributions += m3;
+
+    if (rules.pair_at(j) < 0 && rules.pair_at(i) >= 0) {
+        rules.for_each_split(i, j, [&](cand_pos_t l) {
+            if (rules.has_valid_inner_arc_split(i, l, j, ctx.n()) && rules.parent_within_interval_and_turn(i, l, j)) {
+                const cand_pos_t bp_il = rules.border_bp(i, l);
+                pf_t m4 = ctx.get_BE(i, rules.pair_at(i), bp_il, rules.pair_at(bp_il), tree) *
+                          ctx.get_energy_WI(bp_il + 1, l - 1) * ctx.get_energy_VP(l, j);
+                m4 = rules.apply_double_pb_penalty(m4);
+                contributions += m4;
+            }
+        });
+    }
+
+    ctx.set_WMBP(ij, contributions);
+}
+
 } // namespace scfg
