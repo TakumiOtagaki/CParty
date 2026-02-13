@@ -22,6 +22,10 @@
     },
     "mandatory_seed_dataset": "test/multi.secstruct"
   },
+  "contracts": {
+    "invalid_input_contract": "Deterministic single contract only (one fixed error code or one fixed exception type).",
+    "random_generator_role": "Generator only (not parser); unambiguity is not required for generation."
+  },
   "runtime_requirements": {
     "shell": "bash",
     "python": "python3"
@@ -30,6 +34,13 @@
     "fresh_build_required": true,
     "fresh_build_command": "rm -rf build && cmake -S . -B build && cmake --build build",
     "strict_regression_after_each_refactor": true,
+    "refactor_only_story_ids": [
+      "007",
+      "008",
+      "009",
+      "010"
+    ],
+    "refactor_nonregression_rule": "For refactor_only_story_ids: compared_current == compared_previous AND mismatched_current <= mismatched_previous.",
     "required_metrics": [
       "compared",
       "mismatched",
@@ -40,7 +51,8 @@
       "Do not set passes=true without command evidence in same iteration.",
       "Do not treat compared=0 as success.",
       "Do not rely on stale build artifacts.",
-      "Do not modify baselines only to force green unless the story explicitly says baseline refresh."
+      "Do not modify baselines only to force green unless the story explicitly says baseline refresh.",
+      "Do not claim refactor-only completion if compared/mismatched metrics are missing."
     ]
   },
   "global_stop_condition": {
@@ -63,7 +75,7 @@
       "depends_on": [],
       "done_when": [
         "CMakeLists.txt registers tests from source tree (not stale build cache only)",
-        "Test directory policy is explicit (test/ and/or tests/), with no ambiguous references",
+        "Test directory policy is explicit (use test/ as canonical), with no ambiguous references",
         "ctest -N from fresh build lists source-defined tests"
       ],
       "artifacts": [
@@ -201,7 +213,8 @@
       "done_when": [
         "SCFG core class/interfaces exist (rule eval + state access)",
         "Legacy code path compiles through adapter without formula change",
-        "Regression output remains identical within tolerance"
+        "Regression output remains identical within tolerance",
+        "api_cli_density2_energy_alignment metrics are reported and satisfy refactor_nonregression_rule"
       ],
       "artifacts": [
         "src/scfg/core.hh",
@@ -210,6 +223,7 @@
         "src/scfg/legacy_adapter.cc"
       ],
       "commands": [
+        "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
         "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
@@ -225,7 +239,8 @@
       "done_when": [
         "Constraint oracle is used by at least one part_func and one pseudo_loop path",
         "Oracle includes bracket-family policy and pair admissibility policy",
-        "Refactor step passes full regression with strict drift checks"
+        "Refactor step passes full regression with strict drift checks",
+        "api_cli_density2_energy_alignment metrics satisfy refactor_nonregression_rule"
       ],
       "artifacts": [
         "src/scfg/constraint_oracle.hh",
@@ -249,7 +264,8 @@
       "done_when": [
         "pseudo_loop rules are factored into named SCFG helper units",
         "No recurrence formula modification in this story",
-        "Full regression and alignment gate executed and reported"
+        "Full regression and alignment gate executed and reported",
+        "api_cli_density2_energy_alignment metrics satisfy refactor_nonregression_rule"
       ],
       "artifacts": [
         "src/pseudo_loop.cc",
@@ -274,7 +290,8 @@
       "done_when": [
         "part_func rules are factored into named SCFG helper units",
         "No recurrence formula modification in this story",
-        "Full regression and alignment gate executed and reported"
+        "Full regression and alignment gate executed and reported",
+        "api_cli_density2_energy_alignment metrics satisfy refactor_nonregression_rule"
       ],
       "artifacts": [
         "src/part_func.cc",

@@ -24,7 +24,8 @@ Loop memory is in `documents/ralph-loop/progress.txt`.
 - Do not treat `compared=0` as success for alignment tests.
 - Do not modify tests/baselines only to force green unless explicitly required by the story.
 - Do not set any story to `passes: true` without command evidence in the same run.
-- If required files/directories are missing (e.g., `documents/ralph-loop/prd.json`, `tests/`), stop and report the blocker.
+- For refactor-only stories, do not mark pass unless `api_cli_density2_energy_alignment` metrics are reported and non-regressing.
+- If required files/directories are missing (e.g., `documents/ralph-loop/prd.json`, `test/`), stop and report the blocker.
 
 ## Progress Format
 
