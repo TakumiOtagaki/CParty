@@ -9,6 +9,27 @@
 - `rule_score(rule, state, i, j, context)`: 局所スコアを返す
 - `expand(rule, state, i, j, context)`: 子状態列を返す
 
+## Canonical State Registry (Story 013)
+- Total target states: `16`
+- Canonical states:
+  `W, WI, V, VM, WM, WMv, WMp, WIP, VP, VPL, VPR, WMB, WMBP, WMBW, BE, ZW`
+- Source of truth in code:
+  - `cparty::internal::fixed_energy_target_states()`
+  - `cparty::internal::fixed_energy_rollout_plan()`
+
+## Rollout Story Mapping (Machine-Checkable)
+- `013`: `ZW` (parser scaffold baseline)
+- `014` (slice A): `W, WI, V`
+- `015` (slice B): `VM, WM, WMv, WMp`
+- `016` (slice C): `WIP, VP, VPL, VPR`
+- `017` (slice D): `WMB, WMBP, WMBW, BE`
+
+## Slice Test Registration (Source-Controlled)
+- `fixed_energy_slice_a`
+- `fixed_energy_slice_b`
+- `fixed_energy_slice_c`
+- `fixed_energy_slice_d`
+
 ## Pseudocode
 ```text
 function get_structure_energy(seq, fixed_db):

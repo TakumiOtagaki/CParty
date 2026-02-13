@@ -26,3 +26,12 @@
 ## Pass/Fail Rule
 - PASS only if all checks above are true
 - Otherwise keep `passes=false` and write blocker in audit log
+
+## Fixed-Energy Rollout Registry (Story 013)
+- Canonical 16-state registry must stay synchronized between docs and code.
+- Story mapping source of truth is `fixed_energy_rollout_plan()`.
+- Slice test names must remain source-registered:
+  - `fixed_energy_slice_a`
+  - `fixed_energy_slice_b`
+  - `fixed_energy_slice_c`
+  - `fixed_energy_slice_d`
