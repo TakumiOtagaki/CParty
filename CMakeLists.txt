@@ -106,3 +106,17 @@ install(TARGETS CParty RUNTIME DESTINATION bin)
 target_link_libraries(CParty PRIVATE RNA)
 
 include_directories(src)
+
+include(CTest)
+if(BUILD_TESTING)
+  # Source-controlled smoke checks so ctest registration is reproducible from a fresh build.
+  add_test(
+    NAME source_tree_test_dir_exists
+    COMMAND bash -lc "test -d '${CMAKE_SOURCE_DIR}/test'"
+  )
+
+  add_test(
+    NAME source_tree_seed_dataset_exists
+    COMMAND bash -lc "test -s '${CMAKE_SOURCE_DIR}/test/multi.secstruct'"
+  )
+endif()

@@ -4,3 +4,10 @@ Started: 2026-02-13
 ## Codebase Patterns
 - (Add reusable patterns discovered during implementation.)
 
+## 2026-02-13 - 001
+- What was implemented: Added source-controlled CTest registration in `CMakeLists.txt` and documented canonical test directory policy in `test/README.md`.
+- Files changed: `CMakeLists.txt`, `test/README.md`, `documents/ralph-loop/prd.json`, `documents/ralph-loop/audit/001.md`, `documents/ralph-loop/progress.txt`
+- **Learnings:**
+  - Fresh-build proof can be made explicit by checking newly generated `build/CTestTestfile.cmake` timestamp before running `ctest`.
+  - Even plumbing stories benefit from source-tree smoke tests to prevent stale-build false confidence.
+---

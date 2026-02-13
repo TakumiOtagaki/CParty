@@ -117,7 +117,7 @@
         "rm -rf build && cmake -S . -B build && cmake --build build",
         "ctest --test-dir build -N"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "No algorithm change. Build/test plumbing only. Caution: do not confuse stale build-cache tests with source-defined tests; validate using fresh build + ctest -N output."
     },
     {
