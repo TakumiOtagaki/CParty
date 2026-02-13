@@ -392,7 +392,7 @@
         "ctest --test-dir build --output-on-failure -R api_structure_energy",
         "ctest --test-dir build --output-on-failure"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "API contract phase; may still mismatch CLI energies."
     },
     {

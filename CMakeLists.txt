@@ -22,6 +22,7 @@ SET(SOURCE
   src/scfg/legacy_adapter.cc
   src/scfg/rules_pseudo_loop.cc
   src/scfg/rules_part_func.cc
+  src/fixed_energy_api.cc
   src/CParty.cc
   src/cmdline.cc
   src/Result.cc	
@@ -117,6 +118,11 @@ if(BUILD_TESTING)
   add_executable(multi_secstruct_schema_test test/multi_secstruct_schema_test.cc)
   add_executable(api_cli_density2_energy_alignment_test test/api_cli_density2_energy_alignment_test.cc)
   add_executable(
+    api_structure_energy_validation_test
+    test/api_structure_energy_validation_test.cc
+    src/fixed_energy_api.cc
+  )
+  add_executable(
     can_pair_policy_test
     test/can_pair_policy_test.cc
     src/sparse_tree.cc
@@ -144,6 +150,11 @@ if(BUILD_TESTING)
   add_test(
     NAME can_pair_policy
     COMMAND can_pair_policy_test
+  )
+
+  add_test(
+    NAME api_structure_energy_validation
+    COMMAND api_structure_energy_validation_test
   )
 
   add_test(
