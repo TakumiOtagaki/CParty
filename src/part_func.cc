@@ -1,6 +1,7 @@
 #include "part_func.hh"
 #include "dot_plot.hh"
 #include "h_externs.hh"
+#include "scfg/constraint_oracle.hh"
 #include "pf_globals.hh"
 #include "scfg/legacy_adapter.hh"
 
@@ -503,14 +504,14 @@ void W_final_pf::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t edge_i = std::min(i + MAXLOOP + 1, j - TURN - 1);
     min_borders = std::min(min_borders, edge_i);
     for (cand_pos_t k = i + 1; k < min_borders; ++k) {
-        if (tree.tree[k].pair < -1 && (tree.up[(k)-1] >= ((k) - (i)-1))) {
+        if (scfg::is_unpaired_position(tree, k) && scfg::is_empty_region(tree, i, k)) {
             cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
             cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
             max_borders = std::max(max_borders, edge_j);
             for (cand_pos_t l = j - 1; l > max_borders; --l) {
                 pair_type ptype_closingkj = pair[S_[k]][S_[l]];
                 if (k == i + 1 && l == j - 1) continue; // I have to add or else it will add a stP version and an eintP version to the sum
-                if (tree.tree[l].pair < -1 && ptype_closingkj > 0 && (tree.up[(j)-1] >= ((j) - (l)-1))) {
+                if (scfg::is_unpaired_position(tree, l) && scfg::is_pair_type_allowed(ptype_closingkj) && scfg::is_empty_region(tree, l, j)) {
                     pf_t vp_iloop_kl = (get_e_intP(i, k, l, j) * get_energy_VP(k, l));
                     cand_pos_t u1 = k - i - 1;
                     cand_pos_t u2 = j - l - 1;
@@ -712,8 +713,8 @@ void W_final_pf::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_
 
             cand_pos_t lp = tree.tree[l].pair;
 
-            bool empty_region_il = (tree.up[(l)-1] >= l - i - 1);       // empty between i+1 and l-1
-            bool empty_region_lpj = (tree.up[(j)-1] >= j - lp - 1);     // empty between lp+1 and j-1
+            bool empty_region_il = scfg::is_empty_region(tree, i, l);    // empty between i+1 and l-1
+            bool empty_region_lpj = scfg::is_empty_region(tree, lp, j);   // empty between lp+1 and j-1
             bool weakly_closed_il = tree.weakly_closed(i + 1, l - 1);   // weakly closed between i+1 and l-1
             bool weakly_closed_lpj = tree.weakly_closed(lp + 1, j - 1); // weakly closed between lp+1 and j-1
 

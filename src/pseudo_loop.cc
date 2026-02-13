@@ -1,5 +1,6 @@
 #include "pseudo_loop.hh"
 #include "h_externs.hh"
+#include "scfg/constraint_oracle.hh"
 #include "scfg/legacy_adapter.hh"
 #include <algorithm>
 #include <iostream>
@@ -261,7 +262,7 @@ void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
         // i and ip and j and jp should be in the same arc
         // also it should be the case that [i+1,ip-1] && [jp+1,j-1] are empty regions
 
-        if (tree.tree[k].pair < -1 && (tree.up[(k)-1] >= ((k) - (i)-1))) {
+        if (scfg::is_unpaired_position(tree, k) && scfg::is_empty_region(tree, i, k)) {
             // Hosna, April 6th, 2007
             // whenever we use get_borders we have to check for the correct values
             cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
@@ -270,7 +271,7 @@ void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
             for (cand_pos_t l = j - 1; l > max_borders; --l) {
 
                 pair_type ptype_closingkj = pair[S_[k]][S_[l]];
-                if (tree.tree[l].pair < -1 && ptype_closingkj > 0 && (tree.up[(j)-1] >= ((j) - (l)-1))) {
+                if (scfg::is_unpaired_position(tree, l) && scfg::is_pair_type_allowed(ptype_closingkj) && scfg::is_empty_region(tree, l, j)) {
                     // Hosna: April 20, 2007
                     // i and ip and j and jp should be in the same arc -- If it's unpaired between them, they have to be
                     energy_t tmp = get_e_intP(i, k, l, j) + get_VP(k, l);
@@ -504,8 +505,8 @@ void pseudo_loop::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos
             // Hosna June 29, 2007
             // when we pass a stacked pair instead of an internal loop to e_int, it returns underflow,
             // so I am checking explicitely that we won't have stems instead of internal loop
-            bool empty_region_il = (tree.up[(l)-1] >= l - i - 1);       // empty between i+1 and lp-1
-            bool empty_region_lpj = (tree.up[(j)-1] >= j - lp - 1);     // empty between l+1 and ip-1
+            bool empty_region_il = scfg::is_empty_region(tree, i, l);    // empty between i+1 and lp-1
+            bool empty_region_lpj = scfg::is_empty_region(tree, lp, j);  // empty between l+1 and ip-1
             bool weakly_closed_il = tree.weakly_closed(i + 1, l - 1);   // weakly closed between i+1 and lp-1
             bool weakly_closed_lpj = tree.weakly_closed(lp + 1, j - 1); // weakly closed between l+1 and ip-1
 

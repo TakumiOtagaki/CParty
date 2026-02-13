@@ -291,7 +291,7 @@
         "ctest --test-dir build --output-on-failure -R can_pair_policy",
         "ctest --test-dir build --output-on-failure"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "Do not over-abstract to a single broad helper label; extract concrete duplicated checks first. (Legacy test target name may still include can_pair.)"
     },
     {

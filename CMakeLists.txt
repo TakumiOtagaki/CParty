@@ -18,6 +18,7 @@ SET(SOURCE
   src/pseudo_loop.cc 
   src/part_func.cc
   src/scfg/core.cc
+  src/scfg/constraint_oracle.cc
   src/scfg/legacy_adapter.cc
   src/CParty.cc
   src/cmdline.cc
@@ -113,6 +114,12 @@ include(CTest)
 if(BUILD_TESTING)
   add_executable(multi_secstruct_schema_test test/multi_secstruct_schema_test.cc)
   add_executable(api_cli_density2_energy_alignment_test test/api_cli_density2_energy_alignment_test.cc)
+  add_executable(
+    can_pair_policy_test
+    test/can_pair_policy_test.cc
+    src/sparse_tree.cc
+    src/scfg/constraint_oracle.cc
+  )
 
   # Source-controlled smoke checks so ctest registration is reproducible from a fresh build.
   add_test(
@@ -130,6 +137,11 @@ if(BUILD_TESTING)
     COMMAND multi_secstruct_schema_test
             "${CMAKE_SOURCE_DIR}/test/multi.secstruct"
             "${CMAKE_SOURCE_DIR}/test/fixtures/seed_from_multi_secstruct.tsv"
+  )
+
+  add_test(
+    NAME can_pair_policy
+    COMMAND can_pair_policy_test
   )
 
   add_test(
