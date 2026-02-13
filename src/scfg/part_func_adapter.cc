@@ -35,6 +35,7 @@ struct PartFuncAdapterAccess {
     static std::vector<pf_t> &WMBW(W_final_pf &owner) { return owner.WMBW; }
     static std::vector<pf_t> &WMBP(W_final_pf &owner) { return owner.WMBP; }
     static std::vector<pf_t> &WMB(W_final_pf &owner) { return owner.WMB; }
+    static std::vector<pf_t> &BE(W_final_pf &owner) { return owner.BE; }
     static short *S(W_final_pf &owner) { return owner.S_; }
     static pf_t exp_Extloop(W_final_pf &owner, cand_pos_t i, cand_pos_t j) { return owner.exp_Extloop(i, j); }
     static pf_t exp_MLstem(W_final_pf &owner, cand_pos_t i, cand_pos_t j) { return owner.exp_MLstem(i, j); }
@@ -329,6 +330,32 @@ class LocalWMBContext final : public PartFuncWMBContext {
     W_final_pf &owner_;
 };
 
+class LocalBEContext final : public PartFuncBEContext {
+  public:
+    explicit LocalBEContext(W_final_pf &owner) : owner_(owner) {}
+
+    cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
+        return PartFuncAdapterAccess::index(owner_)[i] + j - i;
+    }
+    cand_pos_t n() const override { return PartFuncAdapterAccess::n(owner_); }
+    pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WIP(i, j); }
+    pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) override {
+        return owner_.get_BE(i, j, ip, jp, tree);
+    }
+    pf_t get_e_stP(cand_pos_t i, cand_pos_t j) override { return PartFuncAdapterAccess::get_e_stP(owner_, i, j); }
+    pf_t get_e_intP(cand_pos_t i, cand_pos_t k, cand_pos_t l, cand_pos_t j) override {
+        return PartFuncAdapterAccess::get_e_intP(owner_, i, k, l, j);
+    }
+    pf_t expap_penalty() const override { return ::expap_penalty; }
+    pf_t expbp_penalty_sq() const override { return ::expbp_penalty * ::expbp_penalty; }
+    pf_t expcp_pen(cand_pos_t length) const override { return PartFuncAdapterAccess::expcp_pen(owner_)[length]; }
+    pf_t scale(cand_pos_t length) const override { return PartFuncAdapterAccess::scale(owner_)[length]; }
+    void set_BE(cand_pos_t ij, pf_t value) override { PartFuncAdapterAccess::BE(owner_)[ij] = value; }
+
+  private:
+    W_final_pf &owner_;
+};
+
 } // namespace
 
 void compute_W_restricted(W_final_pf &owner, sparse_tree &tree) {
@@ -394,6 +421,16 @@ void compute_WMBP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spar
 void compute_WMB_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWMBContext ctx(owner);
     compute_WMB_restricted(ctx, i, j, tree);
+}
+
+void compute_BE_restricted(W_final_pf &owner,
+                           cand_pos_t i,
+                           cand_pos_t j,
+                           cand_pos_t ip,
+                           cand_pos_t jp,
+                           sparse_tree &tree) {
+    LocalBEContext ctx(owner);
+    compute_BE_restricted(ctx, i, j, ip, jp, tree);
 }
 
 } // namespace scfg

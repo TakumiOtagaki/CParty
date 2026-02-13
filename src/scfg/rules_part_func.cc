@@ -412,4 +412,74 @@ void compute_WMB_restricted(PartFuncWMBContext &ctx, cand_pos_t i, cand_pos_t j,
     ctx.set_WMB(ij, contributions);
 }
 
+void compute_BE_restricted(PartFuncBEContext &ctx,
+                           cand_pos_t i,
+                           cand_pos_t j,
+                           cand_pos_t ip,
+                           cand_pos_t jp,
+                           sparse_tree &tree) {
+    if (!(i >= 1 && i <= ip && ip < jp && jp <= j && j <= ctx.n() && tree.tree[i].pair > 0 && tree.tree[j].pair > 0 &&
+          tree.tree[ip].pair > 0 && tree.tree[jp].pair > 0 && tree.tree[i].pair == j && tree.tree[j].pair == i &&
+          tree.tree[ip].pair == jp && tree.tree[jp].pair == ip)) {
+        return;
+    }
+
+    cand_pos_t iip = ctx.index_of(i, ip);
+    pf_t contributions = 0;
+    if (tree.tree[i].pair != j || tree.tree[ip].pair != jp) {
+        ctx.set_BE(iip, 0);
+        return;
+    }
+
+    if (i == ip && j == jp && i < j) {
+        ctx.set_BE(iip, ctx.scale(2));
+        return;
+    }
+
+    if (tree.tree[i + 1].pair == j - 1) {
+        pf_t be_estp = ctx.get_e_stP(i, j) * ctx.get_BE(i + 1, j - 1, ip, jp, tree);
+        be_estp *= ctx.scale(2);
+        contributions += be_estp;
+    }
+
+    for (cand_pos_t l = i + 1; l <= ip; l++) {
+        if (tree.tree[l].pair >= -1 && jp <= tree.tree[l].pair && tree.tree[l].pair < j) {
+            cand_pos_t lp = tree.tree[l].pair;
+
+            bool empty_region_il = scfg::is_empty_region(tree, i, l);
+            bool empty_region_lpj = scfg::is_empty_region(tree, lp, j);
+            bool weakly_closed_il = tree.weakly_closed(i + 1, l - 1);
+            bool weakly_closed_lpj = tree.weakly_closed(lp + 1, j - 1);
+
+            if (empty_region_il && empty_region_lpj) {
+                pf_t eintp = ctx.get_e_intP(i, l, lp, j) * ctx.get_BE(l, lp, ip, jp, tree);
+                cand_pos_t u1 = l - i - 1;
+                cand_pos_t u2 = j - lp - 1;
+                eintp *= ctx.scale(u1 + u2 + 2);
+                contributions += eintp;
+            }
+            if (weakly_closed_il && weakly_closed_lpj) {
+                pf_t m3 = ctx.get_energy_WIP(i + 1, l - 1) * ctx.get_BE(l, lp, ip, jp, tree) *
+                          ctx.get_energy_WIP(lp + 1, j - 1) * ctx.expap_penalty() * ctx.expbp_penalty_sq();
+                m3 *= ctx.scale(2);
+                contributions += m3;
+            }
+            if (weakly_closed_il && empty_region_lpj) {
+                pf_t m4 = ctx.get_energy_WIP(i + 1, l - 1) * ctx.get_BE(l, lp, ip, jp, tree) *
+                          ctx.expcp_pen(j - lp - 1) * ctx.expap_penalty() * ctx.expbp_penalty_sq();
+                m4 *= ctx.scale(2);
+                contributions += m4;
+            }
+            if (empty_region_il && weakly_closed_lpj) {
+                pf_t m5 = ctx.expcp_pen(l - i - 1) * ctx.get_BE(l, lp, ip, jp, tree) *
+                          ctx.get_energy_WIP(lp + 1, j - 1) * ctx.expap_penalty() * ctx.expbp_penalty_sq();
+                m5 *= ctx.scale(2);
+                contributions += m5;
+            }
+        }
+    }
+
+    ctx.set_BE(iip, contributions);
+}
+
 } // namespace scfg
