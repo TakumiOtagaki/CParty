@@ -8,15 +8,23 @@ Loop memory is in `documents/ralph-loop/progress.txt`.
 
 ## Your Task
 
-1. Read `documents/prd.json`
+1. Read `documents/ralph-loop/prd.json` (if missing, stop and report missing file; do not fabricate)
 2. Read `documents/rd.md`
 3. Read `documents/ralph-loop/progress.txt` (check Codebase Patterns first)
 4. Pick highest priority story where `passes: false`
 5. Implement exactly one story in the current directory (`.`)
-6. Run tests required by the story and full regression gate
-7. Update `documents/prd.json` only when all gates are satisfied
+6. Run tests required by the story and full regression gate on a fresh build directory
+7. Update `documents/ralph-loop/prd.json` only when all gates are satisfied
 8. Commit format: `feat: [ID] - [Title]`
 9. Append learnings to `documents/ralph-loop/progress.txt`
+
+## Hard Guards (No Loopholes)
+
+- Do not claim pass using stale `build/` artifacts; regenerate build files before running `ctest`.
+- Do not treat `compared=0` as success for alignment tests.
+- Do not modify tests/baselines only to force green unless explicitly required by the story.
+- Do not set any story to `passes: true` without command evidence in the same run.
+- If required files/directories are missing (e.g., `documents/ralph-loop/prd.json`, `tests/`), stop and report the blocker.
 
 ## Progress Format
 
