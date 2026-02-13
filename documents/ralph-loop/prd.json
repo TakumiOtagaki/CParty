@@ -130,7 +130,7 @@
         "003"
       ],
       "done_when": [
-        "Generator implements grammar S -> S '.' | '(' S ')' | epsilon",
+        "Generator implements grammar S -> S '.' | S '(' S ')' | epsilon",
         "Generated G is pseudoknot-free and balanced",
         "Generated base pairs in G satisfy AU/GC/GU constraints",
         "Seed is controllable for reproducibility"
