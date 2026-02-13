@@ -91,7 +91,7 @@
     "type": "all_stories_pass",
     "strict_requirements": [
       "All userStories.passes == true",
-      "Story 015 strict gate satisfied",
+      "Story 020 strict gate satisfied",
       "No unresolved blocker in notes"
     ]
   },
@@ -397,24 +397,23 @@
     },
     {
       "id": "012",
-      "title": "Implement mechanical SCFG parser path for fixed-structure input",
+      "title": "Parser scaffold: normalized input + deterministic ZW-only rule chain",
       "priority": 12,
       "depends_on": [
         "011"
       ],
       "done_when": [
-        "SCFG parser interfaces (rules_for/applicable_rules/rule_score/expand) exist and are exercised by fixed-structure path",
-        "Structure parsing path is deterministic for valid input (same input -> same rule chain)",
-        "Parser rejects invalid structures via invalid_input_contract",
-        "API evaluation path calls parser-selected rule chain on shared DP core (no duplicate ad-hoc path)"
+        "Parser interfaces (rules_for/applicable_rules/expand) exist with deterministic child ordering",
+        "Parser path is exercised by internal trace test on ZW-only grammar",
+        "Invalid input contract remains deterministic and test-covered",
+        "No shared-DP scoring claims in this story"
       ],
       "micro_steps": [
         "12.1 Add parser entry: db_full -> normalized internal representation",
-        "12.2 Implement rules_for(state) and connect one ZW path",
-        "12.3 Implement applicable_rules(...) using empty-region/pair-type/transition checks",
-        "12.4 Implement expand(...) with deterministic child ordering",
-        "12.5 Enforce invalid_input_contract when applicable rule is non-unique or missing",
-        "12.6 Wire parser-selected rule chain into API execution path and validate determinism on representative cases"
+        "12.2 Implement rules_for(state) for ZW",
+        "12.3 Implement applicable_rules(...) and enforce unique selection",
+        "12.4 Implement expand(...) with deterministic ordering",
+        "12.5 Add fixed_energy_internal trace test for determinism"
       ],
       "artifacts": [
         "src/fixed_energy_api.cc",
@@ -431,34 +430,164 @@
     },
     {
       "id": "013",
-      "title": "Integrate rule scoring and EnergyBreakdown consistency",
+      "title": "State registry and per-state rollout plan (16 nonterminals)",
       "priority": 13,
       "depends_on": [
         "012"
       ],
       "done_when": [
-        "rule_score(...) is active on parser-selected rule chain",
-        "EnergyBreakdown fields are populated consistently (no placeholder-only path)",
-        "Internal tests cover pk_free/h_type/k_type smoke cases on the same shared DP core"
+        "A canonical list of 16 target nonterminals/states is declared in code/docs",
+        "State-to-story mapping is explicit and machine-checkable",
+        "Test names for each rollout slice are source-registered (no -R misses)"
+      ],
+      "artifacts": [
+        "documents/scfg_fixed_structure_parsing_pseudocode.md",
+        "documents/refactor_nonregression_checklist.md",
+        "CMakeLists.txt",
+        "documents/ralph-loop/audit/013.md"
+      ],
+      "commands": [
+        "ctest --test-dir build -N",
+        "ctest --test-dir build --output-on-failure"
+      ],
+      "passes": false,
+      "notes": "Planning/registration story only. No scoring formula change."
+    },
+    {
+      "id": "014",
+      "title": "Shared-DP hookup slice A: W, WI, V",
+      "priority": 14,
+      "depends_on": [
+        "013"
+      ],
+      "done_when": [
+        "Parser-selected chain executes shared DP core for W/WI/V without ad-hoc duplicate scorer",
+        "Slice-A dedicated test is source-registered and executed",
+        "Alignment gate is executed and reported"
+      ],
+      "artifacts": [
+        "src/fixed_energy_api.cc",
+        "test/fixed_energy_slice_a_test.cc",
+        "CMakeLists.txt",
+        "documents/ralph-loop/audit/014.md"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R fixed_energy_slice_a",
+        "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
+        "ctest --test-dir build --output-on-failure"
+      ],
+      "passes": false,
+      "notes": "No broad jump: only slice-A states in this story."
+    },
+    {
+      "id": "015",
+      "title": "Shared-DP hookup slice B: VM, WM, WMv, WMp",
+      "priority": 15,
+      "depends_on": [
+        "014"
+      ],
+      "done_when": [
+        "Parser-selected chain executes shared DP core for VM/WM/WMv/WMp",
+        "Slice-B dedicated test is source-registered and executed",
+        "Alignment gate is executed and reported"
+      ],
+      "artifacts": [
+        "src/fixed_energy_api.cc",
+        "test/fixed_energy_slice_b_test.cc",
+        "CMakeLists.txt",
+        "documents/ralph-loop/audit/015.md"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R fixed_energy_slice_b",
+        "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
+        "ctest --test-dir build --output-on-failure"
+      ],
+      "passes": false,
+      "notes": "No broad jump: only slice-B states in this story."
+    },
+    {
+      "id": "016",
+      "title": "Shared-DP hookup slice C: WIP, VP, VPL, VPR",
+      "priority": 16,
+      "depends_on": [
+        "015"
+      ],
+      "done_when": [
+        "Parser-selected chain executes shared DP core for WIP/VP/VPL/VPR",
+        "Slice-C dedicated test is source-registered and executed",
+        "Alignment gate is executed and reported"
+      ],
+      "artifacts": [
+        "src/fixed_energy_api.cc",
+        "test/fixed_energy_slice_c_test.cc",
+        "CMakeLists.txt",
+        "documents/ralph-loop/audit/016.md"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R fixed_energy_slice_c",
+        "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
+        "ctest --test-dir build --output-on-failure"
+      ],
+      "passes": false,
+      "notes": "No broad jump: only slice-C states in this story."
+    },
+    {
+      "id": "017",
+      "title": "Shared-DP hookup slice D: WMB, WMBP, WMBW, BE",
+      "priority": 17,
+      "depends_on": [
+        "016"
+      ],
+      "done_when": [
+        "Parser-selected chain executes shared DP core for WMB/WMBP/WMBW/BE",
+        "Slice-D dedicated test is source-registered and executed",
+        "Alignment gate is executed and reported"
+      ],
+      "artifacts": [
+        "src/fixed_energy_api.cc",
+        "test/fixed_energy_slice_d_test.cc",
+        "CMakeLists.txt",
+        "documents/ralph-loop/audit/017.md"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R fixed_energy_slice_d",
+        "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
+        "ctest --test-dir build --output-on-failure"
+      ],
+      "passes": false,
+      "notes": "No broad jump: only slice-D states in this story."
+    },
+    {
+      "id": "018",
+      "title": "Integrate rule_score and EnergyBreakdown population on shared path",
+      "priority": 18,
+      "depends_on": [
+        "017"
+      ],
+      "done_when": [
+        "rule_score is derived from shared DP route (no placeholder constant score)",
+        "EnergyBreakdown has no placeholder-only fields on active path",
+        "Internal tests cover pk_free/h_type/k_type smoke cases"
       ],
       "artifacts": [
         "src/fixed_energy_breakdown.hh",
         "test/fixed_energy_breakdown_test.cc",
-        "documents/ralph-loop/audit/013.md"
+        "documents/ralph-loop/audit/018.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R breakdown",
+        "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
         "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "Scoring/breakdown convergence story after deterministic parsing is in place."
+      "notes": "Scoring/breakdown convergence after all state slices are connected."
     },
     {
-      "id": "014",
+      "id": "019",
       "title": "Reach strict CLI alignment target (X=0)",
-      "priority": 14,
+      "priority": 19,
       "depends_on": [
-        "013"
+        "018"
       ],
       "done_when": [
         "Alignment gate on valid density-2 dataset reports alignment_compared >= 100",
@@ -470,7 +599,7 @@
         "test/api_cli_density2_energy_alignment_test.cc",
         "test/baselines/fixed_energy_cli/density2_mfe.tsv",
         "documents/fixed_energy_cli_alignment_report.md",
-        "documents/ralph-loop/audit/014.md"
+        "documents/ralph-loop/audit/019.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
@@ -480,11 +609,11 @@
       "notes": "Strict completion gate for numerical agreement."
     },
     {
-      "id": "015",
+      "id": "020",
       "title": "Final rollout gate and document truth sync",
-      "priority": 15,
+      "priority": 20,
       "depends_on": [
-        "014"
+        "019"
       ],
       "done_when": [
         "All ctest passes on fresh build",
@@ -495,7 +624,7 @@
         "documents/rd.md",
         "documents/ralph-loop/progress.txt",
         "documents/constraint_rollout_report.md",
-        "documents/ralph-loop/audit/015.md"
+        "documents/ralph-loop/audit/020.md"
       ],
       "commands": [
         "rm -rf build && cmake -S . -B build && cmake --build build",
