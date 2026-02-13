@@ -10,14 +10,15 @@ Loop memory is in `documents/ralph-loop/progress.txt`.
 
 1. Read `documents/ralph-loop/prd.json` (if missing, stop and report missing file; do not fabricate)
 2. Read `documents/rd.md`
-3. Read `documents/ralph-loop/progress.txt` (check Codebase Patterns first)
-4. Pick highest priority story where `passes: false`
-5. Implement exactly one story in the current directory (`.`)
-6. Run tests required by the story and full regression gate on a fresh build directory
-7. Update `documents/ralph-loop/prd.json` only when all gates are satisfied
-8. Commit format: `feat: [ID] - [Title]`
-9. Update `documents/ralph-loop/audit/{story_id}.md` with commands, metrics, and result
-10. Append learnings to `documents/ralph-loop/progress.txt`
+3. Read `documents/refactor_nonregression_checklist.md` and `documents/alignment_gate_spec.md`
+4. Read `documents/ralph-loop/progress.txt` (check Codebase Patterns first)
+5. Pick highest priority story where `passes: false`
+6. Implement exactly one story in the current directory (`.`)
+7. Run tests required by the story and full regression gate on a fresh build directory
+8. Update `documents/ralph-loop/prd.json` only when all gates are satisfied
+9. Commit format: `feat: [ID] - [Title]`
+10. Update `documents/ralph-loop/audit/{story_id}.md` using `documents/ralph-loop/audit/TEMPLATE.md`
+11. Append learnings to `documents/ralph-loop/progress.txt`
 
 ## Hard Guards (No Loopholes)
 

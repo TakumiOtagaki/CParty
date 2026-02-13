@@ -30,6 +30,12 @@
     "shell": "bash",
     "python": "python3"
   },
+  "mechanized_docs": [
+    "documents/scfg_fixed_structure_parsing_pseudocode.md",
+    "documents/refactor_nonregression_checklist.md",
+    "documents/alignment_gate_spec.md",
+    "documents/ralph-loop/audit/TEMPLATE.md"
+  ],
   "audit_log_policy": {
     "directory": "documents/ralph-loop/audit",
     "file_pattern": "{story_id}.md",
