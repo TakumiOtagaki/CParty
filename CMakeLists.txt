@@ -20,6 +20,7 @@ SET(SOURCE
   src/scfg/core.cc
   src/scfg/constraint_oracle.cc
   src/scfg/legacy_adapter.cc
+  src/scfg/rules_pseudo_loop.cc
   src/CParty.cc
   src/cmdline.cc
   src/Result.cc	

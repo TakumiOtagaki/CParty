@@ -328,7 +328,7 @@
         "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
         "ctest --test-dir build --output-on-failure"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "Strictly behavior-preserving refactor. Prioritize concrete repeated operations over broad abstraction."
     },
     {

@@ -67,3 +67,11 @@ Started: 2026-02-13
   - Open-interval emptiness (`left,right`) is a reusable primitive that directly replaces multiple duplicated `tree.up[...]` predicates without changing recurrence math.
   - Extracting pair-type admissibility (`ptype > 0`) as a dedicated helper keeps constraints explicit and avoids broad, abstraction-first wrappers.
 ---
+
+## 2026-02-13 - 009
+- What was implemented: Added SCFG pseudo-loop helper module (`rules_pseudo_loop`) and refactored `pseudo_loop::compute_WMBP` case-1/2 recurrence paths to use named helper units for rule access, transition scoring, constraint checks, DP split iteration, and mode wiring, with no recurrence formula changes.
+- Files changed: `CMakeLists.txt`, `src/pseudo_loop.cc`, `src/scfg/rules_pseudo_loop.hh`, `src/scfg/rules_pseudo_loop.cc`, `documents/ralph-loop/prd.json`, `documents/ralph-loop/audit/009.md`, `documents/ralph-loop/progress.txt`
+- **Learnings:**
+  - In this codebase, border accessors on `sparse_tree` are non-const; SCFG helper layers that centralize border logic must accept mutable tree references even for read-like access.
+  - Repeated WMBP split predicates (exterior-case + band-border + parent/turn checks) are a concrete extraction target that improves recurrence readability without altering math.
+---

@@ -2,6 +2,7 @@
 #include "h_externs.hh"
 #include "scfg/constraint_oracle.hh"
 #include "scfg/legacy_adapter.hh"
+#include "scfg/rules_pseudo_loop.hh"
 #include <algorithm>
 #include <iostream>
 #include <math.h>
@@ -336,66 +337,65 @@ void pseudo_loop::compute_WMBW(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
 void pseudo_loop::compute_WMBP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t ij = index[i] + j - i;
+    const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
+    scfg::PseudoLoopRuleHelpers rules(tree, mode_config);
 
     energy_t m1 = INF, m2 = INF, m4 = INF;
 
     // 1)
-    if (tree.tree[j].pair < 0) {
+    if (rules.pair_at(j) < 0) {
         energy_t tmp = INF;
-        cand_pos_t b_ij = tree.b(i, j);
-        for (cand_pos_t l = i + 1; l < j; l++) {
+        const cand_pos_t b_ij = rules.border_b(i, j);
+        rules.for_each_split(i, j, [&](cand_pos_t l) {
             // Hosna: April 19th, 2007
             // the chosen l should be less than border_b(i,j) -- should be greater than border_b(i,l)
             // Mateo Jan 2025 Added exterior cases to consider when looking at band borders. Solved case of [.(.].[.).]
             int ext_case = compute_exterior_cases(l, j, tree);
-            if ((b_ij > 0 && l < b_ij) || (b_ij < 0 && ext_case == 0)) {
-                cand_pos_t bp_il = tree.bp(i, l);
-                cand_pos_t Bp_lj = tree.Bp(l, j);
-                if (bp_il >= 0 && l > bp_il && Bp_lj > 0 && l < Bp_lj) { // bp(i,l) < l < Bp(l,j)
-                    cand_pos_t B_lj = tree.B(l, j);
+            if (rules.allow_exterior_split(l, j, b_ij, ext_case)) {
+                if (rules.has_valid_band_borders(i, l, j)) { // bp(i,l) < l < Bp(l,j)
+                    cand_pos_t B_lj = rules.border_B(l, j);
+                    cand_pos_t Bp_lj = rules.border_Bp(l, j);
 
                     // Hosna: July 5th, 2007:
                     // as long as we have i <= arc(l)< j we are fine
-                    if (i <= tree.tree[l].parent->index && tree.tree[l].parent->index < j && l + TURN <= j) {
+                    if (rules.parent_within_interval_and_turn(i, l, j)) {
                         energy_t sum = get_BE(tree.tree[B_lj].pair, B_lj, tree.tree[Bp_lj].pair, Bp_lj, tree) + get_WMBP(i, l - 1) + get_VP(l, j);
                         tmp = std::min(tmp, sum);
                     }
                 }
             }
-
-            m1 = 2 * PB_penalty + tmp;
-        }
+            m1 = rules.add_double_pb_penalty(tmp);
+        });
     }
     // 2) WMB(i,j) = min_{i<l<j}{WMB(i,l)+WI(l+1,j)} if bp(j)<j
     // Hosna: Feb 5, 2007
-    if (tree.tree[j].pair < 0) {
+    if (rules.pair_at(j) < 0) {
         energy_t tmp = INF;
-        cand_pos_t b_ij = tree.b(i, j);
-        for (cand_pos_t l = i + 1; l < j; l++) {
+        const cand_pos_t b_ij = rules.border_b(i, j);
+        rules.for_each_split(i, j, [&](cand_pos_t l) {
             // Hosna, April 6th, 2007
             // whenever we use get_borders we have to check for the correct values
-            cand_pos_t bp_il = tree.bp(i, l);
-            cand_pos_t Bp_lj = tree.Bp(l, j);
             // Hosna: April 19th, 2007
             // the chosen l should be less than border_b(i,j) -- should be greater than border_b(i,l)
             // Mateo Jan 2025 Added exterior cases to consider when looking at band borders. Solved case of [.(.].[.).]
             // Mateo May 2025 I'm adding to this -- exterior cases are for [.(.]..[.).] where b_ij = -2 when it should be inf and allow
             // the for loop to happen. If b_ij>0 though, the exterior cases shouldn't play a role.
             int ext_case = compute_exterior_cases(l, j, tree);
-            if ((b_ij > 0 && l < b_ij) || (b_ij < 0 && ext_case == 0)) {
-                if (bp_il >= 0 && l > bp_il && Bp_lj > 0 && l < Bp_lj) { // bp(i,l) < l < Bp(l,j)
-                    cand_pos_t B_lj = tree.B(l, j);
+            if (rules.allow_exterior_split(l, j, b_ij, ext_case)) {
+                if (rules.has_valid_band_borders(i, l, j)) { // bp(i,l) < l < Bp(l,j)
+                    cand_pos_t B_lj = rules.border_B(l, j);
+                    cand_pos_t Bp_lj = rules.border_Bp(l, j);
 
                     // Hosna: July 5th, 2007:
                     // as long as we have i <= arc(l)< j we are fine
-                    if (i <= tree.tree[l].parent->index && tree.tree[l].parent->index < j && l + TURN <= j) {
+                    if (rules.parent_within_interval_and_turn(i, l, j)) {
                         energy_t sum = get_BE(tree.tree[B_lj].pair, B_lj, tree.tree[Bp_lj].pair, Bp_lj, tree) + get_WMBW(i, l - 1) + get_VP(l, j);
                         tmp = std::min(tmp, sum);
                     }
                 }
             }
-            m2 = 2 * PB_penalty + tmp;
-        }
+            m2 = rules.add_double_pb_penalty(tmp);
+        });
     }
     // 3) WMB(i,j) = VP(i,j) + P_b
     energy_t m3 = get_VP(i, j) + PB_penalty;
