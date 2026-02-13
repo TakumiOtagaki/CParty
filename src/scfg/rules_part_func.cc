@@ -50,4 +50,24 @@ void PartFuncRuleHelpers::on_fixed_parse_hook(cand_pos_t i, cand_pos_t j) const 
     (void)j;
 }
 
+void compute_V_restricted(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    const cand_pos_t ij = ctx.index_of(i, j);
+
+    const bool unpaired = (tree.tree[i].pair < -1 && tree.tree[j].pair < -1);
+    const bool paired = (tree.tree[i].pair == j && tree.tree[j].pair == i);
+
+    pf_t contributions = 0;
+
+    if (paired || unpaired) {
+        bool canH = !(tree.up[j - 1] < (j - i - 1));
+        if (canH) contributions += ctx.hairpin_energy(i, j);
+
+        contributions += ctx.internal_energy(i, j, tree.up);
+
+        contributions += ctx.vm_energy(i, j, tree.up);
+    }
+
+    ctx.set_V(ij, contributions);
+}
+
 } // namespace scfg

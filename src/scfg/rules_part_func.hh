@@ -42,6 +42,19 @@ class PartFuncRuleHelpers {
     PartFuncModeConfig config_;
 };
 
+class PartFuncVContext {
+  public:
+    virtual ~PartFuncVContext() = default;
+
+    virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
+    virtual void set_V(cand_pos_t ij, pf_t value) = 0;
+    virtual pf_t hairpin_energy(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t internal_energy(cand_pos_t i, cand_pos_t j, std::vector<int> &up) = 0;
+    virtual pf_t vm_energy(cand_pos_t i, cand_pos_t j, std::vector<int> &up) = 0;
+};
+
+void compute_V_restricted(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+
 } // namespace scfg
 
 #endif

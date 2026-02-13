@@ -349,24 +349,36 @@ pf_t W_final_pf::compute_energy_VM_restricted(cand_pos_t i, cand_pos_t j, std::v
 }
 
 void W_final_pf::compute_energy_restricted(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    class LocalVContext final : public scfg::PartFuncVContext {
+      public:
+        explicit LocalVContext(W_final_pf &owner) : owner_(owner) {}
 
-    cand_pos_t ij = index[i] + j - i;
+        cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
+            return owner_.index[i] + j - i;
+        }
 
-    const bool unpaired = (tree.tree[i].pair < -1 && tree.tree[j].pair < -1);
-    const bool paired = (tree.tree[i].pair == j && tree.tree[j].pair == i);
+        void set_V(cand_pos_t ij, pf_t value) override {
+            owner_.V[ij] = value;
+        }
 
-    pf_t contributions = 0;
+        pf_t hairpin_energy(cand_pos_t i, cand_pos_t j) override {
+            return owner_.HairpinE(i, j);
+        }
 
-    if (paired || unpaired) // if i and j can pair
-    {
-        bool canH = !(tree.up[j - 1] < (j - i - 1));
-        if (canH) contributions += HairpinE(i, j);
+        pf_t internal_energy(cand_pos_t i, cand_pos_t j, std::vector<int> &up) override {
+            return owner_.compute_internal_restricted(i, j, up);
+        }
 
-        contributions += compute_internal_restricted(i, j, tree.up);
+        pf_t vm_energy(cand_pos_t i, cand_pos_t j, std::vector<int> &up) override {
+            return owner_.compute_energy_VM_restricted(i, j, up);
+        }
 
-        contributions += compute_energy_VM_restricted(i, j, tree.up);
-    }
-    V[ij] = contributions;
+      private:
+        W_final_pf &owner_;
+    };
+
+    LocalVContext ctx(*this);
+    scfg::compute_V_restricted(ctx, i, j, tree);
 }
 
 void W_final_pf::compute_pk_energies(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
