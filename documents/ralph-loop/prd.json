@@ -7,7 +7,7 @@
     "target": "Single SCFG-oriented core where partition/MFE/fixed-energy share rule-level logic.",
     "must_hold": [
       "Rule evaluation logic is centralized behind SCFG class/interfaces.",
-      "Constraint oracle (can-pair + structure validity) is shared across paths.",
+      "Constraint oracle (empty-region + pair-type + structure validity) is shared across paths.",
       "Fixed-structure energy path is not an ad-hoc duplicate path."
     ]
   },
@@ -68,7 +68,7 @@
       "rule": "Extract repeated concrete operations first, not broad abstract names.",
       "candidate_threshold": "Same or near-identical operation appears >= 3 times.",
       "hot_loop_rule": "Do not force helper extraction for trivial arithmetic in hot loops.",
-      "naming_rule": "Prefer specific names like is_empty_region / is_pair_type_allowed / is_transition_allowed instead of generic can_pair."
+      "naming_rule": "Prefer specific names like is_empty_region / is_pair_type_allowed / is_transition_allowed instead of overly broad generic labels."
     },
     "forbidden_shortcuts": [
       "Do not set passes=true without command evidence in same iteration.",
@@ -285,7 +285,7 @@
         "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "Do not over-abstract to a single generic can_pair helper; extract concrete duplicated checks first."
+      "notes": "Do not over-abstract to a single broad helper label; extract concrete duplicated checks first."
     },
     {
       "id": "009",
@@ -453,7 +453,7 @@
       "artifacts": [
         "documents/rd.md",
         "documents/ralph-loop/progress.txt",
-        "documents/can_pair_rollout_report.md",
+        "documents/constraint_rollout_report.md",
         "documents/ralph-loop/audit/014.md"
       ],
       "commands": [
