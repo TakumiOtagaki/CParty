@@ -16,7 +16,8 @@ Loop memory is in `documents/ralph-loop/progress.txt`.
 6. Run tests required by the story and full regression gate on a fresh build directory
 7. Update `documents/ralph-loop/prd.json` only when all gates are satisfied
 8. Commit format: `feat: [ID] - [Title]`
-9. Append learnings to `documents/ralph-loop/progress.txt`
+9. Update `documents/ralph-loop/audit/{story_id}.md` with commands, metrics, and result
+10. Append learnings to `documents/ralph-loop/progress.txt`
 
 ## Hard Guards (No Loopholes)
 
@@ -25,6 +26,7 @@ Loop memory is in `documents/ralph-loop/progress.txt`.
 - Do not modify tests/baselines only to force green unless explicitly required by the story.
 - Do not set any story to `passes: true` without command evidence in the same run.
 - For refactor-only stories, do not mark pass unless `api_cli_density2_energy_alignment` metrics are reported and non-regressing.
+- Do not mark pass unless `documents/ralph-loop/audit/{story_id}.md` is updated in the same run.
 - If required files/directories are missing (e.g., `documents/ralph-loop/prd.json`, `test/`), stop and report the blocker.
 
 ## Progress Format

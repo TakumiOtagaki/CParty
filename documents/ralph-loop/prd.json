@@ -30,6 +30,19 @@
     "shell": "bash",
     "python": "python3"
   },
+  "audit_log_policy": {
+    "directory": "documents/ralph-loop/audit",
+    "file_pattern": "{story_id}.md",
+    "required_sections": [
+      "Story",
+      "Commit",
+      "Commands",
+      "Metrics",
+      "Result",
+      "Blockers"
+    ],
+    "rule": "One log file per story. Reuse the same file if retried."
+  },
   "execution_policy": {
     "fresh_build_required": true,
     "fresh_build_command": "rm -rf build && cmake -S . -B build && cmake --build build",
@@ -80,7 +93,8 @@
       ],
       "artifacts": [
         "CMakeLists.txt",
-        "test/README.md"
+        "test/README.md",
+        "documents/ralph-loop/audit/001.md"
       ],
       "commands": [
         "rm -rf build && cmake -S . -B build && cmake --build build",
@@ -104,7 +118,8 @@
       "artifacts": [
         "test/multi.secstruct",
         "test/fixtures/seed_from_multi_secstruct.tsv",
-        "test/multi_secstruct_schema_test.cc"
+        "test/multi_secstruct_schema_test.cc",
+        "documents/ralph-loop/audit/002.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R multi_secstruct"
@@ -126,7 +141,8 @@
       ],
       "artifacts": [
         "test/tools/parse_cparty_stdout.sh",
-        "test/tools/parse_cparty_stdout_test.sh"
+        "test/tools/parse_cparty_stdout_test.sh",
+        "documents/ralph-loop/audit/003.md"
       ],
       "commands": [
         "test/tools/parse_cparty_stdout_test.sh"
@@ -149,7 +165,8 @@
       ],
       "artifacts": [
         "test/tools/gen_random_seq_struct.py",
-        "test/tools/gen_random_seq_struct_test.sh"
+        "test/tools/gen_random_seq_struct_test.sh",
+        "documents/ralph-loop/audit/004.md"
       ],
       "commands": [
         "test/tools/gen_random_seq_struct_test.sh"
@@ -171,7 +188,8 @@
       ],
       "artifacts": [
         "test/tools/build_density2_cli_baseline.sh",
-        "test/baselines/fixed_energy_cli/density2_mfe.tsv"
+        "test/baselines/fixed_energy_cli/density2_mfe.tsv",
+        "documents/ralph-loop/audit/005.md"
       ],
       "commands": [
         "test/tools/build_density2_cli_baseline.sh build/CParty test/multi.secstruct test/baselines/fixed_energy_cli/density2_mfe.tsv"
@@ -195,7 +213,8 @@
       "artifacts": [
         "test/api_cli_density2_energy_alignment_test.cc",
         "documents/fixed_energy_cli_alignment_report.md",
-        "CMakeLists.txt"
+        "CMakeLists.txt",
+        "documents/ralph-loop/audit/006.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment"
@@ -220,7 +239,8 @@
         "src/scfg/core.hh",
         "src/scfg/core.cc",
         "src/scfg/legacy_adapter.hh",
-        "src/scfg/legacy_adapter.cc"
+        "src/scfg/legacy_adapter.cc",
+        "documents/ralph-loop/audit/007.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
@@ -245,7 +265,8 @@
       "artifacts": [
         "src/scfg/constraint_oracle.hh",
         "src/scfg/constraint_oracle.cc",
-        "test/can_pair_policy_test.cc"
+        "test/can_pair_policy_test.cc",
+        "documents/ralph-loop/audit/008.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R can_pair_policy",
@@ -270,7 +291,8 @@
       "artifacts": [
         "src/pseudo_loop.cc",
         "src/scfg/rules_pseudo_loop.hh",
-        "src/scfg/rules_pseudo_loop.cc"
+        "src/scfg/rules_pseudo_loop.cc",
+        "documents/ralph-loop/audit/009.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R pseudo_loop",
@@ -296,7 +318,8 @@
       "artifacts": [
         "src/part_func.cc",
         "src/scfg/rules_part_func.hh",
-        "src/scfg/rules_part_func.cc"
+        "src/scfg/rules_part_func.cc",
+        "documents/ralph-loop/audit/010.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R part_func",
@@ -321,7 +344,8 @@
       "artifacts": [
         "src/fixed_energy_api.hh",
         "src/fixed_energy_api.cc",
-        "test/api_structure_energy_validation_test.cc"
+        "test/api_structure_energy_validation_test.cc",
+        "documents/ralph-loop/audit/011.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R api_structure_energy",
@@ -345,7 +369,8 @@
       "artifacts": [
         "src/fixed_energy_breakdown.hh",
         "test/fixed_energy_internal_test.cc",
-        "test/fixed_energy_breakdown_test.cc"
+        "test/fixed_energy_breakdown_test.cc",
+        "documents/ralph-loop/audit/012.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R fixed_energy_internal",
@@ -371,7 +396,8 @@
       "artifacts": [
         "test/api_cli_density2_energy_alignment_test.cc",
         "test/baselines/fixed_energy_cli/density2_mfe.tsv",
-        "documents/fixed_energy_cli_alignment_report.md"
+        "documents/fixed_energy_cli_alignment_report.md",
+        "documents/ralph-loop/audit/013.md"
       ],
       "commands": [
         "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
@@ -395,7 +421,8 @@
       "artifacts": [
         "documents/rd.md",
         "documents/ralph-loop/progress.txt",
-        "documents/can_pair_rollout_report.md"
+        "documents/can_pair_rollout_report.md",
+        "documents/ralph-loop/audit/014.md"
       ],
       "commands": [
         "rm -rf build && cmake -S . -B build && cmake --build build",
