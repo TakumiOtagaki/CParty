@@ -79,6 +79,7 @@
     "forbidden_shortcuts": [
       "Do not set passes=true without command evidence in same iteration.",
       "Do not treat alignment_compared=0 as success.",
+      "Do not treat alignment_mismatched>0 as success.",
       "Do not rely on stale build artifacts.",
       "Do not modify baselines only to force green unless the story explicitly says baseline refresh.",
       "Do not claim refactor-only completion if refactor_compared/refactor_strict_mismatched are missing.",
@@ -226,6 +227,7 @@
         "api_cli_density2_energy_alignment test is source-registered",
         "Test reports alignment_compared/alignment_mismatched/skipped/finite_rate",
         "Test fails when alignment_compared=0",
+        "Test fails when alignment_mismatched>0",
         "Strict threshold for this phase: alignment_mismatched must be reported exactly (no silent pass)"
       ],
       "artifacts": [

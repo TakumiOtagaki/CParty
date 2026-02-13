@@ -24,6 +24,7 @@ Loop memory is in `documents/ralph-loop/progress.txt`.
 
 - Do not claim pass using stale `build/` artifacts; regenerate build files before running `ctest`.
 - Do not treat `alignment_compared=0` as success for alignment tests.
+- Do not treat `alignment_mismatched>0` as success for alignment tests.
 - Do not modify tests/baselines only to force green unless explicitly required by the story.
 - Do not set any story to `passes: true` without command evidence in the same run.
 - For refactor-only stories, do not mark pass unless `refactor_compared` and `refactor_strict_mismatched` are reported and non-regressing.

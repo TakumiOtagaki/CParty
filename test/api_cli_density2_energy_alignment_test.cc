@@ -236,6 +236,12 @@ int main(int argc, char **argv) {
       return EXIT_FAILURE;
     }
 
+    if (alignment_mismatched != 0) {
+      std::cerr << "alignment gate failed: alignment_mismatched="
+                << alignment_mismatched << " (expected 0)\n";
+      return EXIT_FAILURE;
+    }
+
     return EXIT_SUCCESS;
   } catch (const std::exception &e) {
     std::cerr << "api_cli_density2_energy_alignment_test failed: " << e.what() << "\n";
