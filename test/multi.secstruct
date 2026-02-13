@@ -57,6 +57,6 @@ GCAAC
 AGGGGAAAAAGGAGGAAAUGGGGAAAAAAACCCCUAAAACCUCCAAAGGCGGAAAAACCCCGAAAAACCGCC
 (((((.....{{{{{...[[[[[.......)))))....}}}}}...(((((.....]]]]].....)))))
 
->invalid_unsupported_pk_family | family=invalid | expected=invalid | reason=unsupported_pk_family
+>abnormal dotbracket | family=h_type | expected=valid | reason=unsupported_pk_family
 GGGCAAAAGGCGAAAAGCCCAAAACGCC
 ((((....<<<<....))))....>>>>

@@ -1,8 +1,16 @@
 {
-  "project": "CParty fixed-structure energy alignment (density-2, strict)",
+  "project": "CParty SCFG consolidation and fixed-structure energy rollout (density-2 strict)",
   "branchName": "feature/scfg-refactor-fixed-energy",
   "owner": "ootagakitakumi",
   "id_policy": "Stories must be processed in ascending id order.",
+  "architecture_goal": {
+    "target": "Single SCFG-oriented core where partition/MFE/fixed-energy share rule-level logic.",
+    "must_hold": [
+      "Rule evaluation logic is centralized behind SCFG class/interfaces.",
+      "Constraint oracle (can-pair + structure validity) is shared across paths.",
+      "Fixed-structure energy path is not an ad-hoc duplicate path."
+    ]
+  },
   "constraints": {
     "mode": "-d2 only",
     "sequence_alphabet": "A,U,G,C only",
@@ -11,11 +19,17 @@
     "numeric_tolerance": {
       "abs_tol": 1e-7,
       "rel_tol": 1e-7
-    }
+    },
+    "mandatory_seed_dataset": "test/multi.secstruct"
+  },
+  "runtime_requirements": {
+    "shell": "bash",
+    "python": "python3"
   },
   "execution_policy": {
     "fresh_build_required": true,
     "fresh_build_command": "rm -rf build && cmake -S . -B build && cmake --build build",
+    "strict_regression_after_each_refactor": true,
     "required_metrics": [
       "compared",
       "mismatched",
@@ -26,15 +40,15 @@
       "Do not set passes=true without command evidence in same iteration.",
       "Do not treat compared=0 as success.",
       "Do not rely on stale build artifacts.",
-      "Do not update baselines only to force green unless story explicitly requires baseline refresh."
+      "Do not modify baselines only to force green unless the story explicitly says baseline refresh."
     ]
   },
   "global_stop_condition": {
     "type": "all_stories_pass",
     "strict_requirements": [
       "All userStories.passes == true",
-      "Story 012 gate satisfied",
-      "No blocker listed in notes"
+      "Story 014 strict gate satisfied",
+      "No unresolved blocker in notes"
     ]
   },
   "retry_limit": {
@@ -44,84 +58,130 @@
   "userStories": [
     {
       "id": "001",
-      "title": "Restore test harness in source-controlled paths",
+      "title": "Normalize test harness paths and source-controlled ctest registration",
       "priority": 1,
       "depends_on": [],
       "done_when": [
-        "tests/ directory exists with executable helper scripts committed",
-        "CMakeLists.txt enables testing from source (not only pre-existing build cache)",
-        "ctest -N from fresh build lists at least one source-defined test"
+        "CMakeLists.txt registers tests from source tree (not stale build cache only)",
+        "Test directory policy is explicit (test/ and/or tests/), with no ambiguous references",
+        "ctest -N from fresh build lists source-defined tests"
       ],
       "artifacts": [
         "CMakeLists.txt",
-        "tests/README.md"
+        "test/README.md"
       ],
       "commands": [
         "rm -rf build && cmake -S . -B build && cmake --build build",
         "ctest --test-dir build -N"
       ],
       "passes": false,
-      "notes": "No energy logic change in this story."
+      "notes": "No algorithm change. Build/test plumbing only."
     },
     {
       "id": "002",
-      "title": "Add deterministic CLI baseline collector (-d2 fixed)",
+      "title": "Lock mandatory seed dataset from test/multi.secstruct",
       "priority": 2,
       "depends_on": [
         "001"
       ],
       "done_when": [
-        "Script to run CParty on fixture FASTA and capture density-2 MFE structure/energy exists",
-        "Output format is TSV with stable columns and headers",
-        "Script exits non-zero on parse failure"
+        "Parser for test/multi.secstruct exists",
+        "All entries in test/multi.secstruct are consumed (no skip allowed)",
+        "Validation test fails if file row count or ids drift unexpectedly"
       ],
       "artifacts": [
-        "tests/fixed_energy_cli_baseline.sh",
-        "tests/baselines/fixed_energy_cli/README.md"
+        "test/multi.secstruct",
+        "test/fixtures/seed_from_multi_secstruct.tsv",
+        "test/multi_secstruct_schema_test.cc"
       ],
       "commands": [
-        "tests/fixed_energy_cli_baseline.sh build/CParty tests/cparty_fixed_structure_energy/test.multi.fa tests/baselines/fixed_energy_cli/density2_mfe.tsv"
+        "ctest --test-dir build --output-on-failure -R multi_secstruct"
       ],
       "passes": false,
-      "notes": "Single source of truth for initial alignment is current CLI output under -d2."
+      "notes": "User-required mandatory seed set."
     },
     {
       "id": "003",
-      "title": "Create initial fixture set and schema checks",
+      "title": "Implement CLI stdout parser for MFE structure and energy",
       "priority": 3,
       "depends_on": [
         "002"
       ],
       "done_when": [
-        "Fixture dataset exists with at least PK-free, H-type, K-type examples",
-        "Fixture schema validator test exists",
-        "Each fixture row has stable id and expected validity flag"
+        "Parser extracts sequence/restricted/result lines from CParty stdout",
+        "Parser captures density-2 MFE structure and energy deterministically",
+        "Parser exits non-zero on malformed stdout"
       ],
       "artifacts": [
-        "tests/cparty_fixed_structure_energy/test.multi.fa",
-        "tests/cparty_fixed_structure_energy/fixtures.tsv",
-        "tests/fixed_energy_fixtures.sh"
+        "test/tools/parse_cparty_stdout.sh",
+        "test/tools/parse_cparty_stdout_test.sh"
       ],
       "commands": [
-        "tests/fixed_energy_fixtures.sh tests/cparty_fixed_structure_energy/fixtures.tsv"
+        "test/tools/parse_cparty_stdout_test.sh"
       ],
       "passes": false,
-      "notes": "IDs must remain stable for diff-friendly updates."
+      "notes": "Parsing framework is separate from random generation."
     },
     {
       "id": "004",
-      "title": "Install anti-cheat alignment gate with explicit metrics",
+      "title": "Implement random S,G generator (PK-free grammar)",
       "priority": 4,
       "depends_on": [
         "003"
       ],
       "done_when": [
-        "api_cli_density2_energy_alignment test target exists in source CMake",
-        "Test prints compared/mismatched/skipped/finite_rate",
-        "Test fails when compared=0"
+        "Generator implements grammar S -> S '.' | '(' S ')' | epsilon",
+        "Generated G is pseudoknot-free and balanced",
+        "Generated base pairs in G satisfy AU/GC/GU constraints",
+        "Seed is controllable for reproducibility"
       ],
       "artifacts": [
-        "tests/api_cli_density2_energy_alignment_test.cc",
+        "test/tools/gen_random_seq_struct.py",
+        "test/tools/gen_random_seq_struct_test.sh"
+      ],
+      "commands": [
+        "test/tools/gen_random_seq_struct_test.sh"
+      ],
+      "passes": false,
+      "notes": "Random generation is standalone and reusable."
+    },
+    {
+      "id": "005",
+      "title": "Create baseline capture pipeline from mandatory + random cases",
+      "priority": 5,
+      "depends_on": [
+        "004"
+      ],
+      "done_when": [
+        "Pipeline runs CParty with fixed params (-d2 fixed) on all seed and random cases",
+        "Pipeline records {case_id, seq, G, cli_mfe_structure, cli_mfe_energy} as TSV",
+        "At least 100 valid compared-candidate rows are produced"
+      ],
+      "artifacts": [
+        "test/tools/build_density2_cli_baseline.sh",
+        "test/baselines/fixed_energy_cli/density2_mfe.tsv"
+      ],
+      "commands": [
+        "test/tools/build_density2_cli_baseline.sh build/CParty test/multi.secstruct test/baselines/fixed_energy_cli/density2_mfe.tsv"
+      ],
+      "passes": false,
+      "notes": "This is the core data expansion step."
+    },
+    {
+      "id": "006",
+      "title": "Install anti-cheat alignment gate with explicit strict metrics",
+      "priority": 6,
+      "depends_on": [
+        "005"
+      ],
+      "done_when": [
+        "api_cli_density2_energy_alignment test is source-registered",
+        "Test reports compared/mismatched/skipped/finite_rate",
+        "Test fails when compared=0",
+        "Strict threshold for this phase: mismatched must be reported exactly (no silent pass)"
+      ],
+      "artifacts": [
+        "test/api_cli_density2_energy_alignment_test.cc",
         "documents/fixed_energy_cli_alignment_report.md",
         "CMakeLists.txt"
       ],
@@ -129,181 +189,191 @@
         "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment"
       ],
       "passes": false,
-      "notes": "This story is about gate correctness, not API correctness yet."
-    },
-    {
-      "id": "005",
-      "title": "Add API declaration and explicit NotImplemented path",
-      "priority": 5,
-      "depends_on": [
-        "004"
-      ],
-      "done_when": [
-        "Public API declaration for get_structure_energy exists",
-        "Calling path compiles and returns explicit not-implemented error/status",
-        "No silent fallback to unrelated energy path"
-      ],
-      "artifacts": [
-        "src/fixed_energy_api.hh",
-        "src/fixed_energy_api.cc",
-        "tests/api_structure_energy_decl_test.cc"
-      ],
-      "commands": [
-        "ctest --test-dir build --output-on-failure -R api_structure_energy_decl"
-      ],
-      "passes": false,
-      "notes": "Intentional scaffold only."
-    },
-    {
-      "id": "006",
-      "title": "Implement strict input validation contract (AUGC only)",
-      "priority": 6,
-      "depends_on": [
-        "005"
-      ],
-      "done_when": [
-        "API rejects T and non-AUGC bases",
-        "Structure parser enforces allowed bracket sets and balanced pairs",
-        "Invalid inputs map to deterministic error contract (error code/exception/NaN)"
-      ],
-      "artifacts": [
-        "src/fixed_energy_validation.hh",
-        "src/fixed_energy_validation.cc",
-        "tests/api_structure_energy_validation_test.cc"
-      ],
-      "commands": [
-        "ctest --test-dir build --output-on-failure -R api_structure_energy_validation"
-      ],
-      "passes": false,
-      "notes": "Keep CLI legacy behavior unchanged; enforce strictness in API path first."
+      "notes": "Gate correctness first, then algorithm convergence."
     },
     {
       "id": "007",
-      "title": "Extract can-pair oracle module from core loops",
+      "title": "Introduce SCFG core interfaces and adapter layer",
       "priority": 7,
       "depends_on": [
         "006"
       ],
       "done_when": [
-        "Reusable oracle function/class exists for pair admissibility",
-        "At least one part_func path and one pseudo_loop path call shared oracle",
-        "Regression helper tests pass with no numeric drift beyond tolerance"
+        "SCFG core class/interfaces exist (rule eval + state access)",
+        "Legacy code path compiles through adapter without formula change",
+        "Regression output remains identical within tolerance"
       ],
       "artifacts": [
-        "src/can_pair_oracle.hh",
-        "src/can_pair_oracle.cc",
-        "tests/can_pair_policy_test.cc"
+        "src/scfg/core.hh",
+        "src/scfg/core.cc",
+        "src/scfg/legacy_adapter.hh",
+        "src/scfg/legacy_adapter.cc"
       ],
       "commands": [
-        "ctest --test-dir build --output-on-failure -R can_pair_policy"
+        "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "Behavior-preserving extraction only."
+      "notes": "SCFG集約の最初の実体。"
     },
     {
       "id": "008",
-      "title": "Refactor pseudo_loop into named rule helpers (phase-1)",
+      "title": "Extract shared constraint oracle (can-pair + validity)",
       "priority": 8,
       "depends_on": [
         "007"
       ],
       "done_when": [
-        "pseudo_loop helper functions are introduced with clear rule naming",
-        "No recurrence formula change in this step",
-        "Regression test matrix remains green"
+        "Constraint oracle is used by at least one part_func and one pseudo_loop path",
+        "Oracle includes bracket-family policy and pair admissibility policy",
+        "Refactor step passes full regression with strict drift checks"
       ],
       "artifacts": [
-        "src/pseudo_loop.cc",
-        "tests/pseudo_loop_refactor_phase2_test.cc"
+        "src/scfg/constraint_oracle.hh",
+        "src/scfg/constraint_oracle.cc",
+        "test/can_pair_policy_test.cc"
       ],
       "commands": [
-        "ctest --test-dir build --output-on-failure -R pseudo_loop"
+        "ctest --test-dir build --output-on-failure -R can_pair_policy",
+        "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "Pure readability/maintainability step."
+      "notes": "Every refactor step must run strict regression."
     },
     {
       "id": "009",
-      "title": "Refactor part_func into named rule helpers (phase-1)",
+      "title": "Refactor pseudo_loop recurrences into SCFG rule helpers",
       "priority": 9,
       "depends_on": [
         "008"
       ],
       "done_when": [
-        "part_func helper functions are introduced with clear rule naming",
-        "No recurrence formula change in this step",
-        "Regression test matrix remains green"
+        "pseudo_loop rules are factored into named SCFG helper units",
+        "No recurrence formula modification in this story",
+        "Full regression and alignment gate executed and reported"
       ],
       "artifacts": [
-        "src/part_func.cc",
-        "tests/part_func_refactor_phase2_test.cc"
+        "src/pseudo_loop.cc",
+        "src/scfg/rules_pseudo_loop.hh",
+        "src/scfg/rules_pseudo_loop.cc"
       ],
       "commands": [
-        "ctest --test-dir build --output-on-failure -R part_func"
+        "ctest --test-dir build --output-on-failure -R pseudo_loop",
+        "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
+        "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "Pure readability/maintainability step."
+      "notes": "Strictly behavior-preserving refactor."
     },
     {
       "id": "010",
-      "title": "Wire fixed-structure evaluator to extracted rule/oracle path",
+      "title": "Refactor part_func recurrences into SCFG rule helpers",
       "priority": 10,
       "depends_on": [
         "009"
       ],
       "done_when": [
-        "get_structure_energy executes non-placeholder path",
-        "EnergyBreakdown fields are populated consistently (no constant 0.0 placeholders unless explicitly N/A)",
-        "Internal unit tests cover PK-free/H-type/K-type smoke cases"
+        "part_func rules are factored into named SCFG helper units",
+        "No recurrence formula modification in this story",
+        "Full regression and alignment gate executed and reported"
       ],
       "artifacts": [
-        "src/fixed_energy_api.cc",
-        "src/fixed_energy_breakdown.hh",
-        "tests/fixed_energy_internal_test.cc",
-        "tests/fixed_energy_breakdown_test.cc"
+        "src/part_func.cc",
+        "src/scfg/rules_part_func.hh",
+        "src/scfg/rules_part_func.cc"
       ],
       "commands": [
-        "ctest --test-dir build --output-on-failure -R fixed_energy_internal",
-        "ctest --test-dir build --output-on-failure -R breakdown"
+        "ctest --test-dir build --output-on-failure -R part_func",
+        "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
+        "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "First functional evaluator milestone."
+      "notes": "Strictly behavior-preserving refactor."
     },
     {
       "id": "011",
-      "title": "Align API energy against CLI density-2 MFE baselines",
+      "title": "Add get_structure_energy API and strict input contract",
       "priority": 11,
       "depends_on": [
         "010"
       ],
       "done_when": [
-        "Alignment test runs on valid density-2 fixtures",
-        "compared >= 100",
-        "mismatched = 0",
-        "finite_rate = 100%"
+        "get_structure_energy(seq, db_full) is callable",
+        "AUGC-only contract enforced for API path (T rejected)",
+        "Invalid input behavior is deterministic and test-covered"
       ],
       "artifacts": [
-        "tests/api_cli_density2_energy_alignment_test.cc",
-        "tests/baselines/fixed_energy_cli/density2_mfe.tsv",
-        "documents/fixed_energy_cli_alignment_report.md"
+        "src/fixed_energy_api.hh",
+        "src/fixed_energy_api.cc",
+        "test/api_structure_energy_validation_test.cc"
       ],
       "commands": [
-        "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment"
+        "ctest --test-dir build --output-on-failure -R api_structure_energy",
+        "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "Strict gate (X=0)."
+      "notes": "API contract phase; may still mismatch CLI energies."
     },
     {
       "id": "012",
-      "title": "Final strict rollout gate and documentation sync",
+      "title": "Connect API evaluator to SCFG core rule path",
       "priority": 12,
       "depends_on": [
         "011"
       ],
       "done_when": [
-        "Full regression gate passes on fresh build",
-        "rd.md and progress log reflect actual implemented state (no future-tense claims)",
-        "Final report includes command transcript and four required metrics"
+        "API evaluation uses SCFG core/rule path (not duplicate ad-hoc path)",
+        "EnergyBreakdown fields are populated consistently",
+        "Internal tests cover pk_free/h_type/k_type smoke cases"
+      ],
+      "artifacts": [
+        "src/fixed_energy_breakdown.hh",
+        "test/fixed_energy_internal_test.cc",
+        "test/fixed_energy_breakdown_test.cc"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R fixed_energy_internal",
+        "ctest --test-dir build --output-on-failure -R breakdown",
+        "ctest --test-dir build --output-on-failure"
+      ],
+      "passes": false,
+      "notes": "This is the main functional convergence step."
+    },
+    {
+      "id": "013",
+      "title": "Reach strict CLI alignment target (X=0)",
+      "priority": 13,
+      "depends_on": [
+        "012"
+      ],
+      "done_when": [
+        "Alignment gate on valid density-2 dataset reports compared >= 100",
+        "mismatched = 0",
+        "finite_rate = 100%",
+        "Report includes absolute and relative diff summary"
+      ],
+      "artifacts": [
+        "test/api_cli_density2_energy_alignment_test.cc",
+        "test/baselines/fixed_energy_cli/density2_mfe.tsv",
+        "documents/fixed_energy_cli_alignment_report.md"
+      ],
+      "commands": [
+        "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
+        "ctest --test-dir build --output-on-failure"
+      ],
+      "passes": false,
+      "notes": "Strict completion gate for numerical agreement."
+    },
+    {
+      "id": "014",
+      "title": "Final rollout gate and document truth sync",
+      "priority": 14,
+      "depends_on": [
+        "013"
+      ],
+      "done_when": [
+        "All ctest passes on fresh build",
+        "documents/rd.md and documents/ralph-loop/progress.txt reflect actual current code state",
+        "Final report logs command transcript and compared/mismatched/skipped/finite_rate"
       ],
       "artifacts": [
         "documents/rd.md",
@@ -311,8 +381,8 @@
         "documents/can_pair_rollout_report.md"
       ],
       "commands": [
-        "ctest --test-dir build --output-on-failure",
-        "ctest --test-dir build --output-on-failure -R can_pair_rollout_e2e"
+        "rm -rf build && cmake -S . -B build && cmake --build build",
+        "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
       "notes": "Only this story can flip project to COMPLETE."
