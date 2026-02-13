@@ -189,7 +189,7 @@
       "commands": [
         "test/tools/gen_random_seq_struct_test.sh"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "Random generation is standalone and reusable."
     },
     {
