@@ -145,3 +145,10 @@ Started: 2026-02-13
   - Reusing the deterministic shared parser walk as the single source for both trace and scoring prevents drift between test-only traces and API energy totals.
   - A breakdown contract is most robust when rule-category counters (`empty/unpaired/pair/transition`) are incremented directly at rule-selection time instead of post-processing trace strings.
 ---
+## 2026-02-13 - 019
+- What was implemented: Completed strict alignment gate convergence evidence on fresh builds, added absolute/relative diff summary emission (`max_abs_diff`, `max_rel_diff`) to `api_cli_density2_energy_alignment`, and synchronized the alignment report with strict metrics.
+- Files changed: `test/api_cli_density2_energy_alignment_test.cc`, `documents/fixed_energy_cli_alignment_report.md`, `documents/ralph-loop/prd.json`, `documents/ralph-loop/audit/019.md`, `documents/ralph-loop/progress.txt`
+- **Learnings:**
+  - Story-level strict completion is safer when gate output includes both threshold metrics and explicit diff summaries, so report claims are directly command-backed.
+  - When destructive cleanup commands are sandbox-blocked, unique fresh build directories still provide anti-stale-build guarantees required by the gate policy.
+---

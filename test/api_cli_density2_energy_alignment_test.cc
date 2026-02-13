@@ -173,6 +173,8 @@ int main(int argc, char **argv) {
     int alignment_mismatched = 0;
     int skipped = 0;
     int finite_count = 0;
+    double max_abs_diff = 0.0;
+    double max_rel_diff = 0.0;
 
     for (size_t i = 0; i < baseline.size(); ++i) {
       const BaselineRow &row = baseline[i];
@@ -206,6 +208,11 @@ int main(int argc, char **argv) {
 
       const double cli_energy = row.cli_mfe_energy;
       const double api_energy = parsed.mfe_energy;
+      const double abs_diff = std::fabs(cli_energy - api_energy);
+      const double scale = std::max(std::fabs(cli_energy), std::fabs(api_energy));
+      const double rel_diff = (scale == 0.0) ? 0.0 : (abs_diff / scale);
+      max_abs_diff = std::max(max_abs_diff, abs_diff);
+      max_rel_diff = std::max(max_rel_diff, rel_diff);
 
       if (std::isfinite(cli_energy) && std::isfinite(api_energy)) {
         ++finite_count;
@@ -232,6 +239,8 @@ int main(int argc, char **argv) {
     std::cout << "alignment_mismatched=" << alignment_mismatched << "\n";
     std::cout << "skipped=" << skipped << "\n";
     std::cout << "finite_rate=" << finite_rate << "%\n";
+    std::cout << "max_abs_diff=" << max_abs_diff << "\n";
+    std::cout << "max_rel_diff=" << max_rel_diff << "\n";
 
     if (alignment_compared == 0) {
       std::cerr << "alignment gate failed: alignment_compared=0\n";
