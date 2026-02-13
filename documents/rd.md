@@ -16,12 +16,17 @@ CParty の非曖昧な密度2分解ロジックを、次の3用途で共通利�
 
 ### 2.2 機械的DoD (厳格)
 以下を `ctest` で自動判定する。
-- `compared >= 100`
-- early phase: `mismatched` を必ず報告し、比較が機械的に実行されること
-- final strict gate: `mismatched = 0` (X=0)
+- `alignment_compared >= 100`
+- early phase: `alignment_mismatched` を必ず報告し、比較が機械的に実行されること
+- final strict gate: `alignment_mismatched = 0` (X=0)
 - `finite_rate == 100%` (valid density-2 ケースのみ)
 - invalidケース契約: 不正入力は単一の失敗契約（固定エラーコード or 例外型）で決定論的に失敗する
 - 数値比較は `abs_tol` と `rel_tol` を明記する
+
+### 2.2.1 指標の意味（誤解防止）
+- `refactor_strict_mismatched`: リファクタ前後で既存CLI挙動がずれた件数（挙動不変チェック用）。
+- `alignment_mismatched`: fixed-structure API と CLI density-2 baseline の不一致件数（機能整合チェック用）。
+- `refactor_strict_mismatched` と `alignment_mismatched` は別物として常に分離して記録する。
 
 ### 2.3 生成データの数学的前提
 - ランダム生成は「解析用文法」ではなく「テストデータ生成器」として扱う。
@@ -65,8 +70,8 @@ Rule Object + Constraint Oracle を使って単一パス評価を実装する。
 
 ## 7. 完了条件 (Final DoD)
 - `ctest -R api_cli_density2_energy_alignment` が実データで実行される
-- 比較件数が 100 以上で、`mismatched=0`
+- `alignment_compared` が 100 以上で、`alignment_mismatched=0`
 - valid density-2 ケースで `finite_rate=100%`
 - invalidケース契約テストが全件 pass
 - 既存回帰テストを全通過
-- 実行ログに `compared`, `mismatched`, `skipped`, `finite_rate` の4指標を必ず出力し、レビューで再計算可能であること
+- 実行ログに `alignment_compared`, `alignment_mismatched`, `skipped`, `finite_rate`, `refactor_strict_mismatched` を出力し、レビューで再計算可能であること

@@ -22,10 +22,11 @@ Loop memory is in `documents/ralph-loop/progress.txt`.
 ## Hard Guards (No Loopholes)
 
 - Do not claim pass using stale `build/` artifacts; regenerate build files before running `ctest`.
-- Do not treat `compared=0` as success for alignment tests.
+- Do not treat `alignment_compared=0` as success for alignment tests.
 - Do not modify tests/baselines only to force green unless explicitly required by the story.
 - Do not set any story to `passes: true` without command evidence in the same run.
-- For refactor-only stories, do not mark pass unless `api_cli_density2_energy_alignment` metrics are reported and non-regressing.
+- For refactor-only stories, do not mark pass unless `refactor_compared` and `refactor_strict_mismatched` are reported and non-regressing.
+- For alignment stories, do not mark pass unless `alignment_compared` and `alignment_mismatched` are reported.
 - Do not mark pass unless `documents/ralph-loop/audit/{story_id}.md` is updated in the same run.
 - If required files/directories are missing (e.g., `documents/ralph-loop/prd.json`, `test/`), stop and report the blocker.
 

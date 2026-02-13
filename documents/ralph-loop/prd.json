@@ -53,10 +53,14 @@
       "009",
       "010"
     ],
-    "refactor_nonregression_rule": "For refactor_only_story_ids: compared_current == compared_previous AND mismatched_current <= mismatched_previous.",
-    "required_metrics": [
-      "compared",
-      "mismatched",
+    "refactor_nonregression_rule": "For refactor_only_story_ids: refactor_compared_current == refactor_compared_previous AND refactor_strict_mismatched_current <= refactor_strict_mismatched_previous.",
+    "required_metrics_refactor": [
+      "refactor_compared",
+      "refactor_strict_mismatched"
+    ],
+    "required_metrics_alignment": [
+      "alignment_compared",
+      "alignment_mismatched",
       "skipped",
       "finite_rate"
     ],
@@ -65,7 +69,8 @@
       "Do not treat compared=0 as success.",
       "Do not rely on stale build artifacts.",
       "Do not modify baselines only to force green unless the story explicitly says baseline refresh.",
-      "Do not claim refactor-only completion if compared/mismatched metrics are missing."
+      "Do not claim refactor-only completion if refactor_compared/refactor_strict_mismatched are missing.",
+      "Do not claim alignment completion if alignment_compared/alignment_mismatched are missing."
     ]
   },
   "global_stop_condition": {
@@ -206,9 +211,9 @@
       ],
       "done_when": [
         "api_cli_density2_energy_alignment test is source-registered",
-        "Test reports compared/mismatched/skipped/finite_rate",
-        "Test fails when compared=0",
-        "Strict threshold for this phase: mismatched must be reported exactly (no silent pass)"
+        "Test reports alignment_compared/alignment_mismatched/skipped/finite_rate",
+        "Test fails when alignment_compared=0",
+        "Strict threshold for this phase: alignment_mismatched must be reported exactly (no silent pass)"
       ],
       "artifacts": [
         "test/api_cli_density2_energy_alignment_test.cc",
@@ -233,7 +238,7 @@
         "SCFG core class/interfaces exist (rule eval + state access)",
         "Legacy code path compiles through adapter without formula change",
         "Regression output remains identical within tolerance",
-        "api_cli_density2_energy_alignment metrics are reported and satisfy refactor_nonregression_rule"
+        "refactor_compared/refactor_strict_mismatched are reported and satisfy refactor_nonregression_rule"
       ],
       "artifacts": [
         "src/scfg/core.hh",
@@ -260,7 +265,7 @@
         "Constraint oracle is used by at least one part_func and one pseudo_loop path",
         "Oracle includes bracket-family policy and pair admissibility policy",
         "Refactor step passes full regression with strict drift checks",
-        "api_cli_density2_energy_alignment metrics satisfy refactor_nonregression_rule"
+        "refactor_compared/refactor_strict_mismatched satisfy refactor_nonregression_rule"
       ],
       "artifacts": [
         "src/scfg/constraint_oracle.hh",
@@ -286,7 +291,7 @@
         "pseudo_loop rules are factored into named SCFG helper units",
         "No recurrence formula modification in this story",
         "Full regression and alignment gate executed and reported",
-        "api_cli_density2_energy_alignment metrics satisfy refactor_nonregression_rule"
+        "refactor_compared/refactor_strict_mismatched satisfy refactor_nonregression_rule"
       ],
       "artifacts": [
         "src/pseudo_loop.cc",
@@ -313,7 +318,7 @@
         "part_func rules are factored into named SCFG helper units",
         "No recurrence formula modification in this story",
         "Full regression and alignment gate executed and reported",
-        "api_cli_density2_energy_alignment metrics satisfy refactor_nonregression_rule"
+        "refactor_compared/refactor_strict_mismatched satisfy refactor_nonregression_rule"
       ],
       "artifacts": [
         "src/part_func.cc",
@@ -388,8 +393,8 @@
         "012"
       ],
       "done_when": [
-        "Alignment gate on valid density-2 dataset reports compared >= 100",
-        "mismatched = 0",
+        "Alignment gate on valid density-2 dataset reports alignment_compared >= 100",
+        "alignment_mismatched = 0",
         "finite_rate = 100%",
         "Report includes absolute and relative diff summary"
       ],
@@ -416,7 +421,7 @@
       "done_when": [
         "All ctest passes on fresh build",
         "documents/rd.md and documents/ralph-loop/progress.txt reflect actual current code state",
-        "Final report logs command transcript and compared/mismatched/skipped/finite_rate"
+        "Final report logs command transcript and alignment_compared/alignment_mismatched/skipped/finite_rate plus refactor_strict_mismatched"
       ],
       "artifacts": [
         "documents/rd.md",
