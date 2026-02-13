@@ -1,5 +1,7 @@
 #include "scfg/rules_part_func.hh"
 
+#include "scfg/legacy_adapter.hh"
+
 #include <cmath>
 
 namespace scfg {
@@ -129,6 +131,42 @@ pf_t compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, s
     contributions *= ctx.scale2();
     ctx.set_VM(ij, contributions);
     return contributions;
+}
+
+void compute_WMv_WMp_restricted(PartFuncWMvWMpContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<Node> &tree) {
+    if (j - i - 1 < 3) return;
+    const cand_pos_t ij = ctx.index_of(i, j);
+
+    pf_t WMv_contributions = 0;
+    pf_t WMp_contributions = 0;
+
+    WMv_contributions += (ctx.get_energy(i, j) * ctx.exp_MLstem(i, j));
+    WMp_contributions += (ctx.get_energy_WMB(i, j) * ctx.expPSM_penalty() * ctx.expb_penalty());
+    if (tree[j].pair < 0) {
+        WMv_contributions += (ctx.get_energy_WMv(i, j - 1) * ctx.expMLbase1());
+        WMp_contributions += (ctx.get_energy_WMp(i, j - 1) * ctx.expMLbase1());
+    }
+
+    ctx.set_WMv_WMp(ij, WMv_contributions, WMp_contributions);
+}
+
+void compute_WM_restricted(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    if (j - i + 1 < 4) return;
+    pf_t contributions = 0;
+    const cand_pos_t ij = ctx.index_of(i, j);
+    const cand_pos_t turn = ctx.turn();
+
+    for (cand_pos_t k = i; k < j - turn; ++k) {
+        const pf_t qbt1 = ctx.get_energy(k, j) * ctx.exp_MLstem(k, j);
+        const pf_t qbt2 = ctx.get_energy_WMB(k, j) * ctx.expPSM_penalty() * ctx.expb_penalty();
+        const bool can_pair = scfg::can_pair_left_span(tree, i, k);
+        if (can_pair) contributions += (ctx.expMLbase(k - i) * qbt1);
+        if (can_pair) contributions += (ctx.expMLbase(k - i) * qbt2);
+        contributions += (ctx.get_energy_WM(i, k - 1) * qbt1);
+        contributions += (ctx.get_energy_WM(i, k - 1) * qbt2);
+    }
+    if (tree.tree[j].pair < 0) contributions += ctx.get_energy_WM(i, j - 1) * ctx.expMLbase(1);
+    ctx.set_WM(ij, contributions);
 }
 
 } // namespace scfg

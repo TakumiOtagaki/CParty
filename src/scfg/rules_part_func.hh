@@ -107,6 +107,46 @@ class PartFuncVMContext {
 
 pf_t compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<int> &up);
 
+class PartFuncWMvWMpContext {
+  public:
+    virtual ~PartFuncWMvWMpContext() = default;
+
+    virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
+    virtual pf_t get_energy(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WMv(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WMp(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t exp_MLstem(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t expPSM_penalty() const = 0;
+    virtual pf_t expb_penalty() const = 0;
+    virtual pf_t expMLbase1() const = 0;
+    virtual void set_WMv_WMp(cand_pos_t ij, pf_t wmv, pf_t wmp) = 0;
+};
+
+void compute_WMv_WMp_restricted(PartFuncWMvWMpContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<Node> &tree);
+
+class PartFuncWMContext {
+  public:
+    virtual ~PartFuncWMContext() = default;
+
+    virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
+    virtual pf_t get_energy_WM(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WMv(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WMp(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t exp_MLstem(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t expPSM_penalty() const = 0;
+    virtual pf_t expb_penalty() const = 0;
+    virtual pf_t exp_Mbloop(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t expMLclosing() const = 0;
+    virtual pf_t expMLbase(cand_pos_t length) const = 0;
+    virtual cand_pos_t turn() const = 0;
+    virtual void set_WM(cand_pos_t ij, pf_t value) = 0;
+};
+
+void compute_WM_restricted(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+
 } // namespace scfg
 
 #endif

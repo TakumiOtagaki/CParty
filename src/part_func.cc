@@ -286,39 +286,11 @@ pf_t W_final_pf::compute_internal_restricted(cand_pos_t i, cand_pos_t j, std::ve
 }
 
 void W_final_pf::compute_WMv_WMp(cand_pos_t i, cand_pos_t j, std::vector<Node> &tree) {
-    if (j - i - 1 < TURN) return;
-    cand_pos_t ij = index[(i)] + (j) - (i);
-
-    pf_t WMv_contributions = 0;
-    pf_t WMp_contributions = 0;
-
-    WMv_contributions += (get_energy(i, j) * exp_MLstem(i, j));
-    WMp_contributions += (get_energy_WMB(i, j) * expPSM_penalty * expb_penalty);
-    if (tree[j].pair < 0) {
-        WMv_contributions += (get_energy_WMv(i, j - 1) * expMLbase[1]);
-        WMp_contributions += (get_energy_WMp(i, j - 1) * expMLbase[1]);
-    }
-    WMv[ij] = WMv_contributions;
-    WMp[ij] = WMp_contributions;
+    scfg::compute_WMv_WMp_restricted(*this, i, j, tree);
 }
 
 void W_final_pf::compute_energy_WM_restricted(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
-    if (j - i + 1 < 4) return;
-    pf_t contributions = 0;
-    cand_pos_t ij = index[(i)] + (j) - (i);
-    cand_pos_t ijminus1 = index[(i)] + (j)-1 - (i);
-
-    for (cand_pos_t k = i; k < j - TURN; ++k) {
-        pf_t qbt1 = get_energy(k, j) * exp_MLstem(k, j);
-        pf_t qbt2 = get_energy_WMB(k, j) * expPSM_penalty * expb_penalty;
-        bool can_pair = scfg::can_pair_left_span(tree, i, k);
-        if (can_pair) contributions += (static_cast<pf_t>(expMLbase[k - i]) * qbt1);
-        if (can_pair) contributions += (static_cast<pf_t>(expMLbase[k - i]) * qbt2);
-        contributions += (get_energy_WM(i, k - 1) * qbt1);
-        contributions += (get_energy_WM(i, k - 1) * qbt2);
-    }
-    if (tree.tree[j].pair < 0) contributions += WM[ijminus1] * expMLbase[1];
-    WM[ij] = contributions;
+    scfg::compute_WM_restricted(*this, i, j, tree);
 }
 
 pf_t W_final_pf::compute_energy_VM_restricted(cand_pos_t i, cand_pos_t j, std::vector<int> &up) {
