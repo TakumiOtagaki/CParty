@@ -23,6 +23,10 @@ enum class SharedStateKind {
   kWM,
   kWMv,
   kWMp,
+  kWIP,
+  kVP,
+  kVPL,
+  kVPR,
 };
 
 enum class SharedRuleKind {
@@ -34,7 +38,11 @@ enum class SharedRuleKind {
   kVMToWM,
   kWMToWMv,
   kWMvToWMp,
-  kWMpToV,
+  kWMpToWIP,
+  kWIPToVP,
+  kVPToVPL,
+  kVPLToVPR,
+  kVPRToV,
 };
 
 struct SharedState {
@@ -148,7 +156,25 @@ std::vector<SharedRuleKind> rules_for(const SharedStateKind state_kind, const bo
   if (state_kind == SharedStateKind::kWMv) {
     return {SharedRuleKind::kWMvToWMp};
   }
-  return {SharedRuleKind::kWMpToV};
+  if (state_kind == SharedStateKind::kWMp) {
+    if (include_slice_b_states) {
+      return {SharedRuleKind::kWMpToWIP};
+    }
+    return {};
+  }
+  if (state_kind == SharedStateKind::kWIP) {
+    return {SharedRuleKind::kWIPToVP};
+  }
+  if (state_kind == SharedStateKind::kVP) {
+    return {SharedRuleKind::kVPToVPL};
+  }
+  if (state_kind == SharedStateKind::kVPL) {
+    return {SharedRuleKind::kVPLToVPR};
+  }
+  if (state_kind == SharedStateKind::kVPR) {
+    return {SharedRuleKind::kVPRToV};
+  }
+  return {};
 }
 
 bool rule_is_applicable(const SharedRuleKind rule,
@@ -160,7 +186,9 @@ bool rule_is_applicable(const SharedRuleKind rule,
   }
 
   if (rule == SharedRuleKind::kVMToWM || rule == SharedRuleKind::kWMToWMv ||
-      rule == SharedRuleKind::kWMvToWMp || rule == SharedRuleKind::kWMpToV) {
+      rule == SharedRuleKind::kWMvToWMp || rule == SharedRuleKind::kWMpToWIP ||
+      rule == SharedRuleKind::kWIPToVP || rule == SharedRuleKind::kVPToVPL ||
+      rule == SharedRuleKind::kVPLToVPR || rule == SharedRuleKind::kVPRToV) {
     return include_slice_b_states;
   }
 
@@ -208,7 +236,7 @@ double rule_score(const SharedRuleKind rule) {
 
 std::vector<SharedState> expand(const SharedRuleKind rule,
                                 const SharedState state,
-                                const bool include_slice_b_states) {
+                                const bool include_slice_c_states) {
   if (rule == SharedRuleKind::kWToWI) {
     return {SharedState{SharedStateKind::kWI, state.i, state.j}};
   }
@@ -219,7 +247,7 @@ std::vector<SharedState> expand(const SharedRuleKind rule,
     return {SharedState{SharedStateKind::kV, state.i + 1, state.j}};
   }
   if (rule == SharedRuleKind::kPairWrapped) {
-    if (include_slice_b_states) {
+    if (include_slice_c_states) {
       return {SharedState{SharedStateKind::kVM, state.i + 1, state.j - 1}};
     }
     return {SharedState{SharedStateKind::kV, state.i + 1, state.j - 1}};
@@ -233,7 +261,19 @@ std::vector<SharedState> expand(const SharedRuleKind rule,
   if (rule == SharedRuleKind::kWMvToWMp) {
     return {SharedState{SharedStateKind::kWMp, state.i, state.j}};
   }
-  if (rule == SharedRuleKind::kWMpToV) {
+  if (rule == SharedRuleKind::kWMpToWIP) {
+    return {SharedState{SharedStateKind::kWIP, state.i, state.j}};
+  }
+  if (rule == SharedRuleKind::kWIPToVP) {
+    return {SharedState{SharedStateKind::kVP, state.i, state.j}};
+  }
+  if (rule == SharedRuleKind::kVPToVPL) {
+    return {SharedState{SharedStateKind::kVPL, state.i, state.j}};
+  }
+  if (rule == SharedRuleKind::kVPLToVPR) {
+    return {SharedState{SharedStateKind::kVPR, state.i, state.j}};
+  }
+  if (rule == SharedRuleKind::kVPRToV) {
     return {SharedState{SharedStateKind::kV, state.i, state.j}};
   }
   return {};
@@ -258,7 +298,19 @@ std::string state_name(const SharedStateKind state_kind) {
   if (state_kind == SharedStateKind::kWMv) {
     return "WMv";
   }
-  return "WMp";
+  if (state_kind == SharedStateKind::kWMp) {
+    return "WMp";
+  }
+  if (state_kind == SharedStateKind::kWIP) {
+    return "WIP";
+  }
+  if (state_kind == SharedStateKind::kVP) {
+    return "VP";
+  }
+  if (state_kind == SharedStateKind::kVPL) {
+    return "VPL";
+  }
+  return "VPR";
 }
 
 std::string rule_name(const SharedRuleKind rule) {
@@ -286,7 +338,19 @@ std::string rule_name(const SharedRuleKind rule) {
   if (rule == SharedRuleKind::kWMvToWMp) {
     return "WMv_TO_WMp";
   }
-  return "WMp_TO_V";
+  if (rule == SharedRuleKind::kWMpToWIP) {
+    return "WMp_TO_WIP";
+  }
+  if (rule == SharedRuleKind::kWIPToVP) {
+    return "WIP_TO_VP";
+  }
+  if (rule == SharedRuleKind::kVPToVPL) {
+    return "VP_TO_VPL";
+  }
+  if (rule == SharedRuleKind::kVPLToVPR) {
+    return "VPL_TO_VPR";
+  }
+  return "VPR_TO_V";
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_shared_from_normalized(
@@ -327,6 +391,10 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_b_from_normalized(co
   return trace_rule_chain_shared_from_normalized(ctx, true);
 }
 
+std::vector<internal::RuleTraceStep> trace_rule_chain_slice_c_from_normalized(const NormalizedInput &ctx) {
+  return trace_rule_chain_shared_from_normalized(ctx, true);
+}
+
 std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(const NormalizedInput &ctx) {
   std::vector<internal::RuleTraceStep> out;
   const auto slice_a_trace = trace_rule_chain_slice_a_from_normalized(ctx);
@@ -354,7 +422,7 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(co
 
 double get_structure_energy(const std::string &seq, const std::string &db_full) {
   const NormalizedInput normalized = normalize_input(seq, db_full);
-  const auto trace = trace_rule_chain_slice_b_from_normalized(normalized);
+  const auto trace = trace_rule_chain_slice_c_from_normalized(normalized);
 
   double total = 0.0;
   for (const auto &step : trace) {
@@ -382,6 +450,11 @@ std::vector<RuleTraceStep> trace_rule_chain_slice_a(const std::string &seq,
 std::vector<RuleTraceStep> trace_rule_chain_slice_b(const std::string &seq,
                                                     const std::string &db_full) {
   return trace_rule_chain_slice_b_from_normalized(normalize_input(seq, db_full));
+}
+
+std::vector<RuleTraceStep> trace_rule_chain_slice_c(const std::string &seq,
+                                                    const std::string &db_full) {
+  return trace_rule_chain_slice_c_from_normalized(normalize_input(seq, db_full));
 }
 
 const std::vector<std::string> &fixed_energy_target_states() {

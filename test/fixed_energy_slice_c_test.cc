@@ -38,7 +38,7 @@ void expect_contains_rule(const std::vector<cparty::internal::RuleTraceStep> &tr
 void expect_invalid(const std::string &seq, const std::string &db_full) {
   bool threw = false;
   try {
-    (void)cparty::internal::trace_rule_chain_slice_b(seq, db_full);
+    (void)cparty::internal::trace_rule_chain_slice_c(seq, db_full);
   } catch (const std::invalid_argument &) {
     threw = true;
   } catch (const std::exception &e) {
@@ -52,25 +52,26 @@ void expect_invalid(const std::string &seq, const std::string &db_full) {
 
 int main() {
   {
-    const auto trace = cparty::internal::trace_rule_chain_slice_b("AUGCUA", "((..))");
-    expect_contains_state(trace, "VM");
-    expect_contains_state(trace, "WM");
-    expect_contains_state(trace, "WMv");
-    expect_contains_state(trace, "WMp");
-    expect_contains_rule(trace, "VM_TO_WM");
-    expect_contains_rule(trace, "WM_TO_WMv");
-    expect_contains_rule(trace, "WMv_TO_WMp");
+    const auto trace = cparty::internal::trace_rule_chain_slice_c("AUGCUA", "((..))");
+    expect_contains_state(trace, "WIP");
+    expect_contains_state(trace, "VP");
+    expect_contains_state(trace, "VPL");
+    expect_contains_state(trace, "VPR");
     expect_contains_rule(trace, "WMp_TO_WIP");
+    expect_contains_rule(trace, "WIP_TO_VP");
+    expect_contains_rule(trace, "VP_TO_VPL");
+    expect_contains_rule(trace, "VPL_TO_VPR");
+    expect_contains_rule(trace, "VPR_TO_V");
   }
 
   expect(cparty::get_structure_energy("AUGCUA", "((..))") == -2.0,
-         "slice-b shared path energy must preserve pair-wrapped contribution");
+         "slice-c shared path energy must preserve pair-wrapped contribution");
   expect(cparty::get_structure_energy("AUGCUA", "......") == 0.0,
-         "slice-b shared path energy must stay zero for fully-unpaired");
+         "slice-c shared path energy must stay zero for fully-unpaired");
 
   // Balanced but not representable by wrapped/unpaired recursion.
   expect_invalid("AUGC", "()()");
 
-  std::cout << "fixed_energy_slice_b=ok\n";
+  std::cout << "fixed_energy_slice_c=ok\n";
   return EXIT_SUCCESS;
 }

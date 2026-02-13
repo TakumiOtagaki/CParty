@@ -143,6 +143,11 @@ if(BUILD_TESTING)
     src/fixed_energy_api.cc
   )
   add_executable(
+    fixed_energy_slice_c_test
+    test/fixed_energy_slice_c_test.cc
+    src/fixed_energy_api.cc
+  )
+  add_executable(
     can_pair_policy_test
     test/can_pair_policy_test.cc
     src/sparse_tree.cc
@@ -199,7 +204,7 @@ if(BUILD_TESTING)
 
   add_test(
     NAME fixed_energy_slice_c
-    COMMAND fixed_energy_rollout_plan_test c
+    COMMAND fixed_energy_slice_c_test
   )
 
   add_test(

@@ -528,7 +528,7 @@
         "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
         "ctest --test-dir build --output-on-failure"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "No broad jump: only slice-C states in this story."
     },
     {
