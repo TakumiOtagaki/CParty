@@ -341,135 +341,19 @@ void W_final_pf::compute_WI(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 }
 
 void W_final_pf::compute_WIP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
-
-    cand_pos_t ij = index[i] + j - i;
-    pf_t contributions = 0;
-    contributions += get_energy(i, j) * expbp_penalty;
-    contributions += get_energy_WMB(i, j) * expbp_penalty * expPSM_penalty;
-    for (cand_pos_t k = i + 1; k < j - TURN - 1; ++k) {
-        bool can_pair = scfg::can_pair_left_span(tree, i, k);
-
-        contributions += (get_energy_WIP(i, k - 1) * get_energy(k, j) * expbp_penalty);
-        contributions += (get_energy_WIP(i, k - 1) * get_energy_WMB(k, j) * expbp_penalty * expPSM_penalty);
-        if (can_pair) contributions += (expcp_pen[k - i] * get_energy(k, j) * expbp_penalty);
-        if (can_pair) contributions += (expcp_pen[k - i] * get_energy_WMB(k, j) * expbp_penalty * expPSM_penalty);
-    }
-    if (tree.tree[j].pair < 0) contributions += (get_energy_WIP(i, j - 1) * expcp_pen[1]);
-    WIP[ij] = contributions;
+    scfg::compute_WIP_restricted(*this, i, j, tree);
 }
 
 void W_final_pf::compute_VPL(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
-
-    cand_pos_t ij = index[i] + j - i;
-    pf_t contributions = 0;
-
-    cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
-    for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
-        bool can_pair = scfg::can_pair_left_span(tree, i, k);
-        if (can_pair) contributions += (expcp_pen[k - i] * get_energy_VP(k, j));
-    }
-    VPL[ij] = contributions;
+    scfg::compute_VPL_restricted(*this, i, j, tree);
 }
 
 void W_final_pf::compute_VPR(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
-
-    cand_pos_t ij = index[i] + j - i;
-    pf_t contributions = 0;
-    cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
-    for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
-        bool can_pair = scfg::can_pair_right_span(tree, k, j);
-        contributions += (get_energy_VP(i, k) * get_energy_WIP(k + 1, j));
-        if (can_pair) contributions += (get_energy_VP(i, k) * expcp_pen[k - i]);
-    }
-    VPR[ij] = contributions;
+    scfg::compute_VPR_restricted(*this, i, j, tree);
 }
 
 void W_final_pf::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
-    cand_pos_t ij = index[i] + j - i;
-
-    pf_t contributions = 0;
-
-    // Borders -- added one to i and j to make it fit current bounds but also subtracted 1 from answer as the tree bounds are shifted as well
-    cand_pos_t Bp_ij = tree.Bp(i, j);
-    cand_pos_t B_ij = tree.B(i, j);
-    cand_pos_t b_ij = tree.b(i, j);
-    cand_pos_t bp_ij = tree.bp(i, j);
-
-    if ((tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) < (tree.tree[i].parent->index) && Bp_ij >= 0 && B_ij >= 0 && bp_ij < 0) {
-        pf_t m1 = (get_energy_WI(i + 1, Bp_ij - 1) * get_energy_WI(B_ij + 1, j - 1));
-        m1 *= scale[2];
-        contributions += m1;
-    }
-
-    if ((tree.tree[i].parent->index) < (tree.tree[j].parent->index) && (tree.tree[j].parent->index) > 0 && b_ij >= 0 && bp_ij >= 0 && Bp_ij < 0) {
-        pf_t m2 = (get_energy_WI(i + 1, b_ij - 1) * get_energy_WI(bp_ij + 1, j - 1));
-        m2 *= scale[2];
-        contributions += m2;
-    }
-
-    if ((tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) > 0 && Bp_ij >= 0 && B_ij >= 0 && b_ij >= 0 && bp_ij >= 0) {
-        pf_t m3 = (get_energy_WI(i + 1, Bp_ij - 1) * get_energy_WI(B_ij + 1, b_ij - 1) * get_energy_WI(bp_ij + 1, j - 1));
-        m3 *= scale[2];
-        contributions += m3;
-    }
-
-    pair_type ptype_closingip1jm1 = pair[S_[i + 1]][S_[j - 1]];
-    if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 && ptype_closingip1jm1 > 0) {
-        pf_t vp_stp = (get_e_stP(i, j) * get_energy_VP(i + 1, j - 1));
-        vp_stp *= scale[2];
-        contributions += vp_stp;
-    }
-
-    cand_pos_t min_borders = std::min((cand_pos_tu)Bp_ij, (cand_pos_tu)b_ij);
-    cand_pos_t edge_i = std::min(i + MAXLOOP + 1, j - TURN - 1);
-    min_borders = std::min(min_borders, edge_i);
-    for (cand_pos_t k = i + 1; k < min_borders; ++k) {
-        if (scfg::is_unpaired_position(tree, k) && scfg::is_empty_region(tree, i, k)) {
-            cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
-            cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
-            max_borders = std::max(max_borders, edge_j);
-            for (cand_pos_t l = j - 1; l > max_borders; --l) {
-                pair_type ptype_closingkj = pair[S_[k]][S_[l]];
-                if (k == i + 1 && l == j - 1) continue; // I have to add or else it will add a stP version and an eintP version to the sum
-                if (scfg::is_unpaired_position(tree, l) && scfg::is_pair_type_allowed(ptype_closingkj) && scfg::is_empty_region(tree, l, j)) {
-                    pf_t vp_iloop_kl = (get_e_intP(i, k, l, j) * get_energy_VP(k, l));
-                    cand_pos_t u1 = k - i - 1;
-                    cand_pos_t u2 = j - l - 1;
-                    vp_iloop_kl *= scale[u1 + u2 + 2];
-                    contributions += vp_iloop_kl;
-                }
-            }
-        }
-    }
-
-    cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
-    cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
-
-    for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
-        pf_t m6 = (get_energy_WIP(i + 1, k - 1) * get_energy_VP(k, j - 1) * expap_penalty * pow(expbp_penalty, 2));
-        m6 *= scale[2];
-        contributions += m6;
-    }
-
-    for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
-        pf_t m7 = (get_energy_VP(i + 1, k) * get_energy_WIP(k + 1, j - 1) * expap_penalty * pow(expbp_penalty, 2));
-        m7 *= scale[2];
-        contributions += m7;
-    }
-
-    for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
-        pf_t m8 = (get_energy_WIP(i + 1, k - 1) * get_energy_VPR(k, j - 1) * expap_penalty * pow(expbp_penalty, 2));
-        m8 *= scale[2];
-        contributions += m8;
-    }
-
-    for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
-        pf_t m9 = (get_energy_VPL(i + 1, k) * get_energy_WIP(k + 1, j - 1) * expap_penalty * pow(expbp_penalty, 2));
-        m9 *= scale[2];
-        contributions += m9;
-    }
-
-    VP[ij] = contributions;
+    scfg::compute_VP_restricted(*this, i, j, tree);
 }
 
 pf_t W_final_pf::compute_int(cand_pos_t i, cand_pos_t j, cand_pos_t k, cand_pos_t l) {

@@ -17,6 +17,10 @@ void compute_V_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_
 void compute_WI_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 void compute_WMv_WMp_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, std::vector<Node> &tree);
 void compute_WM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void compute_WIP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void compute_VPL_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void compute_VPR_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
 } // namespace scfg
 

@@ -147,6 +147,71 @@ class PartFuncWMContext {
 
 void compute_WM_restricted(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
+class PartFuncWIPContext {
+  public:
+    virtual ~PartFuncWIPContext() = default;
+
+    virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
+    virtual pf_t get_energy(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t expbp_penalty() const = 0;
+    virtual pf_t expPSM_penalty() const = 0;
+    virtual pf_t expcp_pen(cand_pos_t length) const = 0;
+    virtual void set_WIP(cand_pos_t ij, pf_t value) = 0;
+    virtual cand_pos_t turn() const = 0;
+};
+
+void compute_WIP_restricted(PartFuncWIPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+
+class PartFuncVPLContext {
+  public:
+    virtual ~PartFuncVPLContext() = default;
+
+    virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
+    virtual pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t expcp_pen(cand_pos_t length) const = 0;
+    virtual void set_VPL(cand_pos_t ij, pf_t value) = 0;
+};
+
+void compute_VPL_restricted(PartFuncVPLContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+
+class PartFuncVPRContext {
+  public:
+    virtual ~PartFuncVPRContext() = default;
+
+    virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
+    virtual pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t expcp_pen(cand_pos_t length) const = 0;
+    virtual void set_VPR(cand_pos_t ij, pf_t value) = 0;
+};
+
+void compute_VPR_restricted(PartFuncVPRContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+
+class PartFuncVPContext {
+  public:
+    virtual ~PartFuncVPContext() = default;
+
+    virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
+    virtual pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_VPL(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_VPR(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pair_type pair_type_of(cand_pos_t i, cand_pos_t j) const = 0;
+    virtual pf_t get_e_stP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_e_intP(cand_pos_t i, cand_pos_t k, cand_pos_t l, cand_pos_t j) = 0;
+    virtual pf_t expap_penalty() const = 0;
+    virtual pf_t expbp_penalty() const = 0;
+    virtual pf_t expcp_pen(cand_pos_t length) const = 0;
+    virtual pf_t scale(cand_pos_t length) const = 0;
+    virtual pf_t expbp_penalty_sq() const = 0;
+    virtual void set_VP(cand_pos_t ij, pf_t value) = 0;
+};
+
+void compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+
 } // namespace scfg
 
 #endif

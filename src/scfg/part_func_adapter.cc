@@ -8,6 +8,8 @@ extern double expPSP_penalty;
 extern double expPS_penalty;
 extern double expPSM_penalty;
 extern double expb_penalty;
+extern double expap_penalty;
+extern double expbp_penalty;
 
 namespace scfg {
 
@@ -16,6 +18,7 @@ struct PartFuncAdapterAccess {
     static const std::vector<pf_t> &scale(const W_final_pf &owner) { return owner.scale; }
     static const std::vector<pf_t> &expMLbase(const W_final_pf &owner) { return owner.expMLbase; }
     static const std::vector<pf_t> &expPUP_pen(const W_final_pf &owner) { return owner.expPUP_pen; }
+    static const std::vector<pf_t> &expcp_pen(const W_final_pf &owner) { return owner.expcp_pen; }
     static const std::vector<cand_pos_t> &index(const W_final_pf &owner) { return owner.index; }
     static std::vector<pf_t> &V(W_final_pf &owner) { return owner.V; }
     static std::vector<pf_t> &VM(W_final_pf &owner) { return owner.VM; }
@@ -24,6 +27,11 @@ struct PartFuncAdapterAccess {
     static std::vector<pf_t> &WMv(W_final_pf &owner) { return owner.WMv; }
     static std::vector<pf_t> &WMp(W_final_pf &owner) { return owner.WMp; }
     static std::vector<pf_t> &WM(W_final_pf &owner) { return owner.WM; }
+    static std::vector<pf_t> &WIP(W_final_pf &owner) { return owner.WIP; }
+    static std::vector<pf_t> &VP(W_final_pf &owner) { return owner.VP; }
+    static std::vector<pf_t> &VPL(W_final_pf &owner) { return owner.VPL; }
+    static std::vector<pf_t> &VPR(W_final_pf &owner) { return owner.VPR; }
+    static short *S(W_final_pf &owner) { return owner.S_; }
     static pf_t exp_Extloop(W_final_pf &owner, cand_pos_t i, cand_pos_t j) { return owner.exp_Extloop(i, j); }
     static pf_t exp_MLstem(W_final_pf &owner, cand_pos_t i, cand_pos_t j) { return owner.exp_MLstem(i, j); }
     static pf_t exp_Mbloop(W_final_pf &owner, cand_pos_t i, cand_pos_t j) { return owner.exp_Mbloop(i, j); }
@@ -33,6 +41,12 @@ struct PartFuncAdapterAccess {
     }
     static pf_t compute_energy_VM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, std::vector<int> &up) {
         return owner.compute_energy_VM_restricted(i, j, up);
+    }
+    static pf_t get_e_stP(W_final_pf &owner, cand_pos_t i, cand_pos_t j) {
+        return owner.get_e_stP(i, j);
+    }
+    static pf_t get_e_intP(W_final_pf &owner, cand_pos_t i, cand_pos_t k, cand_pos_t l, cand_pos_t j) {
+        return owner.get_e_intP(i, k, l, j);
     }
 };
 
@@ -166,6 +180,87 @@ class LocalWMContext final : public PartFuncWMContext {
     W_final_pf &owner_;
 };
 
+class LocalWIPContext final : public PartFuncWIPContext {
+  public:
+    explicit LocalWIPContext(W_final_pf &owner) : owner_(owner) {}
+
+    cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
+        return PartFuncAdapterAccess::index(owner_)[i] + j - i;
+    }
+    pf_t get_energy(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
+    pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMB(i, j); }
+    pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WIP(i, j); }
+    pf_t expbp_penalty() const override { return ::expbp_penalty; }
+    pf_t expPSM_penalty() const override { return ::expPSM_penalty; }
+    pf_t expcp_pen(cand_pos_t length) const override { return PartFuncAdapterAccess::expcp_pen(owner_)[length]; }
+    void set_WIP(cand_pos_t ij, pf_t value) override { PartFuncAdapterAccess::WIP(owner_)[ij] = value; }
+    cand_pos_t turn() const override { return TURN; }
+
+  private:
+    W_final_pf &owner_;
+};
+
+class LocalVPLContext final : public PartFuncVPLContext {
+  public:
+    explicit LocalVPLContext(W_final_pf &owner) : owner_(owner) {}
+
+    cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
+        return PartFuncAdapterAccess::index(owner_)[i] + j - i;
+    }
+    pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_VP(i, j); }
+    pf_t expcp_pen(cand_pos_t length) const override { return PartFuncAdapterAccess::expcp_pen(owner_)[length]; }
+    void set_VPL(cand_pos_t ij, pf_t value) override { PartFuncAdapterAccess::VPL(owner_)[ij] = value; }
+
+  private:
+    W_final_pf &owner_;
+};
+
+class LocalVPRContext final : public PartFuncVPRContext {
+  public:
+    explicit LocalVPRContext(W_final_pf &owner) : owner_(owner) {}
+
+    cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
+        return PartFuncAdapterAccess::index(owner_)[i] + j - i;
+    }
+    pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_VP(i, j); }
+    pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WIP(i, j); }
+    pf_t expcp_pen(cand_pos_t length) const override { return PartFuncAdapterAccess::expcp_pen(owner_)[length]; }
+    void set_VPR(cand_pos_t ij, pf_t value) override { PartFuncAdapterAccess::VPR(owner_)[ij] = value; }
+
+  private:
+    W_final_pf &owner_;
+};
+
+class LocalVPContext final : public PartFuncVPContext {
+  public:
+    explicit LocalVPContext(W_final_pf &owner) : owner_(owner) {}
+
+    cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
+        return PartFuncAdapterAccess::index(owner_)[i] + j - i;
+    }
+    pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WI(i, j); }
+    pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_VP(i, j); }
+    pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WIP(i, j); }
+    pf_t get_energy_VPL(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_VPL(i, j); }
+    pf_t get_energy_VPR(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_VPR(i, j); }
+    pair_type pair_type_of(cand_pos_t i, cand_pos_t j) const override {
+        return pair[PartFuncAdapterAccess::S(owner_)[i]][PartFuncAdapterAccess::S(owner_)[j]];
+    }
+    pf_t get_e_stP(cand_pos_t i, cand_pos_t j) override { return PartFuncAdapterAccess::get_e_stP(owner_, i, j); }
+    pf_t get_e_intP(cand_pos_t i, cand_pos_t k, cand_pos_t l, cand_pos_t j) override {
+        return PartFuncAdapterAccess::get_e_intP(owner_, i, k, l, j);
+    }
+    pf_t expap_penalty() const override { return ::expap_penalty; }
+    pf_t expbp_penalty() const override { return ::expbp_penalty; }
+    pf_t expcp_pen(cand_pos_t length) const override { return PartFuncAdapterAccess::expcp_pen(owner_)[length]; }
+    pf_t scale(cand_pos_t length) const override { return PartFuncAdapterAccess::scale(owner_)[length]; }
+    pf_t expbp_penalty_sq() const override { return ::expbp_penalty * ::expbp_penalty; }
+    void set_VP(cand_pos_t ij, pf_t value) override { PartFuncAdapterAccess::VP(owner_)[ij] = value; }
+
+  private:
+    W_final_pf &owner_;
+};
+
 } // namespace
 
 void compute_W_restricted(W_final_pf &owner, sparse_tree &tree) {
@@ -196,6 +291,26 @@ void compute_WMv_WMp_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, s
 void compute_WM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWMContext ctx(owner);
     compute_WM_restricted(ctx, i, j, tree);
+}
+
+void compute_WIP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    LocalWIPContext ctx(owner);
+    compute_WIP_restricted(ctx, i, j, tree);
+}
+
+void compute_VPL_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    LocalVPLContext ctx(owner);
+    compute_VPL_restricted(ctx, i, j, tree);
+}
+
+void compute_VPR_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    LocalVPRContext ctx(owner);
+    compute_VPR_restricted(ctx, i, j, tree);
+}
+
+void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    LocalVPContext ctx(owner);
+    compute_VP_restricted(ctx, i, j, tree);
 }
 
 } // namespace scfg
