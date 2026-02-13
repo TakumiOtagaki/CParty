@@ -450,7 +450,7 @@
         "ctest --test-dir build -N",
         "ctest --test-dir build --output-on-failure"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "Planning/registration story only. No scoring formula change."
     },
     {
@@ -476,7 +476,7 @@
         "ctest --test-dir build --output-on-failure -R api_cli_density2_energy_alignment",
         "ctest --test-dir build --output-on-failure"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "No broad jump: only slice-A states in this story."
     },
     {

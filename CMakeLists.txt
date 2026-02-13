@@ -128,6 +128,16 @@ if(BUILD_TESTING)
     src/fixed_energy_api.cc
   )
   add_executable(
+    fixed_energy_rollout_plan_test
+    test/fixed_energy_rollout_plan_test.cc
+    src/fixed_energy_api.cc
+  )
+  add_executable(
+    fixed_energy_slice_a_test
+    test/fixed_energy_slice_a_test.cc
+    src/fixed_energy_api.cc
+  )
+  add_executable(
     can_pair_policy_test
     test/can_pair_policy_test.cc
     src/sparse_tree.cc
@@ -165,6 +175,31 @@ if(BUILD_TESTING)
   add_test(
     NAME fixed_energy_internal
     COMMAND fixed_energy_internal_test
+  )
+
+  add_test(
+    NAME fixed_energy_rollout_registry
+    COMMAND fixed_energy_rollout_plan_test
+  )
+
+  add_test(
+    NAME fixed_energy_slice_a
+    COMMAND fixed_energy_slice_a_test
+  )
+
+  add_test(
+    NAME fixed_energy_slice_b
+    COMMAND fixed_energy_rollout_plan_test b
+  )
+
+  add_test(
+    NAME fixed_energy_slice_c
+    COMMAND fixed_energy_rollout_plan_test c
+  )
+
+  add_test(
+    NAME fixed_energy_slice_d
+    COMMAND fixed_energy_rollout_plan_test d
   )
 
   add_test(

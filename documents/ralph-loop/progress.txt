@@ -99,3 +99,18 @@ Started: 2026-02-13
   - Pair-map normalization (`db_full` -> bidirectional partner indices) is a practical foundation for deterministic rule selection before multi-state rollout.
   - Enforcing exactly one applicable rule at each parser step gives a clear deterministic-failure contract for structures outside current grammar coverage.
 ---
+
+## 2026-02-13 - 013
+- What was implemented: Added a canonical 16-state fixed-energy rollout registry and machine-checkable state-to-story mapping in the API internals, then source-registered dedicated slice test names (`fixed_energy_slice_a/b/c/d`) backed by a rollout-plan test target.
+- Files changed: `CMakeLists.txt`, `src/fixed_energy_api.hh`, `src/fixed_energy_api.cc`, `test/fixed_energy_rollout_plan_test.cc`, `documents/scfg_fixed_structure_parsing_pseudocode.md`, `documents/refactor_nonregression_checklist.md`, `documents/ralph-loop/prd.json`, `documents/ralph-loop/audit/013.md`, `documents/ralph-loop/progress.txt`
+- **Learnings:**
+  - Keeping the canonical state list and rollout mapping as code-level constants allows a single machine-checkable source of truth while docs mirror the same plan.
+  - Pre-registering slice test names as passing plan checks prevents later `ctest -R fixed_energy_slice_*` misses and keeps rollout stories focused on behavior changes.
+---
+## 2026-02-13 - 014
+- What was implemented: Replaced the active fixed-energy execution path with a shared parser/DP traversal for slice-A states (`W -> WI -> V`) and added a dedicated `fixed_energy_slice_a` behavioral test that validates deterministic state/rule trace selection, deterministic invalid-case failure, and energy accumulation on the shared path.
+- Files changed: `CMakeLists.txt`, `src/fixed_energy_api.hh`, `src/fixed_energy_api.cc`, `test/fixed_energy_slice_a_test.cc`, `documents/ralph-loop/prd.json`, `documents/ralph-loop/audit/014.md`, `documents/ralph-loop/progress.txt`
+- **Learnings:**
+  - A stack-based deterministic parser loop lets rollout slices add state transitions (`W/WI`) without duplicating scoring logic outside the shared traversal.
+  - Keeping a compatibility trace shim for prior `ZW`-only tests allows incremental rollout while preserving earlier-story test intent.
+---

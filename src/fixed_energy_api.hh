@@ -19,9 +19,22 @@ struct RuleTraceStep {
   std::string rule;
 };
 
+struct RolloutStatePlanEntry {
+  std::string state;
+  std::string story_id;
+};
+
 // Story 012 parser scaffold: deterministic ZW-only rule chain trace.
 std::vector<RuleTraceStep> trace_rule_chain_zw_only(const std::string &seq,
                                                     const std::string &db_full);
+
+// Story 014 slice-A shared parser trace: W/WI/V states on shared DP path.
+std::vector<RuleTraceStep> trace_rule_chain_slice_a(const std::string &seq,
+                                                    const std::string &db_full);
+
+// Story 013 registry: canonical fixed-energy target states and rollout mapping.
+const std::vector<std::string> &fixed_energy_target_states();
+const std::vector<RolloutStatePlanEntry> &fixed_energy_rollout_plan();
 
 }  // namespace internal
 

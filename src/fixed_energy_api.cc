@@ -15,13 +15,22 @@ struct NormalizedInput {
   std::vector<int> pair_map;
 };
 
-enum class ZWRuleKind {
+enum class SharedStateKind {
+  kW,
+  kWI,
+  kV,
+};
+
+enum class SharedRuleKind {
+  kWToWI,
+  kWIToV,
   kEmpty,
   kUnpaired,
   kPairWrapped,
 };
 
-struct ZWState {
+struct SharedState {
+  SharedStateKind kind = SharedStateKind::kW;
   int i = 1;  // 1-based inclusive
   int j = 0;  // 1-based inclusive
 };
@@ -109,14 +118,24 @@ NormalizedInput normalize_input(const std::string &seq, const std::string &db_fu
   return out;
 }
 
-std::vector<ZWRuleKind> rules_for_zw() {
-  return {ZWRuleKind::kEmpty, ZWRuleKind::kUnpaired, ZWRuleKind::kPairWrapped};
+std::vector<SharedRuleKind> rules_for(const SharedStateKind state_kind) {
+  if (state_kind == SharedStateKind::kW) {
+    return {SharedRuleKind::kWToWI};
+  }
+  if (state_kind == SharedStateKind::kWI) {
+    return {SharedRuleKind::kWIToV};
+  }
+  return {SharedRuleKind::kEmpty, SharedRuleKind::kUnpaired, SharedRuleKind::kPairWrapped};
 }
 
-bool rule_is_applicable(const ZWRuleKind rule,
-                        const ZWState state,
+bool rule_is_applicable(const SharedRuleKind rule,
+                        const SharedState state,
                         const NormalizedInput &ctx) {
-  if (rule == ZWRuleKind::kEmpty) {
+  if (rule == SharedRuleKind::kWToWI || rule == SharedRuleKind::kWIToV) {
+    return true;
+  }
+
+  if (rule == SharedRuleKind::kEmpty) {
     return state.i > state.j;
   }
   if (state.i > state.j) {
@@ -124,10 +143,10 @@ bool rule_is_applicable(const ZWRuleKind rule,
   }
 
   const size_t left = static_cast<size_t>(state.i - 1);
-  if (rule == ZWRuleKind::kUnpaired) {
+  if (rule == SharedRuleKind::kUnpaired) {
     return ctx.db_full[left] == '.';
   }
-  if (rule == ZWRuleKind::kPairWrapped) {
+  if (rule == SharedRuleKind::kPairWrapped) {
     if (ctx.db_full[left] != '(') {
       return false;
     }
@@ -137,11 +156,11 @@ bool rule_is_applicable(const ZWRuleKind rule,
   return false;
 }
 
-std::vector<ZWRuleKind> applicable_rules(const ZWState state, const NormalizedInput &ctx) {
-  const auto candidates = rules_for_zw();
-  std::vector<ZWRuleKind> out;
+std::vector<SharedRuleKind> applicable_rules(const SharedState state, const NormalizedInput &ctx) {
+  const auto candidates = rules_for(state.kind);
+  std::vector<SharedRuleKind> out;
   out.reserve(candidates.size());
-  for (const ZWRuleKind rule : candidates) {
+  for (const SharedRuleKind rule : candidates) {
     if (rule_is_applicable(rule, state, ctx)) {
       out.push_back(rule);
     }
@@ -149,66 +168,116 @@ std::vector<ZWRuleKind> applicable_rules(const ZWState state, const NormalizedIn
   return out;
 }
 
-double rule_score(const ZWRuleKind rule) {
-  if (rule == ZWRuleKind::kPairWrapped) {
+double rule_score(const SharedRuleKind rule) {
+  if (rule == SharedRuleKind::kPairWrapped) {
     return -1.0;
   }
   return 0.0;
 }
 
-ZWState expand(const ZWRuleKind rule, const ZWState state) {
-  if (rule == ZWRuleKind::kUnpaired) {
-    return ZWState{state.i + 1, state.j};
+std::vector<SharedState> expand(const SharedRuleKind rule, const SharedState state) {
+  if (rule == SharedRuleKind::kWToWI) {
+    return {SharedState{SharedStateKind::kWI, state.i, state.j}};
   }
-  if (rule == ZWRuleKind::kPairWrapped) {
-    return ZWState{state.i + 1, state.j - 1};
+  if (rule == SharedRuleKind::kWIToV) {
+    return {SharedState{SharedStateKind::kV, state.i, state.j}};
   }
-  return ZWState{1, 0};
+  if (rule == SharedRuleKind::kUnpaired) {
+    return {SharedState{SharedStateKind::kV, state.i + 1, state.j}};
+  }
+  if (rule == SharedRuleKind::kPairWrapped) {
+    return {SharedState{SharedStateKind::kV, state.i + 1, state.j - 1}};
+  }
+  return {};
 }
 
-std::string rule_name(const ZWRuleKind rule) {
-  if (rule == ZWRuleKind::kEmpty) {
-    return "ZW_EMPTY";
+std::string state_name(const SharedStateKind state_kind) {
+  if (state_kind == SharedStateKind::kW) {
+    return "W";
   }
-  if (rule == ZWRuleKind::kUnpaired) {
-    return "ZW_UNPAIRED";
+  if (state_kind == SharedStateKind::kWI) {
+    return "WI";
   }
-  return "ZW_PAIR_WRAPPED";
+  return "V";
 }
 
-std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(const NormalizedInput &ctx) {
+std::string rule_name(const SharedRuleKind rule) {
+  if (rule == SharedRuleKind::kWToWI) {
+    return "W_TO_WI";
+  }
+  if (rule == SharedRuleKind::kWIToV) {
+    return "WI_TO_V";
+  }
+  if (rule == SharedRuleKind::kEmpty) {
+    return "V_EMPTY";
+  }
+  if (rule == SharedRuleKind::kUnpaired) {
+    return "V_UNPAIRED";
+  }
+  return "V_PAIR_WRAPPED";
+}
+
+std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_from_normalized(const NormalizedInput &ctx) {
   std::vector<internal::RuleTraceStep> trace;
-  ZWState state{1, static_cast<int>(ctx.db_full.size())};
+  std::vector<SharedState> stack;
+  stack.push_back(SharedState{SharedStateKind::kW, 1, static_cast<int>(ctx.db_full.size())});
 
-  while (true) {
+  while (!stack.empty()) {
+    const SharedState state = stack.back();
+    stack.pop_back();
     const auto candidates = applicable_rules(state, ctx);
     if (candidates.size() != 1) {
-      fail_invalid_input("deterministic ZW rule selection failed at state [" +
-                         std::to_string(state.i) + "," + std::to_string(state.j) +
+      fail_invalid_input("deterministic shared rule selection failed at state " +
+                         state_name(state.kind) + "[" + std::to_string(state.i) + "," +
+                         std::to_string(state.j) +
                          "] with candidates=" + std::to_string(candidates.size()));
     }
 
-    const ZWRuleKind selected = candidates.front();
-    trace.push_back(internal::RuleTraceStep{"ZW", state.i, state.j, rule_name(selected)});
+    const SharedRuleKind selected = candidates.front();
+    trace.push_back(internal::RuleTraceStep{state_name(state.kind), state.i, state.j, rule_name(selected)});
 
-    if (selected == ZWRuleKind::kEmpty) {
-      break;
+    const auto children = expand(selected, state);
+    for (auto it = children.rbegin(); it != children.rend(); ++it) {
+      stack.push_back(*it);
     }
-    state = expand(selected, state);
   }
+
   return trace;
+}
+
+std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(const NormalizedInput &ctx) {
+  std::vector<internal::RuleTraceStep> out;
+  const auto slice_a_trace = trace_rule_chain_slice_a_from_normalized(ctx);
+  out.reserve(slice_a_trace.size());
+  for (const auto &step : slice_a_trace) {
+    if (step.state == "V") {
+      internal::RuleTraceStep mapped = step;
+      mapped.state = "ZW";
+      if (step.rule == "V_EMPTY") {
+        mapped.rule = "ZW_EMPTY";
+      } else if (step.rule == "V_UNPAIRED") {
+        mapped.rule = "ZW_UNPAIRED";
+      } else if (step.rule == "V_PAIR_WRAPPED") {
+        mapped.rule = "ZW_PAIR_WRAPPED";
+      } else {
+        continue;
+      }
+      out.push_back(mapped);
+    }
+  }
+  return out;
 }
 
 }  // namespace
 
 double get_structure_energy(const std::string &seq, const std::string &db_full) {
   const NormalizedInput normalized = normalize_input(seq, db_full);
-  const auto trace = trace_rule_chain_zw_only_from_normalized(normalized);
+  const auto trace = trace_rule_chain_slice_a_from_normalized(normalized);
 
   double total = 0.0;
   for (const auto &step : trace) {
-    if (step.rule == "ZW_PAIR_WRAPPED") {
-      total += rule_score(ZWRuleKind::kPairWrapped);
+    if (step.rule == "V_PAIR_WRAPPED") {
+      total += rule_score(SharedRuleKind::kPairWrapped);
     } else {
       total += 0.0;
     }
@@ -221,6 +290,29 @@ namespace internal {
 std::vector<RuleTraceStep> trace_rule_chain_zw_only(const std::string &seq,
                                                     const std::string &db_full) {
   return trace_rule_chain_zw_only_from_normalized(normalize_input(seq, db_full));
+}
+
+std::vector<RuleTraceStep> trace_rule_chain_slice_a(const std::string &seq,
+                                                    const std::string &db_full) {
+  return trace_rule_chain_slice_a_from_normalized(normalize_input(seq, db_full));
+}
+
+const std::vector<std::string> &fixed_energy_target_states() {
+  static const std::vector<std::string> kStates = {
+      "W", "WI", "V", "VM", "WM", "WMv", "WMp", "WIP",
+      "VP", "VPL", "VPR", "WMB", "WMBP", "WMBW", "BE", "ZW",
+  };
+  return kStates;
+}
+
+const std::vector<RolloutStatePlanEntry> &fixed_energy_rollout_plan() {
+  static const std::vector<RolloutStatePlanEntry> kPlan = {
+      {"W", "014"},   {"WI", "014"},  {"V", "014"},    {"VM", "015"},
+      {"WM", "015"},  {"WMv", "015"}, {"WMp", "015"},  {"WIP", "016"},
+      {"VP", "016"},  {"VPL", "016"}, {"VPR", "016"},  {"WMB", "017"},
+      {"WMBP", "017"},{"WMBW", "017"},{"BE", "017"},   {"ZW", "013"},
+  };
+  return kPlan;
 }
 
 }  // namespace internal
