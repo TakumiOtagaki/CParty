@@ -21,6 +21,7 @@ SET(SOURCE
   src/scfg/constraint_oracle.cc
   src/scfg/legacy_adapter.cc
   src/scfg/rules_pseudo_loop.cc
+  src/scfg/rules_part_func.cc
   src/CParty.cc
   src/cmdline.cc
   src/Result.cc	
