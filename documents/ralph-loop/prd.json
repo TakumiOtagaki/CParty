@@ -64,6 +64,12 @@
       "skipped",
       "finite_rate"
     ],
+    "refactor_extraction_policy": {
+      "rule": "Extract repeated concrete operations first, not broad abstract names.",
+      "candidate_threshold": "Same or near-identical operation appears >= 3 times.",
+      "hot_loop_rule": "Do not force helper extraction for trivial arithmetic in hot loops.",
+      "naming_rule": "Prefer specific names like is_empty_region / is_pair_type_allowed / is_transition_allowed instead of generic can_pair."
+    },
     "forbidden_shortcuts": [
       "Do not set passes=true without command evidence in same iteration.",
       "Do not treat compared=0 as success.",
@@ -256,14 +262,15 @@
     },
     {
       "id": "008",
-      "title": "Extract shared constraint oracle (can-pair + validity)",
+      "title": "Extract shared constraint operations (empty-region/pair-type/validity)",
       "priority": 8,
       "depends_on": [
         "007"
       ],
       "done_when": [
-        "Constraint oracle is used by at least one part_func and one pseudo_loop path",
-        "Oracle includes bracket-family policy and pair admissibility policy",
+        "Repeated concrete checks (>=3 occurrences) are identified and extracted first",
+        "Shared helpers cover empty-region checks and pair-type admissibility where duplicated",
+        "At least one part_func and one pseudo_loop path call the shared helpers",
         "Refactor step passes full regression with strict drift checks",
         "refactor_compared/refactor_strict_mismatched satisfy refactor_nonregression_rule"
       ],
@@ -278,7 +285,7 @@
         "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "Every refactor step must run strict regression."
+      "notes": "Do not over-abstract to a single generic can_pair helper; extract concrete duplicated checks first."
     },
     {
       "id": "009",
@@ -289,6 +296,7 @@
       ],
       "done_when": [
         "pseudo_loop rules are factored into named SCFG helper units",
+        "Helper boundaries follow refactor_extraction_policy (>=3 duplicated concrete operations first)",
         "No recurrence formula modification in this story",
         "Full regression and alignment gate executed and reported",
         "refactor_compared/refactor_strict_mismatched satisfy refactor_nonregression_rule"
@@ -305,7 +313,7 @@
         "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "Strictly behavior-preserving refactor."
+      "notes": "Strictly behavior-preserving refactor. Prioritize concrete repeated operations over broad abstraction."
     },
     {
       "id": "010",
@@ -316,6 +324,7 @@
       ],
       "done_when": [
         "part_func rules are factored into named SCFG helper units",
+        "Helper boundaries follow refactor_extraction_policy (>=3 duplicated concrete operations first)",
         "No recurrence formula modification in this story",
         "Full regression and alignment gate executed and reported",
         "refactor_compared/refactor_strict_mismatched satisfy refactor_nonregression_rule"
@@ -332,7 +341,7 @@
         "ctest --test-dir build --output-on-failure"
       ],
       "passes": false,
-      "notes": "Strictly behavior-preserving refactor."
+      "notes": "Strictly behavior-preserving refactor. Prioritize concrete repeated operations over broad abstraction."
     },
     {
       "id": "011",

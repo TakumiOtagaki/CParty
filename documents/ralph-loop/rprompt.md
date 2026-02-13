@@ -27,6 +27,7 @@ Loop memory is in `documents/ralph-loop/progress.txt`.
 - Do not set any story to `passes: true` without command evidence in the same run.
 - For refactor-only stories, do not mark pass unless `refactor_compared` and `refactor_strict_mismatched` are reported and non-regressing.
 - For alignment stories, do not mark pass unless `alignment_compared` and `alignment_mismatched` are reported.
+- In refactor stories, prioritize extraction of repeated concrete operations (>=3 occurrences); avoid broad abstraction-first helpers.
 - Do not mark pass unless `documents/ralph-loop/audit/{story_id}.md` is updated in the same run.
 - If required files/directories are missing (e.g., `documents/ralph-loop/prd.json`, `test/`), stop and report the blocker.
 
