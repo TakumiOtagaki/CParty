@@ -212,7 +212,7 @@
       "commands": [
         "test/tools/build_density2_cli_baseline.sh build/CParty test/multi.secstruct test/baselines/fixed_energy_cli/density2_mfe.tsv"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "This is the core data expansion step."
     },
     {
