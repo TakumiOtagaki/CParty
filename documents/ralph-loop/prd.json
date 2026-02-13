@@ -296,10 +296,19 @@
       ],
       "done_when": [
         "pseudo_loop rules are factored into named SCFG helper units",
+        "SCFG method groups are implemented incrementally in this order: 1) rule access, 2) transition scoring, 3) constraint checks, 4) DP execution control, 5) traceback/fixed-parse hooks, 6) mode/parameter wiring",
         "Helper boundaries follow refactor_extraction_policy (>=3 duplicated concrete operations first)",
         "No recurrence formula modification in this story",
         "Full regression and alignment gate executed and reported",
         "refactor_compared/refactor_strict_mismatched satisfy refactor_nonregression_rule"
+      ],
+      "micro_steps": [
+        "9.1 Add rule access stubs and route one pseudo_loop path through them",
+        "9.2 Add transition scoring helper for one recurrence family",
+        "9.3 Add constraint checks (empty-region/pair-type) for the same family",
+        "9.4 Add DP execution control helper (fill-order compatible)",
+        "9.5 Add traceback/fixed-parse hooks without changing recurrence math",
+        "9.6 Add mode/parameter wiring used by that path"
       ],
       "artifacts": [
         "src/pseudo_loop.cc",
@@ -324,10 +333,19 @@
       ],
       "done_when": [
         "part_func rules are factored into named SCFG helper units",
+        "SCFG method groups are implemented incrementally in this order: 1) rule access, 2) transition scoring, 3) constraint checks, 4) DP execution control, 5) traceback/fixed-parse hooks, 6) mode/parameter wiring",
         "Helper boundaries follow refactor_extraction_policy (>=3 duplicated concrete operations first)",
         "No recurrence formula modification in this story",
         "Full regression and alignment gate executed and reported",
         "refactor_compared/refactor_strict_mismatched satisfy refactor_nonregression_rule"
+      ],
+      "micro_steps": [
+        "10.1 Port rule access pattern from story 009 to part_func paths",
+        "10.2 Port transition scoring helpers to matching recurrence families",
+        "10.3 Port constraint checks with identical semantics",
+        "10.4 Port DP execution control helpers preserving fill dependencies",
+        "10.5 Port traceback/fixed-parse hooks to part_func-facing routes",
+        "10.6 Port mode/parameter wiring and validate no drift"
       ],
       "artifacts": [
         "src/part_func.cc",
