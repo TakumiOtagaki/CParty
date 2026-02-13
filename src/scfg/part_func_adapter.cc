@@ -31,6 +31,7 @@ struct PartFuncAdapterAccess {
     static std::vector<pf_t> &VP(W_final_pf &owner) { return owner.VP; }
     static std::vector<pf_t> &VPL(W_final_pf &owner) { return owner.VPL; }
     static std::vector<pf_t> &VPR(W_final_pf &owner) { return owner.VPR; }
+    static std::vector<pf_t> &WMBW(W_final_pf &owner) { return owner.WMBW; }
     static short *S(W_final_pf &owner) { return owner.S_; }
     static pf_t exp_Extloop(W_final_pf &owner, cand_pos_t i, cand_pos_t j) { return owner.exp_Extloop(i, j); }
     static pf_t exp_MLstem(W_final_pf &owner, cand_pos_t i, cand_pos_t j) { return owner.exp_MLstem(i, j); }
@@ -261,6 +262,21 @@ class LocalVPContext final : public PartFuncVPContext {
     W_final_pf &owner_;
 };
 
+class LocalWMBWContext final : public PartFuncWMBWContext {
+  public:
+    explicit LocalWMBWContext(W_final_pf &owner) : owner_(owner) {}
+
+    cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
+        return PartFuncAdapterAccess::index(owner_)[i] + j - i;
+    }
+    pf_t get_energy_WMBP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMBP(i, j); }
+    pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WI(i, j); }
+    void set_WMBW(cand_pos_t ij, pf_t value) override { PartFuncAdapterAccess::WMBW(owner_)[ij] = value; }
+
+  private:
+    W_final_pf &owner_;
+};
+
 } // namespace
 
 void compute_W_restricted(W_final_pf &owner, sparse_tree &tree) {
@@ -311,6 +327,11 @@ void compute_VPR_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
 void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalVPContext ctx(owner);
     compute_VP_restricted(ctx, i, j, tree);
+}
+
+void compute_WMBW_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    LocalWMBWContext ctx(owner);
+    compute_WMBW_restricted(ctx, i, j, tree);
 }
 
 } // namespace scfg

@@ -309,4 +309,19 @@ void compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, s
     ctx.set_VP(ij, contributions);
 }
 
+void compute_WMBW_restricted(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    const cand_pos_t ij = ctx.index_of(i, j);
+    pf_t contributions = 0;
+
+    if (tree.tree[j].pair < j) {
+        for (cand_pos_t l = i + 1; l < j; l++) {
+            if (tree.tree[l].pair < 0 && tree.tree[l].parent->index > -1 && tree.tree[j].parent->index > -1
+                && tree.tree[j].parent->index == tree.tree[l].parent->index) {
+                contributions += ctx.get_energy_WMBP(i, l) * ctx.get_energy_WI(l + 1, j);
+            }
+        }
+    }
+    ctx.set_WMBW(ij, contributions);
+}
+
 } // namespace scfg

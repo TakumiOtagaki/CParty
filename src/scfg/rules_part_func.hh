@@ -212,6 +212,18 @@ class PartFuncVPContext {
 
 void compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
+class PartFuncWMBWContext {
+  public:
+    virtual ~PartFuncWMBWContext() = default;
+
+    virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
+    virtual pf_t get_energy_WMBP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) = 0;
+    virtual void set_WMBW(cand_pos_t ij, pf_t value) = 0;
+};
+
+void compute_WMBW_restricted(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+
 } // namespace scfg
 
 #endif

@@ -378,19 +378,7 @@ pf_t W_final_pf::get_e_intP(cand_pos_t i, cand_pos_t ip, cand_pos_t jp, cand_pos
 }
 
 void W_final_pf::compute_WMBW(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
-    cand_pos_t ij = index[i] + j - i;
-
-    pf_t contributions = 0;
-
-    if (tree.tree[j].pair < j) {
-        for (cand_pos_t l = i + 1; l < j; l++) {
-            if (tree.tree[l].pair < 0 && tree.tree[l].parent->index > -1 && tree.tree[j].parent->index > -1
-                && tree.tree[j].parent->index == tree.tree[l].parent->index) {
-                contributions += get_energy_WMBP(i, l) * get_energy_WI(l + 1, j);
-            }
-        }
-    }
-    WMBW[ij] = contributions;
+    scfg::compute_WMBW_restricted(*this, i, j, tree);
 }
 
 void W_final_pf::compute_WMBP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
