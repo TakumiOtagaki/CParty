@@ -386,29 +386,7 @@ void W_final_pf::compute_WMBP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 }
 
 void W_final_pf::compute_WMB(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
-    cand_pos_t ij = index[i] + j - i;
-    pf_t contributions = 0;
-    // base case
-    if (i == j) {
-        WMB[ij] = 0;
-        return;
-    }
-
-    if (tree.tree[j].pair >= 0 && j > tree.tree[j].pair && tree.tree[j].pair > i) {
-        cand_pos_t bp_j = tree.tree[j].pair;
-        for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {
-            // if(tree.tree[l].pair>0) continue;
-            cand_pos_t Bp_lj = tree.Bp(l, j);
-            if (Bp_lj >= 0 && Bp_lj < n) {
-                contributions +=
-                    get_BE(bp_j, j, tree.tree[Bp_lj].pair, Bp_lj, tree) * get_energy_WMBP(i, l) * get_energy_WI(l + 1, Bp_lj - 1) * expPB_penalty;
-            }
-        }
-    }
-
-    contributions += get_energy_WMBP(i, j);
-
-    WMB[ij] = contributions;
+    scfg::compute_WMB_restricted(*this, i, j, tree);
 }
 
 void W_final_pf::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) {

@@ -23,6 +23,7 @@ void compute_VPR_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
 void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 void compute_WMBW_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 void compute_WMBP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void compute_WMB_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
 } // namespace scfg
 

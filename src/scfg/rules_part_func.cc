@@ -388,4 +388,28 @@ void compute_WMBP_restricted(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t 
     ctx.set_WMBP(ij, contributions);
 }
 
+void compute_WMB_restricted(PartFuncWMBContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    const cand_pos_t ij = ctx.index_of(i, j);
+    pf_t contributions = 0;
+    if (i == j) {
+        ctx.set_WMB(ij, 0);
+        return;
+    }
+
+    if (tree.tree[j].pair >= 0 && j > tree.tree[j].pair && tree.tree[j].pair > i) {
+        cand_pos_t bp_j = tree.tree[j].pair;
+        for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {
+            cand_pos_t Bp_lj = tree.Bp(l, j);
+            if (Bp_lj >= 0 && Bp_lj < ctx.n()) {
+                contributions += ctx.get_BE(bp_j, j, tree.tree[Bp_lj].pair, Bp_lj, tree) *
+                                 ctx.get_energy_WMBP(i, l) *
+                                 ctx.get_energy_WI(l + 1, Bp_lj - 1) * ctx.expPB_penalty();
+            }
+        }
+    }
+
+    contributions += ctx.get_energy_WMBP(i, j);
+    ctx.set_WMB(ij, contributions);
+}
+
 } // namespace scfg

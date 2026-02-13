@@ -34,6 +34,7 @@ struct PartFuncAdapterAccess {
     static std::vector<pf_t> &VPR(W_final_pf &owner) { return owner.VPR; }
     static std::vector<pf_t> &WMBW(W_final_pf &owner) { return owner.WMBW; }
     static std::vector<pf_t> &WMBP(W_final_pf &owner) { return owner.WMBP; }
+    static std::vector<pf_t> &WMB(W_final_pf &owner) { return owner.WMB; }
     static short *S(W_final_pf &owner) { return owner.S_; }
     static pf_t exp_Extloop(W_final_pf &owner, cand_pos_t i, cand_pos_t j) { return owner.exp_Extloop(i, j); }
     static pf_t exp_MLstem(W_final_pf &owner, cand_pos_t i, cand_pos_t j) { return owner.exp_MLstem(i, j); }
@@ -308,6 +309,26 @@ class LocalWMBPContext final : public PartFuncWMBPContext {
     W_final_pf &owner_;
 };
 
+class LocalWMBContext final : public PartFuncWMBContext {
+  public:
+    explicit LocalWMBContext(W_final_pf &owner) : owner_(owner) {}
+
+    cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
+        return PartFuncAdapterAccess::index(owner_)[i] + j - i;
+    }
+    pf_t get_energy_WMBP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMBP(i, j); }
+    pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WI(i, j); }
+    pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) override {
+        return owner_.get_BE(i, j, ip, jp, tree);
+    }
+    pf_t expPB_penalty() const override { return ::expPB_penalty; }
+    cand_pos_t n() const override { return PartFuncAdapterAccess::n(owner_); }
+    void set_WMB(cand_pos_t ij, pf_t value) override { PartFuncAdapterAccess::WMB(owner_)[ij] = value; }
+
+  private:
+    W_final_pf &owner_;
+};
+
 } // namespace
 
 void compute_W_restricted(W_final_pf &owner, sparse_tree &tree) {
@@ -368,6 +389,11 @@ void compute_WMBW_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spar
 void compute_WMBP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWMBPContext ctx(owner);
     compute_WMBP_restricted(ctx, i, j, tree);
+}
+
+void compute_WMB_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    LocalWMBContext ctx(owner);
+    compute_WMB_restricted(ctx, i, j, tree);
 }
 
 } // namespace scfg
