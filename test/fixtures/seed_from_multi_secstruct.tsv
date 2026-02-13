@@ -1,0 +1,16 @@
+row	id	family	expected	reason	sequence	structure
+1	pkfree_stem	pk_free	valid		GCAUGC	(....)
+2	pkfree_stem 2	pk_free	valid		GCAUGU	(....)
+3	pkfree_stem 3	pk_free	valid		ACAAUGU	(.....)
+4	pkfree_hairpin	pk_free	valid		CGGCAACAGCCG	((((....))))
+5	pkfree_hairpin 2	pk_free	valid		AGGAAAACAUCCU	((((.....))))
+6	h_type 1	h_type	valid		GGGCAAAAGGCGAAAAGCCCAAAACGCC	((((....[[[[....))))....]]]]
+7	h_type 2	h_type	valid		GGGCAAAAGGCGAAAAAGCCCACAAACGCC	((((....[[[[.....)))).....]]]]
+8	h_type 2	h_type	valid		GCGCAAAAGGCGGGAAAAAGCGCACAAACUCGCC	((((....[[[[[[.....)))).....]]]]]]
+9	k_type 1	k_type	valid		GGCGGAAAAACCGGCAAAAACCGCCAAAAACGGGUAAUAAGCUGGAAAAAGCCCG	(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))
+10	k_type 2	k_type	valid		GGCGGAAAUUAACCGGCGCAAAAACCGCCAAAUUAACGGGUAAUAAGCGCUGGAAAAAGCCCG	(((((.......[[[[[[[.....))))).......(((((.....]]]]]]].....)))))
+11	invalid_length_mismatch	invalid	invalid	length_mismatch	GCAAA	(....)
+12	invalid_sequence_symbol	invalid	invalid	invalid_sequence_symbol	GCXAC	(..).
+13	invalid_unbalanced_structure	invalid	invalid	unbalanced_structure	GCAAC	((..)
+14	invalid_mixed_pk_families	invalid	invalid	mixed_pk_families	AGGGGAAAAAGGAGGAAAUGGGGAAAAAAACCCCUAAAACCUCCAAAGGCGGAAAAACCCCGAAAAACCGCC	(((((.....{{{{{...[[[[[.......)))))....}}}}}...(((((.....]]]]].....)))))
+15	abnormal dotbracket	h_type	valid	unsupported_pk_family	GGGCAAAAGGCGAAAAGCCCAAAACGCC	((((....<<<<....))))....>>>>

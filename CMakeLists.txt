@@ -109,6 +109,8 @@ include_directories(src)
 
 include(CTest)
 if(BUILD_TESTING)
+  add_executable(multi_secstruct_schema_test test/multi_secstruct_schema_test.cc)
+
   # Source-controlled smoke checks so ctest registration is reproducible from a fresh build.
   add_test(
     NAME source_tree_test_dir_exists
@@ -118,5 +120,12 @@ if(BUILD_TESTING)
   add_test(
     NAME source_tree_seed_dataset_exists
     COMMAND bash -lc "test -s '${CMAKE_SOURCE_DIR}/test/multi.secstruct'"
+  )
+
+  add_test(
+    NAME multi_secstruct_schema_test
+    COMMAND multi_secstruct_schema_test
+            "${CMAKE_SOURCE_DIR}/test/multi.secstruct"
+            "${CMAKE_SOURCE_DIR}/test/fixtures/seed_from_multi_secstruct.tsv"
   )
 endif()

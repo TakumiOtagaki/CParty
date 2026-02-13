@@ -141,7 +141,7 @@
       "commands": [
         "ctest --test-dir build --output-on-failure -R multi_secstruct"
       ],
-      "passes": false,
+      "passes": true,
       "notes": "User-required mandatory seed set."
     },
     {
