@@ -70,4 +70,23 @@ void compute_V_restricted(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, spa
     ctx.set_V(ij, contributions);
 }
 
+void compute_WI_restricted(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    const cand_pos_t ij = ctx.index_of(i, j);
+    pf_t contributions = 0;
+    if (i == j) {
+        ctx.set_WI(ij, ctx.expPUP_pen1());
+        return;
+    }
+    const cand_pos_t turn = ctx.turn();
+    for (cand_pos_t k = i; k <= j - turn - 1; ++k) {
+        contributions += (ctx.get_WI(i, k - 1) * ctx.get_energy(k, j) * ctx.expPPS_penalty());
+        contributions += (ctx.get_WI(i, k - 1) * ctx.get_energy_WMB(k, j) * ctx.expPSP_penalty() * ctx.expPPS_penalty());
+    }
+    if (tree.tree[j].pair < 0) {
+        contributions += (ctx.get_WI(i, j - 1) * ctx.expPUP_pen1());
+    }
+
+    ctx.set_WI(ij, contributions);
+}
+
 } // namespace scfg

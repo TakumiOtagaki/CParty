@@ -417,20 +417,52 @@ void W_final_pf::compute_pk_energies(cand_pos_t i, cand_pos_t j, sparse_tree &tr
 }
 
 void W_final_pf::compute_WI(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    class LocalWIContext final : public scfg::PartFuncWIContext {
+      public:
+        explicit LocalWIContext(W_final_pf &owner) : owner_(owner) {}
 
-    cand_pos_t ij = index[i] + j - i;
-    pf_t contributions = 0;
-    if (i == j) {
-        WI[ij] = expPUP_pen[1];
-        return;
-    }
-    for (cand_pos_t k = i; k <= j - TURN - 1; ++k) {
-        contributions += (get_energy_WI(i, k - 1) * get_energy(k, j) * expPPS_penalty);
-        contributions += (get_energy_WI(i, k - 1) * get_energy_WMB(k, j) * expPSP_penalty * expPPS_penalty);
-    }
-    if (tree.tree[j].pair < 0) contributions += (get_energy_WI(i, j - 1) * expPUP_pen[1]);
+        cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
+            return owner_.index[i] + j - i;
+        }
 
-    WI[ij] = contributions;
+        void set_WI(cand_pos_t ij, pf_t value) override {
+            owner_.WI[ij] = value;
+        }
+
+        pf_t get_WI(cand_pos_t i, cand_pos_t j) override {
+            return owner_.get_energy_WI(i, j);
+        }
+
+        pf_t get_energy(cand_pos_t i, cand_pos_t j) override {
+            return owner_.get_energy(i, j);
+        }
+
+        pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) override {
+            return owner_.get_energy_WMB(i, j);
+        }
+
+        pf_t expPPS_penalty() const override {
+            return ::expPPS_penalty;
+        }
+
+        pf_t expPSP_penalty() const override {
+            return ::expPSP_penalty;
+        }
+
+        pf_t expPUP_pen1() const override {
+            return owner_.expPUP_pen[1];
+        }
+
+        cand_pos_t turn() const override {
+            return TURN;
+        }
+
+      private:
+        W_final_pf &owner_;
+    };
+
+    LocalWIContext ctx(*this);
+    scfg::compute_WI_restricted(ctx, i, j, tree);
 }
 
 void W_final_pf::compute_WIP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
