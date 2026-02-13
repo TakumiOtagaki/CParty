@@ -1,0 +1,62 @@
+
+>pkfree_stem | family=pk_free | expected=valid
+GCAUGC
+(....)
+
+
+>pkfree_stem 2 | family=pk_free | expected=valid
+GCAUGU
+(....)
+
+>pkfree_stem 3 | family=pk_free | expected=valid
+ACAAUGU
+(.....)
+
+>pkfree_hairpin | family=pk_free | expected=valid
+CGGCAACAGCCG
+((((....))))
+
+>pkfree_hairpin 2 | family=pk_free | expected=valid
+AGGAAAACAUCCU
+((((.....))))
+
+>h_type 1 | family=h_type | expected=valid
+GGGCAAAAGGCGAAAAGCCCAAAACGCC
+((((....[[[[....))))....]]]]
+
+>h_type 2| family=h_type | expected=valid
+GGGCAAAAGGCGAAAAAGCCCACAAACGCC
+((((....[[[[.....)))).....]]]]
+
+>h_type 2| family=h_type | expected=valid
+GCGCAAAAGGCGGGAAAAAGCGCACAAACUCGCC
+((((....[[[[[[.....)))).....]]]]]]
+
+>k_type 1 | family=k_type | expected=valid
+GGCGGAAAAACCGGCAAAAACCGCCAAAAACGGGUAAUAAGCUGGAAAAAGCCCG
+(((((.....[[[[[.....))))).....(((((.....]]]]].....)))))
+
+>k_type 2 | family=k_type | expected=valid
+GGCGGAAAUUAACCGGCGCAAAAACCGCCAAAUUAACGGGUAAUAAGCGCUGGAAAAAGCCCG
+(((((.......[[[[[[[.....))))).......(((((.....]]]]]]].....)))))
+
+
+>invalid_length_mismatch | family=invalid | expected=invalid | reason=length_mismatch
+GCAAA
+(....)
+
+>invalid_sequence_symbol | family=invalid | expected=invalid | reason=invalid_sequence_symbol
+GCXAC
+(..).
+
+>invalid_unbalanced_structure | family=invalid | expected=invalid | reason=unbalanced_structure
+GCAAC
+((..)
+
+>invalid_mixed_pk_families | family=invalid | expected=invalid | reason=mixed_pk_families
+AGGGGAAAAAGGAGGAAAUGGGGAAAAAAACCCCUAAAACCUCCAAAGGCGGAAAAACCCCGAAAAACCGCC
+(((((.....{{{{{...[[[[[.......)))))....}}}}}...(((((.....]]]]].....)))))
+
+>invalid_unsupported_pk_family | family=invalid | expected=invalid | reason=unsupported_pk_family
+GGGCAAAAGGCGAAAAGCCCAAAACGCC
+((((....<<<<....))))....>>>>
