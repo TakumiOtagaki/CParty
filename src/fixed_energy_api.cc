@@ -42,6 +42,7 @@ enum class SharedRuleKind {
   kVMToWM,
   kWMToWMv,
   kWMvToWMp,
+  kWMpToV,
   kWMpToWMB,
   kWMBToWMBP,
   kWMBPToWMBW,
@@ -209,6 +210,9 @@ std::vector<SharedRuleKind> rules_for(const SharedStateKind state_kind, const Sh
     if (mode.include_slice_c) {
       return {SharedRuleKind::kWMpToWIP};
     }
+    if (mode.include_slice_b) {
+      return {SharedRuleKind::kWMpToV};
+    }
     return {};
   }
   if (state_kind == SharedStateKind::kWMB) {
@@ -246,7 +250,8 @@ bool rule_is_applicable(const SharedRuleKind rule,
     return true;
   }
 
-  if (rule == SharedRuleKind::kVMToWM || rule == SharedRuleKind::kWMToWMv || rule == SharedRuleKind::kWMvToWMp) {
+  if (rule == SharedRuleKind::kVMToWM || rule == SharedRuleKind::kWMToWMv || rule == SharedRuleKind::kWMvToWMp ||
+      rule == SharedRuleKind::kWMpToV) {
     return mode.include_slice_b;
   }
 
@@ -370,6 +375,9 @@ std::vector<SharedState> expand(const SharedRuleKind rule,
   if (rule == SharedRuleKind::kWMvToWMp) {
     return {SharedState{SharedStateKind::kWMp, state.i, state.j}};
   }
+  if (rule == SharedRuleKind::kWMpToV) {
+    return {SharedState{SharedStateKind::kV, state.i, state.j}};
+  }
   if (rule == SharedRuleKind::kWMpToWMB) {
     return {SharedState{SharedStateKind::kWMB, state.i, state.j}};
   }
@@ -473,6 +481,9 @@ std::string rule_name(const SharedRuleKind rule) {
   }
   if (rule == SharedRuleKind::kWMvToWMp) {
     return "WMv_TO_WMp";
+  }
+  if (rule == SharedRuleKind::kWMpToV) {
+    return "WMp_TO_V";
   }
   if (rule == SharedRuleKind::kWMpToWMB) {
     return "WMp_TO_WMB";
