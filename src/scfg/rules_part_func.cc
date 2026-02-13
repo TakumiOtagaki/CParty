@@ -111,4 +111,24 @@ void compute_W_restricted(PartFuncWContext &ctx, sparse_tree &tree) {
     }
 }
 
+pf_t compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<int> &up) {
+    pf_t contributions = 0;
+    const cand_pos_t ij = ctx.index_of(i, j);
+    const cand_pos_t turn = ctx.turn();
+    for (cand_pos_t k = i + 1; k <= j - turn - 1; ++k) {
+        contributions += (ctx.get_energy_WM(i + 1, k - 1) * ctx.get_energy_WMv(k, j - 1) *
+                          ctx.exp_Mbloop(i, j) * ctx.expMLclosing());
+        contributions += (ctx.get_energy_WM(i + 1, k - 1) * ctx.get_energy_WMp(k, j - 1) *
+                          ctx.exp_Mbloop(i, j) * ctx.expMLclosing());
+        if (up[k - 1] >= (k - (i + 1))) {
+            contributions += (ctx.expMLbase(k - i - 1) * ctx.get_energy_WMp(k, j - 1) *
+                              ctx.exp_Mbloop(i, j) * ctx.expMLclosing());
+        }
+    }
+
+    contributions *= ctx.scale2();
+    ctx.set_VM(ij, contributions);
+    return contributions;
+}
+
 } // namespace scfg

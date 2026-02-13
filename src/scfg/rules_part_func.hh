@@ -89,6 +89,24 @@ class PartFuncWContext {
 
 void compute_W_restricted(PartFuncWContext &ctx, sparse_tree &tree);
 
+class PartFuncVMContext {
+  public:
+    virtual ~PartFuncVMContext() = default;
+
+    virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
+    virtual void set_VM(cand_pos_t ij, pf_t value) = 0;
+    virtual pf_t get_energy_WM(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WMv(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_energy_WMp(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t exp_Mbloop(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t expMLclosing() const = 0;
+    virtual pf_t expMLbase(cand_pos_t length) const = 0;
+    virtual pf_t scale2() const = 0;
+    virtual cand_pos_t turn() const = 0;
+};
+
+pf_t compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<int> &up);
+
 } // namespace scfg
 
 #endif

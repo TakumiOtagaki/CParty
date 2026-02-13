@@ -366,18 +366,56 @@ void W_final_pf::compute_energy_WM_restricted(cand_pos_t i, cand_pos_t j, sparse
 }
 
 pf_t W_final_pf::compute_energy_VM_restricted(cand_pos_t i, cand_pos_t j, std::vector<int> &up) {
-    pf_t contributions = 0;
-    cand_pos_t ij = index[(i)] + (j) - (i);
-    for (cand_pos_t k = i + 1; k <= j - TURN - 1; ++k) {
-        contributions += (get_energy_WM(i + 1, k - 1) * get_energy_WMv(k, j - 1) * exp_Mbloop(i, j) * exp_params_->expMLclosing);
-        contributions += (get_energy_WM(i + 1, k - 1) * get_energy_WMp(k, j - 1) * exp_Mbloop(i, j) * exp_params_->expMLclosing);
-        if (up[k - 1] >= (k - (i + 1)))
-            contributions += (expMLbase[k - i - 1] * get_energy_WMp(k, j - 1) * exp_Mbloop(i, j) * exp_params_->expMLclosing);
-    }
+    class LocalVMContext final : public scfg::PartFuncVMContext {
+      public:
+        explicit LocalVMContext(W_final_pf &owner) : owner_(owner) {}
 
-    contributions *= scale[2];
-    VM[ij] = contributions;
-    return contributions;
+        cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
+            return owner_.index[i] + j - i;
+        }
+
+        void set_VM(cand_pos_t ij, pf_t value) override {
+            owner_.VM[ij] = value;
+        }
+
+        pf_t get_energy_WM(cand_pos_t i, cand_pos_t j) override {
+            return owner_.get_energy_WM(i, j);
+        }
+
+        pf_t get_energy_WMv(cand_pos_t i, cand_pos_t j) override {
+            return owner_.get_energy_WMv(i, j);
+        }
+
+        pf_t get_energy_WMp(cand_pos_t i, cand_pos_t j) override {
+            return owner_.get_energy_WMp(i, j);
+        }
+
+        pf_t exp_Mbloop(cand_pos_t i, cand_pos_t j) override {
+            return owner_.exp_Mbloop(i, j);
+        }
+
+        pf_t expMLclosing() const override {
+            return owner_.exp_params_->expMLclosing;
+        }
+
+        pf_t expMLbase(cand_pos_t length) const override {
+            return owner_.expMLbase[length];
+        }
+
+        pf_t scale2() const override {
+            return owner_.scale[2];
+        }
+
+        cand_pos_t turn() const override {
+            return TURN;
+        }
+
+      private:
+        W_final_pf &owner_;
+    };
+
+    LocalVMContext ctx(*this);
+    return scfg::compute_VM_restricted(ctx, i, j, up);
 }
 
 void W_final_pf::compute_energy_restricted(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
