@@ -14,6 +14,10 @@ extern "C" {
 #include "ViennaRNA/params/io.h"
 }
 
+namespace scfg {
+struct PartFuncAdapterAccess;
+}
+
 struct SzudzikHash {
     cand_pos_t operator()(const std::pair<cand_pos_t, cand_pos_t> pair) const {
         cand_pos_t a = pair.first;
@@ -26,6 +30,7 @@ inline cand_pos_t boustrophedon_at(cand_pos_t start, cand_pos_t end, cand_pos_t 
 std::vector<cand_pos_t> boustrophedon(cand_pos_t start, cand_pos_t end);
 
 class W_final_pf {
+    friend struct scfg::PartFuncAdapterAccess;
 
   public:
     std::string structure;

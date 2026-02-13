@@ -2,6 +2,7 @@
 #include "dot_plot.hh"
 #include "h_externs.hh"
 #include "scfg/constraint_oracle.hh"
+#include "scfg/part_func_adapter.hh"
 #include "scfg/rules_part_func.hh"
 #include "pf_globals.hh"
 #include "scfg/legacy_adapter.hh"
@@ -173,52 +174,7 @@ pf_t W_final_pf::hfold_pf(sparse_tree &tree) {
             compute_energy_WM_restricted(i, j, tree);
         }
     }
-    class LocalWContext final : public scfg::PartFuncWContext {
-      public:
-        explicit LocalWContext(W_final_pf &owner) : owner_(owner) {}
-
-        cand_pos_t n() const override {
-            return owner_.n;
-        }
-
-        pf_t scale1() const override {
-            return owner_.scale[1];
-        }
-
-        pf_t get_W(cand_pos_t j) const override {
-            return owner_.W[j];
-        }
-
-        pf_t get_energy(cand_pos_t i, cand_pos_t j) override {
-            return owner_.get_energy(i, j);
-        }
-
-        pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) override {
-            return owner_.get_energy_WMB(i, j);
-        }
-
-        pf_t exp_Extloop(cand_pos_t i, cand_pos_t j) override {
-            return owner_.exp_Extloop(i, j);
-        }
-
-        pf_t expPS_penalty() const override {
-            return ::expPS_penalty;
-        }
-
-        void set_W(cand_pos_t j, pf_t value) override {
-            owner_.W[j] = value;
-        }
-
-        cand_pos_t turn() const override {
-            return TURN;
-        }
-
-      private:
-        W_final_pf &owner_;
-    };
-
-    LocalWContext ctx(*this);
-    scfg::compute_W_restricted(ctx, tree);
+    scfg::compute_W_restricted(*this, tree);
     pf_t energy = to_Energy(W[n], n);
 
     // Base pair probability
@@ -366,89 +322,11 @@ void W_final_pf::compute_energy_WM_restricted(cand_pos_t i, cand_pos_t j, sparse
 }
 
 pf_t W_final_pf::compute_energy_VM_restricted(cand_pos_t i, cand_pos_t j, std::vector<int> &up) {
-    class LocalVMContext final : public scfg::PartFuncVMContext {
-      public:
-        explicit LocalVMContext(W_final_pf &owner) : owner_(owner) {}
-
-        cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
-            return owner_.index[i] + j - i;
-        }
-
-        void set_VM(cand_pos_t ij, pf_t value) override {
-            owner_.VM[ij] = value;
-        }
-
-        pf_t get_energy_WM(cand_pos_t i, cand_pos_t j) override {
-            return owner_.get_energy_WM(i, j);
-        }
-
-        pf_t get_energy_WMv(cand_pos_t i, cand_pos_t j) override {
-            return owner_.get_energy_WMv(i, j);
-        }
-
-        pf_t get_energy_WMp(cand_pos_t i, cand_pos_t j) override {
-            return owner_.get_energy_WMp(i, j);
-        }
-
-        pf_t exp_Mbloop(cand_pos_t i, cand_pos_t j) override {
-            return owner_.exp_Mbloop(i, j);
-        }
-
-        pf_t expMLclosing() const override {
-            return owner_.exp_params_->expMLclosing;
-        }
-
-        pf_t expMLbase(cand_pos_t length) const override {
-            return owner_.expMLbase[length];
-        }
-
-        pf_t scale2() const override {
-            return owner_.scale[2];
-        }
-
-        cand_pos_t turn() const override {
-            return TURN;
-        }
-
-      private:
-        W_final_pf &owner_;
-    };
-
-    LocalVMContext ctx(*this);
-    return scfg::compute_VM_restricted(ctx, i, j, up);
+    return scfg::compute_VM_restricted(*this, i, j, up);
 }
 
 void W_final_pf::compute_energy_restricted(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
-    class LocalVContext final : public scfg::PartFuncVContext {
-      public:
-        explicit LocalVContext(W_final_pf &owner) : owner_(owner) {}
-
-        cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
-            return owner_.index[i] + j - i;
-        }
-
-        void set_V(cand_pos_t ij, pf_t value) override {
-            owner_.V[ij] = value;
-        }
-
-        pf_t hairpin_energy(cand_pos_t i, cand_pos_t j) override {
-            return owner_.HairpinE(i, j);
-        }
-
-        pf_t internal_energy(cand_pos_t i, cand_pos_t j, std::vector<int> &up) override {
-            return owner_.compute_internal_restricted(i, j, up);
-        }
-
-        pf_t vm_energy(cand_pos_t i, cand_pos_t j, std::vector<int> &up) override {
-            return owner_.compute_energy_VM_restricted(i, j, up);
-        }
-
-      private:
-        W_final_pf &owner_;
-    };
-
-    LocalVContext ctx(*this);
-    scfg::compute_V_restricted(ctx, i, j, tree);
+    scfg::compute_V_restricted(*this, i, j, tree);
 }
 
 void W_final_pf::compute_pk_energies(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
@@ -487,52 +365,7 @@ void W_final_pf::compute_pk_energies(cand_pos_t i, cand_pos_t j, sparse_tree &tr
 }
 
 void W_final_pf::compute_WI(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
-    class LocalWIContext final : public scfg::PartFuncWIContext {
-      public:
-        explicit LocalWIContext(W_final_pf &owner) : owner_(owner) {}
-
-        cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const override {
-            return owner_.index[i] + j - i;
-        }
-
-        void set_WI(cand_pos_t ij, pf_t value) override {
-            owner_.WI[ij] = value;
-        }
-
-        pf_t get_WI(cand_pos_t i, cand_pos_t j) override {
-            return owner_.get_energy_WI(i, j);
-        }
-
-        pf_t get_energy(cand_pos_t i, cand_pos_t j) override {
-            return owner_.get_energy(i, j);
-        }
-
-        pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) override {
-            return owner_.get_energy_WMB(i, j);
-        }
-
-        pf_t expPPS_penalty() const override {
-            return ::expPPS_penalty;
-        }
-
-        pf_t expPSP_penalty() const override {
-            return ::expPSP_penalty;
-        }
-
-        pf_t expPUP_pen1() const override {
-            return owner_.expPUP_pen[1];
-        }
-
-        cand_pos_t turn() const override {
-            return TURN;
-        }
-
-      private:
-        W_final_pf &owner_;
-    };
-
-    LocalWIContext ctx(*this);
-    scfg::compute_WI_restricted(ctx, i, j, tree);
+    scfg::compute_WI_restricted(*this, i, j, tree);
 }
 
 void W_final_pf::compute_WIP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
