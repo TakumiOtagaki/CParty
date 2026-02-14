@@ -20,6 +20,7 @@ SET(SOURCE
   src/scfg/core.cc
   src/scfg/constraint_oracle.cc
   src/scfg/legacy_adapter.cc
+  src/scfg/part_func_adapter.cc
   src/scfg/rules_pseudo_loop.cc
   src/scfg/rules_part_func.cc
   src/fixed_energy_api.cc
@@ -158,6 +159,11 @@ if(BUILD_TESTING)
     src/fixed_energy_api.cc
   )
   add_executable(
+    fixed_energy_cli_mfe_energy_alignment_test
+    test/fixed_energy_cli_mfe_energy_alignment_test.cc
+    src/fixed_energy_api.cc
+  )
+  add_executable(
     can_pair_policy_test
     test/can_pair_policy_test.cc
     src/sparse_tree.cc
@@ -225,6 +231,12 @@ if(BUILD_TESTING)
   add_test(
     NAME fixed_energy_breakdown
     COMMAND fixed_energy_breakdown_test
+  )
+
+  add_test(
+    NAME fixed_energy_cli_mfe_energy_alignment
+    COMMAND fixed_energy_cli_mfe_energy_alignment_test
+            "${CMAKE_SOURCE_DIR}/test/baselines/fixed_energy_cli/density2_mfe_large.tsv"
   )
 
   add_test(
