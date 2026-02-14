@@ -120,6 +120,7 @@ class PartFuncWMvWMpContext {
     virtual pf_t expPSM_penalty() const = 0;
     virtual pf_t expb_penalty() const = 0;
     virtual pf_t expMLbase1() const = 0;
+    virtual cand_pos_t turn() const = 0;
     virtual void set_WMv_WMp(cand_pos_t ij, pf_t wmv, pf_t wmp) = 0;
 };
 
@@ -235,7 +236,6 @@ class PartFuncWMBPContext {
     virtual pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) = 0;
     virtual pf_t expPB_penalty() const = 0;
-    virtual pf_t expPB_penalty_sq() const = 0;
     virtual cand_pos_t n() const = 0;
     virtual int compute_exterior_cases(cand_pos_t l, cand_pos_t j, sparse_tree &tree) = 0;
     virtual void set_WMBP(cand_pos_t ij, pf_t value) = 0;

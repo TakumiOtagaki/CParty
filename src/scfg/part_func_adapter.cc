@@ -154,6 +154,7 @@ class LocalWMvWMpContext final : public PartFuncWMvWMpContext {
     pf_t expPSM_penalty() const override { return ::expPSM_penalty; }
     pf_t expb_penalty() const override { return ::expb_penalty; }
     pf_t expMLbase1() const override { return PartFuncAdapterAccess::expMLbase(owner_)[1]; }
+    cand_pos_t turn() const override { return TURN; }
     void set_WMv_WMp(cand_pos_t ij, pf_t wmv, pf_t wmp) override {
         PartFuncAdapterAccess::WMv(owner_)[ij] = wmv;
         PartFuncAdapterAccess::WMp(owner_)[ij] = wmp;
@@ -299,7 +300,6 @@ class LocalWMBPContext final : public PartFuncWMBPContext {
         return owner_.get_BE(i, j, ip, jp, tree);
     }
     pf_t expPB_penalty() const override { return ::expPB_penalty; }
-    pf_t expPB_penalty_sq() const override { return ::expPB_penalty * ::expPB_penalty; }
     cand_pos_t n() const override { return PartFuncAdapterAccess::n(owner_); }
     int compute_exterior_cases(cand_pos_t l, cand_pos_t j, sparse_tree &tree) override {
         return PartFuncAdapterAccess::compute_exterior_cases(owner_, l, j, tree);

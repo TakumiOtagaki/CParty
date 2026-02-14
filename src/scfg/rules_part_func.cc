@@ -136,7 +136,7 @@ pf_t compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, s
 }
 
 void compute_WMv_WMp_restricted(PartFuncWMvWMpContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<Node> &tree) {
-    if (j - i - 1 < 3) return;
+    if (j - i - 1 < ctx.turn()) return;
     const cand_pos_t ij = ctx.index_of(i, j);
 
     pf_t WMv_contributions = 0;
