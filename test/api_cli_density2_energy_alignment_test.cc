@@ -206,6 +206,15 @@ int main(int argc, char **argv) {
       }
       std::remove(tmp_name);
 
+      if (parsed.seq != row.seq) {
+        ++alignment_mismatched;
+        continue;
+      }
+      if (parsed.restricted != row.g) {
+        ++alignment_mismatched;
+        continue;
+      }
+
       const double cli_energy = row.cli_mfe_energy;
       const double api_energy = parsed.mfe_energy;
       const double abs_diff = std::fabs(cli_energy - api_energy);
