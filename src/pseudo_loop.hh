@@ -115,5 +115,6 @@ class pseudo_loop {
     void back_track_wmb(seq_interval *cur_interval, sparse_tree &tree);
     void back_track_wmbp(seq_interval *cur_interval, sparse_tree &tree);
     void back_track_wip(seq_interval *cur_interval, sparse_tree &tree);
+    void back_track_be(seq_interval *cur_interval, sparse_tree &tree);
 };
 #endif /*PSEUDO_LOOP_H_*/
