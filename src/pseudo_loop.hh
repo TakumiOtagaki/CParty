@@ -117,5 +117,7 @@ class pseudo_loop {
     void back_track_wip(seq_interval *cur_interval, sparse_tree &tree);
     void back_track_be(seq_interval *cur_interval, sparse_tree &tree);
     void back_track_vp_preamble(seq_interval *cur_interval);
+    void back_track_vp_cases_1_3(cand_pos_t i, cand_pos_t j, sparse_tree &tree, cand_pos_t Bp_ij, cand_pos_t B_ij, cand_pos_t b_ij,
+                                 cand_pos_t bp_ij, int &min, int &best_row);
 };
 #endif /*PSEUDO_LOOP_H_*/

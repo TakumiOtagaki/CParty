@@ -27,6 +27,7 @@ SET(SOURCE
   src/pseudo_loop_backtrack_wip.cc
   src/pseudo_loop_backtrack_be.cc
   src/pseudo_loop_backtrack_vp_preamble.cc
+  src/pseudo_loop_backtrack_vp_cases_1_3.cc
   src/part_func.cc
   src/scfg/core.cc
   src/scfg/constraint_oracle.cc
