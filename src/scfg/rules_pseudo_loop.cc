@@ -18,6 +18,8 @@ cand_pos_t PseudoLoopRuleHelpers::parent_index(cand_pos_t pos) const { return tr
 
 energy_t PseudoLoopRuleHelpers::add_double_pb_penalty(energy_t value) const { return 2 * config_.pb_penalty + value; }
 
+energy_t PseudoLoopRuleHelpers::add_single_pb_penalty(energy_t value) const { return config_.pb_penalty + value; }
+
 bool PseudoLoopRuleHelpers::allow_exterior_split(cand_pos_t l, cand_pos_t j, cand_pos_t b_ij, int exterior_case) const {
     (void)j;
     return (b_ij > 0 && l < b_ij) || (b_ij < 0 && exterior_case == 0);

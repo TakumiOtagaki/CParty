@@ -398,11 +398,11 @@ void pseudo_loop::compute_WMBP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
         });
     }
     // 3) WMB(i,j) = VP(i,j) + P_b
-    energy_t m3 = get_VP(i, j) + PB_penalty;
+    energy_t m3 = rules.add_single_pb_penalty(get_VP(i, j));
 
     // if not paired(j) and paired(i) then
     // WMBP(i,j) = 2*Pb + min_{i<l<bp(i)}(BE(i,bp(i),b'(i,l),bp(b'(i,l)))+WI(b'+1,l-1)+VP(l,j))
-    if (tree.tree[j].pair < 0 && tree.tree[i].pair >= 0) {
+    if (rules.pair_at(j) < 0 && rules.pair_at(i) >= 0) {
         energy_t tmp = INF;
         // Hosna: June 29, 2007
         // if j is inside i's arc then the l should be
@@ -412,16 +412,16 @@ void pseudo_loop::compute_WMBP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
             // Hosna, April 9th, 2007
             // checking the borders as they may be negative
-            cand_pos_t bp_il = tree.bp(i, l);
+            cand_pos_t bp_il = rules.border_bp(i, l);
             if (bp_il >= 0 && bp_il < n && l + TURN <= j) {
-                energy_t BE_energy = get_BE(i, tree.tree[i].pair, bp_il, tree.tree[bp_il].pair, tree);
+                energy_t BE_energy = get_BE(i, rules.pair_at(i), bp_il, rules.pair_at(bp_il), tree);
                 energy_t WI_energy = get_WI(bp_il + 1, l - 1);
                 energy_t VP_energy = get_VP(l, j);
                 energy_t sum = BE_energy + WI_energy + VP_energy;
                 tmp = std::min(tmp, sum);
             }
         }
-        m4 = 2 * PB_penalty + tmp;
+        m4 = rules.add_double_pb_penalty(tmp);
     }
 
     // get the min for WMB

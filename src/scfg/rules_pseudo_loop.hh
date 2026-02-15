@@ -23,6 +23,7 @@ class PseudoLoopRuleHelpers {
     cand_pos_t parent_index(cand_pos_t pos) const;
 
     energy_t add_double_pb_penalty(energy_t value) const;
+    energy_t add_single_pb_penalty(energy_t value) const;
 
     bool allow_exterior_split(cand_pos_t l, cand_pos_t j, cand_pos_t b_ij, int exterior_case) const;
     bool has_valid_band_borders(cand_pos_t i, cand_pos_t l, cand_pos_t j);
