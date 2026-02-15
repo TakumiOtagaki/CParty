@@ -18,18 +18,18 @@ SET(SOURCE
   src/pseudo_loop.cc 
   src/pseudo_loop_utils.cc
   src/pseudo_loop_getters.cc
-  src/pseudo_loop_backtrack_vpl.cc
-  src/pseudo_loop_backtrack_vpr.cc
-  src/pseudo_loop_backtrack_wi.cc
-  src/pseudo_loop_backtrack_wmbw.cc
-  src/pseudo_loop_backtrack_wmb.cc
-  src/pseudo_loop_backtrack_wmbp.cc
-  src/pseudo_loop_backtrack_wip.cc
-  src/pseudo_loop_backtrack_be.cc
-  src/pseudo_loop_backtrack_vp_preamble.cc
-  src/pseudo_loop_backtrack_vp_cases_1_3.cc
-  src/pseudo_loop_backtrack_vp_case_4.cc
-  src/pseudo_loop_backtrack_vp_case_5.cc
+  src/pseudo_loop_backtrack/pseudo_loop_backtrack_vpl.cc
+  src/pseudo_loop_backtrack/pseudo_loop_backtrack_vpr.cc
+  src/pseudo_loop_backtrack/pseudo_loop_backtrack_wi.cc
+  src/pseudo_loop_backtrack/pseudo_loop_backtrack_wmbw.cc
+  src/pseudo_loop_backtrack/pseudo_loop_backtrack_wmb.cc
+  src/pseudo_loop_backtrack/pseudo_loop_backtrack_wmbp.cc
+  src/pseudo_loop_backtrack/pseudo_loop_backtrack_wip.cc
+  src/pseudo_loop_backtrack/pseudo_loop_backtrack_be.cc
+  src/pseudo_loop_backtrack/pseudo_loop_backtrack_vp_preamble.cc
+  src/pseudo_loop_backtrack/pseudo_loop_backtrack_vp_cases_1_3.cc
+  src/pseudo_loop_backtrack/pseudo_loop_backtrack_vp_case_4.cc
+  src/pseudo_loop_backtrack/pseudo_loop_backtrack_vp_case_5.cc
   src/part_func.cc
   src/scfg/core.cc
   src/scfg/constraint_oracle.cc
