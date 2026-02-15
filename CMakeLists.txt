@@ -32,7 +32,6 @@ SET(SOURCE
   src/pseudo_loop_backtrack/vp_case3.cc
   src/pseudo_loop_backtrack/vp_case4.cc
   src/pseudo_loop_backtrack/vp_case5.cc
-  src/part_func.cc
   src/part_func_bpp.cc
   src/part_func_sample.cc
   src/part_func_energy.cc
