@@ -3,6 +3,7 @@
 #include "base_types.hh"
 #include "sparse_tree.hh"
 #include <cstring>
+#include <math.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -194,7 +195,9 @@ class W_final_pf {
     /**           MEA            */
     // std::vector<pf_t> probs;
 
-    double to_Energy(pf_t energy, cand_pos_t length);
+    pf_t to_Energy(pf_t energy, cand_pos_t length) {
+        return ((-log(energy) - length * log(exp_params_->pf_scale)) * exp_params_->kT / 1000.0);
+    }
     void rescale_pk_globals();
 
     void exp_params_rescale(double mfe);
