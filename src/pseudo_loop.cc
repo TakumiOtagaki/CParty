@@ -123,7 +123,8 @@ void pseudo_loop::compute_WI(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
         return;
     }
 
-    for (cand_pos_t k = i + 1; k < j - TURN - 1; ++k) {
+    const cand_pos_t turn = mode_config.turn;
+    for (cand_pos_t k = i + 1; k < j - turn - 1; ++k) {
         energy_t wi_1 = get_WI(i, k - 1);
         energy_t v_energy = wi_1 + V->get_energy(k, j);
         energy_t wmb_energy = wi_1 + get_WMB(k, j);
