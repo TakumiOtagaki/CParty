@@ -94,3 +94,62 @@ Rule Object + Constraint Oracle を使って単一パス評価を実装する。
   - `max_abs_diff=0`
   - `max_rel_diff=0`
 - 補足: 実行環境ポリシーで `rm -rf build` が拒否されるため、ストーリー実行では一意な fresh build ディレクトリを使用して anti-stale 条件を満たした。
+
+## 9. リファクタ作業フロー (2026-02-15 追記)
+以下は分割リファクタ時の基本フロー。原則として「機械的抽出 → build → strict test → commit」を徹底する。
+
+### 9.1 再ビルド・Strict Test
+```
+cmake --build build
+test/tools/compare_cli_stdout.sh worktree_legacy/build/CParty build/CParty 42 200 30,50,80
+```
+
+### 9.2 コミット運用
+- 変更が小さく機械的な単位になるように分割し、各ステップでコミットする。
+- 例:
+```
+git add <changed files...>
+git commit -m "<short summary>"
+```
+
+## 10. 分割進捗まとめ (2026-02-15)
+`src/part_func.cc` の分割を段階的に実施。すべての段階で build と strict test を通過。
+
+### 10.1 反映済みの分割内容
+- `boustrophedon` ヘルパを `src/part_func.hh` の `inline` に移動
+- BPP 関連:
+  - `src/part_func_bpp.cc`
+- サンプリング系:
+  - `src/part_func_sample.cc`
+  - `pair[]` 参照のため TU 内で `make_pair_matrix()` を一度だけ呼ぶガード追加
+- エネルギー系:
+  - `src/part_func_energy.cc`
+  - `pair[]` 参照のため TU 内で `make_pair_matrix()` を一度だけ呼ぶガード追加
+- PK 計算系:
+  - `src/part_func_pk.cc`
+  - `pair[]` 参照のため TU 内で `make_pair_matrix()` を一度だけ呼ぶガード追加
+- コア計算系:
+  - `src/part_func_core.cc`
+  - `pair[]` 参照のため TU 内で `make_pair_matrix()` を一度だけ呼ぶガード追加
+- rescale 系:
+  - `src/part_func_rescale.cc`
+- driver 系:
+  - `src/part_func_driver.cc`
+  - `pair[]` 参照のため TU 内で `make_pair_matrix()` を一度だけ呼ぶガード追加
+- init 系:
+  - `src/part_func_init.cc`
+  - `pair[]` 参照のため TU 内で `make_pair_matrix()` を一度だけ呼ぶガード追加
+- `compute_exterior_cases` は `src/part_func_pk.cc` に移動
+- `src/part_func.cc` は分割完了後に削除
+
+### 10.2 CMake 更新
+以下を `CMakeLists.txt` の `SOURCE` に追加:
+- `src/part_func_bpp.cc`
+- `src/part_func_sample.cc`
+- `src/part_func_energy.cc`
+- `src/part_func_pk.cc`
+- `src/part_func_core.cc`
+- `src/part_func_rescale.cc`
+- `src/part_func_driver.cc`
+- `src/part_func_init.cc`
+- `src/part_func.cc` を削除

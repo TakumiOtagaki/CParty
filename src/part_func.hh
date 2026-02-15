@@ -3,6 +3,7 @@
 #include "base_types.hh"
 #include "sparse_tree.hh"
 #include <cstring>
+#include <math.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -26,8 +27,24 @@ struct SzudzikHash {
     }
 };
 
-inline cand_pos_t boustrophedon_at(cand_pos_t start, cand_pos_t end, cand_pos_t pos);
-std::vector<cand_pos_t> boustrophedon(cand_pos_t start, cand_pos_t end);
+inline cand_pos_t boustrophedon_at(cand_pos_t start, cand_pos_t end, cand_pos_t pos) {
+    cand_pos_t count = pos - 1;
+    cand_pos_t advance = (cand_pos_t)(count / 2);
+
+    return start + (end - start) * (count % 2) + advance - (2 * (count % 2)) * advance;
+}
+
+inline std::vector<cand_pos_t> boustrophedon(cand_pos_t start, cand_pos_t end) {
+    std::vector<cand_pos_t> seq;
+
+    if (end >= start) {
+        seq.push_back(end - start + 1);
+        for (cand_pos_t pos = 1; pos <= end - start + 1; pos++)
+            seq.push_back(boustrophedon_at(start, end, pos));
+    }
+
+    return seq;
+}
 
 class W_final_pf {
     friend struct scfg::PartFuncAdapterAccess;
@@ -178,7 +195,9 @@ class W_final_pf {
     /**           MEA            */
     // std::vector<pf_t> probs;
 
-    double to_Energy(pf_t energy, cand_pos_t length);
+    pf_t to_Energy(pf_t energy, cand_pos_t length) {
+        return ((-log(energy) - length * log(exp_params_->pf_scale)) * exp_params_->kT / 1000.0);
+    }
     void rescale_pk_globals();
 
     void exp_params_rescale(double mfe);

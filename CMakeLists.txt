@@ -32,7 +32,14 @@ SET(SOURCE
   src/pseudo_loop_backtrack/vp_case3.cc
   src/pseudo_loop_backtrack/vp_case4.cc
   src/pseudo_loop_backtrack/vp_case5.cc
-  src/part_func.cc
+  src/part_func_bpp.cc
+  src/part_func_sample.cc
+  src/part_func_energy.cc
+  src/part_func_pk.cc
+  src/part_func_core.cc
+  src/part_func_rescale.cc
+  src/part_func_driver.cc
+  src/part_func_init.cc
   src/scfg/core.cc
   src/scfg/constraint_oracle.cc
   src/scfg/legacy_adapter.cc
