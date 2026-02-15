@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string>
 
+
+
 pseudo_loop::pseudo_loop(std::string seq, std::string res, s_energy_matrix *V, short *S, short *S1, vrna_param_t *params) {
     this->seq = seq;
     this->res = res;
@@ -20,6 +22,8 @@ pseudo_loop::pseudo_loop(std::string seq, std::string res, s_energy_matrix *V, s
     make_pair_matrix();
     allocate_space();
 }
+
+
 
 void pseudo_loop::allocate_space() {
     n = seq.length();
@@ -49,6 +53,7 @@ void pseudo_loop::allocate_space() {
     BE.resize(total_length, 0);
 }
 
+
 pseudo_loop::~pseudo_loop() {}
 
 /**
@@ -56,6 +61,8 @@ pseudo_loop::~pseudo_loop() {}
  * When applied to WMBP, if all cases are 0, then we can proceed with WMBP
  * Mateo Jan 2025: Added to Fix WMBP problem
  */
+
+
 int pseudo_loop::compute_exterior_cases(cand_pos_t l, cand_pos_t j, sparse_tree &tree) {
     // Case 1 -> l is not covered
     bool case1 = tree.tree[l].parent->index <= 0;
@@ -68,6 +75,8 @@ int pseudo_loop::compute_exterior_cases(cand_pos_t l, cand_pos_t j, sparse_tree 
     // By bitshifting each one, we have a more granular idea of what cases fail and is faster than branching
     return (case1 << 2) | (case2 << 1) | case4;
 }
+
+
 
 void pseudo_loop::compute_energies(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t ij = index[i] + j - i;
@@ -112,6 +121,8 @@ void pseudo_loop::compute_energies(cand_pos_t i, cand_pos_t j, sparse_tree &tree
     compute_BE(i, ip, jp, j, tree);
 }
 // Added +1 to fres/tree indices as they are 1 ahead at the moment
+
+
 void pseudo_loop::compute_WI(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
     scfg::PseudoLoopRuleHelpers rules(tree, mode_config);
@@ -139,6 +150,8 @@ void pseudo_loop::compute_WI(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     WI[ij] = std::min({m1, m2, m3, m4, m5});
 }
+
+
 
 void pseudo_loop::compute_WIP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t ij = index[i] + j - i;
@@ -171,6 +184,8 @@ void pseudo_loop::compute_WIP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     WIP[ij] = std::min({m1, m2, m3, m4, m5, m6, m7});
 }
 
+
+
 void pseudo_loop::compute_VPL(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     cand_pos_t ij = index[i] + j - i;
@@ -186,6 +201,8 @@ void pseudo_loop::compute_VPL(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     VPL[ij] = m1;
 }
+
+
 
 void pseudo_loop::compute_VPR(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
@@ -206,6 +223,8 @@ void pseudo_loop::compute_VPR(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     VPR[ij] = std::min(m1, m2);
 }
+
+
 
 void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t ij = index[i] + j - i;
@@ -330,6 +349,8 @@ void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     VP[ij] = min;
 }
 
+
+
 void pseudo_loop::compute_WMBW(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t ij = index[i] + j - i;
     const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
@@ -347,6 +368,8 @@ void pseudo_loop::compute_WMBW(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     }
     WMBW[ij] = m1;
 }
+
+
 
 void pseudo_loop::compute_WMBP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t ij = index[i] + j - i;
@@ -441,6 +464,8 @@ void pseudo_loop::compute_WMBP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     WMBP[ij] = std::min({m1, m2, m3, m4});
 }
 
+
+
 void pseudo_loop::compute_WMB(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t ij = index[i] + j - i;
     const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
@@ -476,6 +501,8 @@ void pseudo_loop::compute_WMB(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     // get the min for WMB
     WMB[ij] = std::min(m2, mWMBP);
 }
+
+
 
 void pseudo_loop::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) {
     const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
@@ -564,11 +591,15 @@ void pseudo_loop::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos
     BE[iip] = std::min({m1, m2, m3, m4, m5});
 }
 
+
+
 energy_t pseudo_loop::get_WI(cand_pos_t i, cand_pos_t j) {
     if (i > j) return 0;
     cand_pos_t ij = index[i] + j - i;
     return WI[ij];
 }
+
+
 
 energy_t pseudo_loop::get_WIP(cand_pos_t i, cand_pos_t j) {
     if (i >= j) return INF;
@@ -576,26 +607,36 @@ energy_t pseudo_loop::get_WIP(cand_pos_t i, cand_pos_t j) {
     return WIP[ij];
 }
 
+
+
 energy_t pseudo_loop::get_VP(cand_pos_t i, cand_pos_t j) {
     if (i >= j) return INF;
     cand_pos_t ij = index[i] + j - i;
     return VP[ij];
 }
+
+
 energy_t pseudo_loop::get_VPL(cand_pos_t i, cand_pos_t j) {
     if (i >= j) return INF;
     cand_pos_t ij = index[i] + j - i;
     return VPL[ij];
 }
+
+
 energy_t pseudo_loop::get_VPR(cand_pos_t i, cand_pos_t j) {
     if (i >= j) return INF;
     cand_pos_t ij = index[i] + j - i;
     return VPR[ij];
 }
+
+
 energy_t pseudo_loop::get_WMB(cand_pos_t i, cand_pos_t j) {
     if (i >= j) return INF;
     cand_pos_t ij = index[i] + j - i;
     return WMB[ij];
 }
+
+
 
 energy_t pseudo_loop::get_WMBW(cand_pos_t i, cand_pos_t j) {
     if (i >= j) return INF;
@@ -603,11 +644,15 @@ energy_t pseudo_loop::get_WMBW(cand_pos_t i, cand_pos_t j) {
     return WMBW[ij];
 }
 
+
+
 energy_t pseudo_loop::get_WMBP(cand_pos_t i, cand_pos_t j) {
     if (i >= j) return INF;
     cand_pos_t ij = index[i] + j - i;
     return WMBP[ij];
 }
+
+
 
 energy_t pseudo_loop::get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) {
     // Hosna, March 16, 2012,
@@ -626,30 +671,7 @@ energy_t pseudo_loop::get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos
     }
 }
 
-energy_t pseudo_loop::compute_int(cand_pos_t i, cand_pos_t j, cand_pos_t k, cand_pos_t l, const paramT *params) {
 
-    const pair_type ptype_closing = pair[S_[i]][S_[j]];
-    return E_IntLoop(k - i - 1, j - l - 1, ptype_closing, rtype[pair[S_[k]][S_[l]]], S1_[i + 1], S1_[j - 1], S1_[k - 1], S1_[l + 1],
-                     const_cast<paramT *>(params));
-}
-
-energy_t pseudo_loop::get_e_stP(cand_pos_t i, cand_pos_t j) {
-    if (i + 1 == j - 1) { // TODO: do I need something like that or stack is taking care of this?
-        return INF;
-    }
-    energy_t ss = compute_int(i, j, i + 1, j - 1, params_);
-    return lrint(e_stP_penalty * ss);
-}
-
-energy_t pseudo_loop::get_e_intP(cand_pos_t i, cand_pos_t ip, cand_pos_t jp, cand_pos_t j) {
-    // Hosna Feb 12th, 2007:
-    // this function is only being called in branch 5 of VP
-    // and branch 2 of BE
-    // in both cases regions [i,ip] and [jp,j] are closed regions
-    energy_t e_int = compute_int(i, j, ip, jp, params_);
-    energy_t energy = lrint(e_intP_penalty * e_int);
-    return energy;
-}
 
 void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interval *cur_interval, sparse_tree &tree) {
     this->structure = structure;
@@ -1490,6 +1512,8 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
     }
 }
 
+
+
 void pseudo_loop::insert_node(int i, int j, char type) {
     seq_interval *tmp;
     tmp = new seq_interval;
@@ -1500,4 +1524,7 @@ void pseudo_loop::insert_node(int i, int j, char type) {
     stack_interval = tmp;
 }
 
+
+
 void pseudo_loop::set_stack_interval(seq_interval *stack_interval) { this->stack_interval = stack_interval; }
+

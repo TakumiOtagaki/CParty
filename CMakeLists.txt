@@ -16,6 +16,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto")
 SET(SOURCE
   src/W_final.cc 
   src/pseudo_loop.cc 
+  src/pseudo_loop_utils.cc
   src/part_func.cc
   src/scfg/core.cc
   src/scfg/constraint_oracle.cc
