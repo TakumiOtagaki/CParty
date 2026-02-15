@@ -288,8 +288,6 @@ void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
         }
     }
 
-    cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
-    cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
     cand_pos_t min_Bp_j_m6 = std::min((cand_pos_tu)rules.border_b(i, j), (cand_pos_tu)rules.border_Bp(i, j));
     cand_pos_t max_i_bp_m7 = std::max(rules.border_B(i, j), rules.border_bp(i, j));
 
@@ -305,13 +303,13 @@ void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     m7 += ap_penalty + 2 * bp_penalty;
 
-    for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
+    for (cand_pos_t k = i + 1; k < min_Bp_j_m6; ++k) {
         m8 = std::min(m8, get_WIP(i + 1, k - 1) + get_VPR(k, j - 1));
     }
 
     m8 += ap_penalty + 2 * bp_penalty;
 
-    for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
+    for (cand_pos_t k = max_i_bp_m7 + 1; k < j; ++k) {
         m9 = std::min(m9, get_VPL(i + 1, k) + get_WIP(k + 1, j - 1));
     }
 
