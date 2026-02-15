@@ -159,3 +159,11 @@ Started: 2026-02-13
   - Final gate stories should capture a single explicit command transcript plus emitted metrics in one report file to keep completion claims mechanically auditable.
   - In policy-restricted environments, fresh unique build directories are a valid anti-stale substitute for `rm -rf build` as long as all gates execute in that directory.
 ---
+
+## 2026-02-15 - pseudo_loop SCFG migration complete
+- What was implemented: Completed SCFG helper migration for remaining `pseudo_loop` recurrences (WMB/WMBW/VP/WI/WIP/BE), keeping formulas unchanged while routing border, pair, and closure checks through `scfg::PseudoLoopRuleHelpers`.
+- Strict check: `cmake --build build` + `test/tools/compare_cli_stdout.sh worktree_legacy/build/CParty build/CParty 42 200 30,50,80` reported `compare_total=600`, `compare_matched=600`, `compare_failed=0`, `compare_skipped=0`.
+- Files changed (this run): `src/pseudo_loop.cc`, `src/scfg/rules_pseudo_loop.hh`, `src/scfg/rules_pseudo_loop.cc`
+- **Learnings:**
+  - Keeping pseudo-loop border/pair access behind a single helper interface allows incremental refactors without touching the recurrence math.
+---
