@@ -35,6 +35,7 @@ SET(SOURCE
   src/part_func.cc
   src/part_func_bpp.cc
   src/part_func_sample.cc
+  src/part_func_energy.cc
   src/scfg/core.cc
   src/scfg/constraint_oracle.cc
   src/scfg/legacy_adapter.cc
