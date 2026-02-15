@@ -28,7 +28,7 @@ class GenerationError(RuntimeError):
     pass
 
 
-def generate_structure(rng: random.Random, length: int) -> str:
+def generate_structure(rng: random.Random, length: int, turn: int) -> str:
     if length < 0:
         raise ValueError("length must be >= 0")
     if length == 0:
@@ -42,9 +42,11 @@ def generate_structure(rng: random.Random, length: int) -> str:
         # S -> S '.'  (left-recursive form reinterpreted with bounded size)
         if n >= 1:
             options.append(("dot", None))
-        # S -> S '(' S ')' : choose inner span size k, remaining prefix uses n-k-2
+        # S -> S '(' S ')' : choose inner span size k, remaining prefix uses n-k-2.
+        # Enforce TURN: inner length must be >= turn to satisfy j - i - 1 >= turn.
         if n >= 2:
-            for inner in range(0, n - 1):
+            min_inner = max(turn, 0)
+            for inner in range(min_inner, n - 1):
                 options.append(("pair", inner))
 
         if not options:
@@ -124,6 +126,7 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=1, help="PRNG seed")
     parser.add_argument("--count", type=int, default=10, help="number of cases")
     parser.add_argument("--length", type=int, default=24, help="sequence/structure length")
+    parser.add_argument("--turn", type=int, default=3, help="minimum unpaired bases between paired positions")
     parser.add_argument(
         "--prefix",
         default="rand",
@@ -146,7 +149,7 @@ def main(argv: Sequence[str]) -> int:
 
     print("case_id\tseq\tG")
     for i in range(1, args.count + 1):
-        structure = generate_structure(rng, args.length)
+    structure = generate_structure(rng, args.length, args.turn)
         seq = assign_sequence(rng, structure)
         validate_pairing(seq, structure)
         print(f"{args.prefix}_{i:04d}\t{seq}\t{structure}")

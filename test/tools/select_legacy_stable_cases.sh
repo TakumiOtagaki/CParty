@@ -147,6 +147,30 @@ def randomize_sequence(structure: str) -> str:
         raise ValueError("unbalanced structure")
     return "".join(seq)
 
+TURN = 3
+
+def enforce_turn(structure: str, turn: int) -> str:
+    """Replace too-short pairs with dots so all pairs satisfy j - i - 1 >= turn."""
+    if turn <= 0:
+        return structure
+    chars = list(structure)
+    stack = []
+    for i, ch in enumerate(chars):
+        if ch == "(":
+            stack.append(i)
+        elif ch == ")":
+            if not stack:
+                raise ValueError("unbalanced structure")
+            j = stack.pop()
+            if i - j - 1 < turn:
+                chars[j] = "."
+                chars[i] = "."
+        elif ch != ".":
+            raise ValueError(f"unsupported char: {ch}")
+    if stack:
+        raise ValueError("unbalanced structure")
+    return "".join(chars)
+
 def build_structure(target_len: int) -> str:
     structure_parts = []
     total = 0
@@ -171,7 +195,9 @@ def build_structure(target_len: int) -> str:
                 structure_parts.append("." * gap)
                 total += gap
 
-    return "".join(structure_parts)
+    structure = "".join(structure_parts)
+    structure = enforce_turn(structure, TURN)
+    return structure
 
 writer = csv.writer(sys.stdout, delimiter="\t", lineterminator="\n")
 writer.writerow(["case_id", "seq", "G"])
