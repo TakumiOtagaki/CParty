@@ -320,17 +320,18 @@ void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
 void pseudo_loop::compute_WMBW(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t ij = index[i] + j - i;
+    const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
+    scfg::PseudoLoopRuleHelpers rules(tree, mode_config);
 
     energy_t m1 = INF;
 
-    if (tree.tree[j].pair < j) {
-        for (cand_pos_t l = i + 1; l < j; l++) {
-            if (tree.tree[l].pair < 0 && tree.tree[l].parent->index > -1 && tree.tree[j].parent->index > -1
-                && tree.tree[j].parent->index == tree.tree[l].parent->index) {
+    if (rules.pair_at(j) < j) {
+        rules.for_each_split(i, j, [&](cand_pos_t l) {
+            if (rules.pair_at(l) < 0 && rules.parent_index(l) > -1 && rules.parent_index(j) > -1 && rules.parent_index(j) == rules.parent_index(l)) {
                 energy_t tmp = get_WMBP(i, l) + get_WI(l + 1, j);
                 m1 = std::min(m1, tmp);
             }
-        }
+        });
     }
     WMBW[ij] = m1;
 }
