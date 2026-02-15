@@ -478,18 +478,19 @@ void pseudo_loop::compute_WMB(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 }
 
 void pseudo_loop::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) {
+    const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
+    scfg::PseudoLoopRuleHelpers rules(tree, mode_config);
 
     // Ian Wark July 19 2017
     // otherwise it will create pairs in spots where the restricted structure says there should be no pairs
 
-    if (!(i >= 1 && i <= ip && ip < jp && jp <= j && j <= n && tree.tree[i].pair > 0 && tree.tree[j].pair > 0 && tree.tree[ip].pair > 0
-          && tree.tree[jp].pair > 0 && tree.tree[i].pair == j && tree.tree[j].pair == i && tree.tree[ip].pair == jp
-          && tree.tree[jp].pair == ip)) { // impossible cases
+    if (!(i >= 1 && i <= ip && ip < jp && jp <= j && j <= n && rules.pair_at(i) > 0 && rules.pair_at(j) > 0 && rules.pair_at(ip) > 0
+          && rules.pair_at(jp) > 0 && rules.pair_at(i) == j && rules.pair_at(j) == i && rules.pair_at(ip) == jp && rules.pair_at(jp) == ip)) {
         return;
     }
     cand_pos_t iip = index[i] + ip - i;
     // base case: i.j and ip.jp must be in G
-    if (tree.tree[i].pair != j || tree.tree[ip].pair != jp) {
+    if (rules.pair_at(i) != j || rules.pair_at(ip) != jp) {
         BE[iip] = INF;
         return;
     }
@@ -502,7 +503,7 @@ void pseudo_loop::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos
 
     energy_t m1 = INF, m2 = INF, m3 = INF, m4 = INF, m5 = INF;
     // 1) bp(i+1) == j-1
-    if (tree.tree[i + 1].pair == j - 1) {
+    if (rules.pair_at(i + 1) == j - 1) {
         m1 = get_e_stP(i, j) + get_BE(i + 1, j - 1, ip, jp, tree);
     }
 
@@ -510,12 +511,12 @@ void pseudo_loop::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos
     for (cand_pos_t l = i + 1; l <= ip; l++) {
 
         // Hosna: March 14th, 2007
-        if (tree.tree[l].pair >= -1 && jp <= tree.tree[l].pair && tree.tree[l].pair < j) {
+        if (rules.pair_at(l) >= -1 && jp <= rules.pair_at(l) && rules.pair_at(l) < j) {
             // Hosna, March 15, 2007
             // since not_paired_all[i,l] includes i and l themselves
             // and in BE energy calculation we are looking for the oepn region (i,l)
             // we have to look at not_paired_all[i+1,l-1]
-            cand_pos_t lp = tree.tree[l].pair;
+            cand_pos_t lp = rules.pair_at(l);
             // 2)
             // Hosna June 29, 2007
             // when we pass a stacked pair instead of an internal loop to e_int, it returns underflow,
