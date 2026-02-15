@@ -109,5 +109,6 @@ class pseudo_loop {
     // used for backtracking
     void insert_node(cand_pos_t i, cand_pos_t j, char type); //, seq_interval *stack_interval);
     void back_track_vpl(seq_interval *cur_interval, sparse_tree &tree);
+    void back_track_vpr(seq_interval *cur_interval, sparse_tree &tree);
 };
 #endif /*PSEUDO_LOOP_H_*/
