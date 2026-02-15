@@ -431,6 +431,8 @@ void pseudo_loop::compute_WMBP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
 void pseudo_loop::compute_WMB(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t ij = index[i] + j - i;
+    const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
+    scfg::PseudoLoopRuleHelpers rules(tree, mode_config);
     // base case
     if (i == j) {
         WMB[ij] = INF;
@@ -440,20 +442,20 @@ void pseudo_loop::compute_WMB(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     // added impossible cases
     energy_t m2 = INF, mWMBP = INF;
     // 2)
-    if (tree.tree[j].pair >= 0 && j > tree.tree[j].pair && tree.tree[j].pair > i) {
-        cand_pos_t bp_j = tree.tree[j].pair;
+    if (rules.pair_at(j) >= 0 && j > rules.pair_at(j) && rules.pair_at(j) > i) {
+        cand_pos_t bp_j = rules.pair_at(j);
         for (cand_pos_t l = (bp_j + 1); (l < j); l++) {
             // Hosna: April 24, 2007
             // correct case 2 such that a multi-pseudoknotted
             // loop would not be treated as case 2
-            cand_pos_t Bp_lj = tree.Bp(l, j);
+            cand_pos_t Bp_lj = rules.border_Bp(l, j);
 
             if (Bp_lj >= 0 && Bp_lj < n) {
-                energy_t sum = get_BE(bp_j, j, tree.tree[Bp_lj].pair, Bp_lj, tree) + get_WMBP(i, l) + get_WI(l + 1, Bp_lj - 1);
+                energy_t sum = get_BE(bp_j, j, rules.pair_at(Bp_lj), Bp_lj, tree) + get_WMBP(i, l) + get_WI(l + 1, Bp_lj - 1);
                 m2 = std::min(m2, sum);
             }
         }
-        m2 += PB_penalty;
+        m2 = rules.add_single_pb_penalty(m2);
     }
 
     // check the WMBP value
