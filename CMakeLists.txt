@@ -246,4 +246,15 @@ if(BUILD_TESTING)
             "$<TARGET_FILE:CParty>"
             "${CMAKE_SOURCE_DIR}/params/rna_DirksPierce09.par"
   )
+
+  add_test(
+    NAME api_cli_stdout_legacy_alignment
+    COMMAND bash -lc
+            "LEGACY_BIN=\"${CMAKE_SOURCE_DIR}/worktree_legacy/build/CParty\"; \
+             if [[ -n \"$CPARTY_LEGACY_BIN\" ]]; then LEGACY_BIN=\"$CPARTY_LEGACY_BIN\"; fi; \
+             \"${CMAKE_SOURCE_DIR}/test/tools/compare_cli_stdout.sh\" \
+             \"$LEGACY_BIN\" \
+             \"$<TARGET_FILE:CParty>\" \
+             20260213 200 30,50,80"
+  )
 endif()
