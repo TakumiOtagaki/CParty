@@ -18,6 +18,7 @@ SET(SOURCE
   src/pseudo_loop.cc 
   src/pseudo_loop_utils.cc
   src/pseudo_loop_getters.cc
+  src/pseudo_loop_backtrack_vpl.cc
   src/part_func.cc
   src/scfg/core.cc
   src/scfg/constraint_oracle.cc
