@@ -623,15 +623,7 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
         cand_pos_t b_ij = tree.b(i, j);
         cand_pos_t bp_ij = tree.bp(i, j);
         back_track_vp_cases_1_3(i, j, tree, Bp_ij, B_ij, b_ij, bp_ij, min, best_row);
-        // case 4
-        pair_type ptype_closingip1jm1 = pair[S_[i + 1]][S_[j - 1]];
-        if (tree.tree[i + 1].pair < 0 && tree.tree[j - 1].pair < 0 && ptype_closingip1jm1 > 0) {
-            tmp = get_e_stP(i, j) + get_VP(i + 1, j - 1);
-            if (tmp < min) {
-                min = tmp;
-                best_row = 4;
-            }
-        }
+        back_track_vp_case_4(i, j, tree, min, best_row);
 
         cand_pos_t min_borders = std::min((cand_pos_tu)Bp_ij, (cand_pos_tu)b_ij);
         cand_pos_t edge_i = std::min(i + MAXLOOP + 1, j - TURN - 1);
