@@ -184,9 +184,11 @@ void pseudo_loop::compute_VPL(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 void pseudo_loop::compute_VPR(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     cand_pos_t ij = index[i] + j - i;
+    const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
+    scfg::PseudoLoopRuleHelpers rules(tree, mode_config);
     energy_t m1 = INF, m2 = INF;
 
-    cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
+    cand_pos_t max_i_bp = std::max(rules.border_B(i, j), rules.border_bp(i, j));
 
     for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
         energy_t VP_energy = get_VP(i, k);
