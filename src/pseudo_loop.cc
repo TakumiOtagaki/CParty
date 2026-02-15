@@ -203,14 +203,16 @@ void pseudo_loop::compute_VPR(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
 void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t ij = index[i] + j - i;
+    const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
+    scfg::PseudoLoopRuleHelpers rules(tree, mode_config);
 
     energy_t m1 = INF, m2 = INF, m3 = INF, m4 = INF, m5 = INF, m6 = INF, m7 = INF, m8 = INF, m9 = INF; // different branches
 
     // Borders -- added one to i and j to make it fit current bounds but also subtracted 1 from answer as the tree bounds are shifted as well
-    cand_pos_t Bp_ij = tree.Bp(i, j);
-    cand_pos_t B_ij = tree.B(i, j);
-    cand_pos_t b_ij = tree.b(i, j);
-    cand_pos_t bp_ij = tree.bp(i, j);
+    cand_pos_t Bp_ij = rules.border_Bp(i, j);
+    cand_pos_t B_ij = rules.border_B(i, j);
+    cand_pos_t b_ij = rules.border_b(i, j);
+    cand_pos_t bp_ij = rules.border_bp(i, j);
 
     // branchs:
     //  1) inArc(i) and NOT_inArc(j)
@@ -218,7 +220,7 @@ void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     // Hosna April 9th, 2007
     // need to check the borders as they may be negative
-    if ((tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) < (tree.tree[i].parent->index) && Bp_ij >= 0 && B_ij >= 0 && bp_ij < 0) {
+    if (rules.parent_index(i) > 0 && rules.parent_index(j) < rules.parent_index(i) && Bp_ij >= 0 && B_ij >= 0 && bp_ij < 0) {
         energy_t WI_ipus1_BPminus = get_WI(i + 1, Bp_ij - 1);
         energy_t WI_Bplus_jminus = get_WI(B_ij + 1, j - 1);
         m1 = WI_ipus1_BPminus + WI_Bplus_jminus;
