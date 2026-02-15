@@ -142,11 +142,14 @@ void pseudo_loop::compute_WI(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
 void pseudo_loop::compute_WIP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     cand_pos_t ij = index[i] + j - i;
+    const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
+    scfg::PseudoLoopRuleHelpers rules(tree, mode_config);
 
     energy_t m1 = INF, m2 = INF, m3 = INF, m4 = INF, m5 = INF, m6 = INF, m7 = INF;
 
     // branch 1:
-    for (cand_pos_t k = i + 1; k < j - TURN - 1; ++k) {
+    const cand_pos_t turn = mode_config.turn;
+    for (cand_pos_t k = i + 1; k < j - turn - 1; ++k) {
         bool can_pair = scfg::can_pair_left_span(tree, i, k);
         energy_t wi_1 = get_WIP(i, k - 1);
         energy_t v_energy = V->get_energy(k, j);
@@ -161,7 +164,7 @@ void pseudo_loop::compute_WIP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     m3 += bp_penalty;
     m4 += PSM_penalty + bp_penalty;
     // branch 2:
-    if (tree.tree[j].pair < 0) m5 = get_WIP(i, j - 1) + cp_penalty;
+    if (rules.pair_at(j) < 0) m5 = get_WIP(i, j - 1) + cp_penalty;
     m6 = V->get_energy(i, j) + bp_penalty;
     m7 = get_WMB(i, j) + PSM_penalty + bp_penalty;
 
