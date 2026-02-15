@@ -278,7 +278,7 @@ void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
             for (cand_pos_t l = j - 1; l > max_borders; --l) {
 
                 pair_type ptype_closingkj = pair[S_[k]][S_[l]];
-                if (scfg::is_unpaired_position(tree, l) && scfg::is_pair_type_allowed(ptype_closingkj) && scfg::is_empty_region(tree, l, j)) {
+                if (rules.pair_at(l) < -1 && scfg::is_pair_type_allowed(ptype_closingkj) && scfg::is_empty_region(tree, l, j)) {
                     // Hosna: April 20, 2007
                     // i and ip and j and jp should be in the same arc -- If it's unpaired between them, they have to be
                     energy_t tmp = get_e_intP(i, k, l, j) + get_VP(k, l);
