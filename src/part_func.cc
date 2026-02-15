@@ -395,25 +395,6 @@ void W_final_pf::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_
 
 /*                                BPP                                            */
 
-inline cand_pos_t boustrophedon_at(cand_pos_t start, cand_pos_t end, cand_pos_t pos) {
-    cand_pos_t count = pos - 1;
-    cand_pos_t advance = (cand_pos_t)(count / 2);
-
-    return start + (end - start) * (count % 2) + advance - (2 * (count % 2)) * advance;
-}
-
-std::vector<cand_pos_t> boustrophedon(cand_pos_t start, cand_pos_t end) {
-    std::vector<cand_pos_t> seq;
-
-    if (end >= start) {
-        seq.push_back(end - start + 1);
-        for (cand_pos_t pos = 1; pos <= end - start + 1; pos++)
-            seq.push_back(boustrophedon_at(start, end, pos));
-    }
-
-    return seq;
-}
-
 void W_final_pf::Sample_W(cand_pos_t start, cand_pos_t end, std::string &structure,
                           std::unordered_map<std::pair<cand_pos_t, cand_pos_t>, cand_pos_t, SzudzikHash> &samples, sparse_tree &tree) {
     if (debug) printf("W at %d and %d with W[j]=%f,%f\n", start, end, W[end], to_Energy(W[end], end));
