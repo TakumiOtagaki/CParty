@@ -38,6 +38,7 @@ SET(SOURCE
   src/part_func_energy.cc
   src/part_func_pk.cc
   src/part_func_core.cc
+  src/part_func_rescale.cc
   src/scfg/core.cc
   src/scfg/constraint_oracle.cc
   src/scfg/legacy_adapter.cc
