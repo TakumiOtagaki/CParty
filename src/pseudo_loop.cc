@@ -523,8 +523,8 @@ void pseudo_loop::compute_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos
             // so I am checking explicitely that we won't have stems instead of internal loop
             bool empty_region_il = scfg::is_empty_region(tree, i, l);    // empty between i+1 and lp-1
             bool empty_region_lpj = scfg::is_empty_region(tree, lp, j);  // empty between l+1 and ip-1
-            bool weakly_closed_il = tree.weakly_closed(i + 1, l - 1);   // weakly closed between i+1 and lp-1
-            bool weakly_closed_lpj = tree.weakly_closed(lp + 1, j - 1); // weakly closed between l+1 and ip-1
+            bool weakly_closed_il = rules.weakly_closed(i + 1, l - 1);   // weakly closed between i+1 and lp-1
+            bool weakly_closed_lpj = rules.weakly_closed(lp + 1, j - 1); // weakly closed between l+1 and ip-1
 
             if (empty_region_il && empty_region_lpj) { //&& !(ip == (i+1) && jp==(j-1)) && !(l == (i+1) && lp == (j-1))){
                 energy_t tmp = get_e_intP(i, l, lp, j) + get_BE(l, lp, ip, jp, tree);

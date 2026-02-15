@@ -35,6 +35,8 @@ bool PseudoLoopRuleHelpers::parent_within_interval_and_turn(cand_pos_t i, cand_p
     return i <= parent_index(l) && parent_index(l) < j && l + config_.turn <= j;
 }
 
+bool PseudoLoopRuleHelpers::weakly_closed(cand_pos_t i, cand_pos_t j) const { return tree_.weakly_closed(i, j); }
+
 void PseudoLoopRuleHelpers::on_traceback_hook(cand_pos_t i, cand_pos_t j) const {
     (void)i;
     (void)j;

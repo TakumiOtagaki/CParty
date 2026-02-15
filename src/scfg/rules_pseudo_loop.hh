@@ -28,6 +28,7 @@ class PseudoLoopRuleHelpers {
     bool allow_exterior_split(cand_pos_t l, cand_pos_t j, cand_pos_t b_ij, int exterior_case) const;
     bool has_valid_band_borders(cand_pos_t i, cand_pos_t l, cand_pos_t j);
     bool parent_within_interval_and_turn(cand_pos_t i, cand_pos_t l, cand_pos_t j) const;
+    bool weakly_closed(cand_pos_t i, cand_pos_t j) const;
 
     template <typename Fn>
     void for_each_split(cand_pos_t i, cand_pos_t j, Fn fn) const {
