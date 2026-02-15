@@ -131,6 +131,16 @@ git commit -m "<short summary>"
 - コア計算系:
   - `src/part_func_core.cc`
   - `pair[]` 参照のため TU 内で `make_pair_matrix()` を一度だけ呼ぶガード追加
+- rescale 系:
+  - `src/part_func_rescale.cc`
+- driver 系:
+  - `src/part_func_driver.cc`
+  - `pair[]` 参照のため TU 内で `make_pair_matrix()` を一度だけ呼ぶガード追加
+- init 系:
+  - `src/part_func_init.cc`
+  - `pair[]` 参照のため TU 内で `make_pair_matrix()` を一度だけ呼ぶガード追加
+- `compute_exterior_cases` は `src/part_func_pk.cc` に移動
+- `src/part_func.cc` は分割完了後に削除
 
 ### 10.2 CMake 更新
 以下を `CMakeLists.txt` の `SOURCE` に追加:
@@ -139,3 +149,7 @@ git commit -m "<short summary>"
 - `src/part_func_energy.cc`
 - `src/part_func_pk.cc`
 - `src/part_func_core.cc`
+- `src/part_func_rescale.cc`
+- `src/part_func_driver.cc`
+- `src/part_func_init.cc`
+- `src/part_func.cc` を削除
