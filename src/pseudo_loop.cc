@@ -252,7 +252,7 @@ void pseudo_loop::compute_VP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     // 4) NOT_paired(i+1) and NOT_paired(j-1) and they can pair together
     // e_stP(i,i+1,j-1,j) + VP(i+1)(j-1)
     pair_type ptype_closingip1jm1 = pair[S_[i + 1]][S_[j - 1]];
-    if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 && ptype_closingip1jm1 > 0) {
+    if (rules.pair_at(i + 1) < -1 && rules.pair_at(j - 1) < -1 && scfg::is_pair_type_allowed(ptype_closingip1jm1)) {
         m4 = get_e_stP(i, j) + get_VP(i + 1, j - 1);
     }
 
