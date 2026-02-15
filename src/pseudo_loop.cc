@@ -622,7 +622,9 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
         cand_pos_t B_ij = tree.B(i, j);
         cand_pos_t b_ij = tree.b(i, j);
         cand_pos_t bp_ij = tree.bp(i, j);
-        back_track_vp_cases_1_3(i, j, tree, Bp_ij, B_ij, b_ij, bp_ij, min, best_row);
+        back_track_vp_case_1(i, j, tree, Bp_ij, B_ij, b_ij, bp_ij, min, best_row);
+        back_track_vp_case_2(i, j, tree, Bp_ij, B_ij, b_ij, bp_ij, min, best_row);
+        back_track_vp_case_3(i, j, tree, Bp_ij, B_ij, b_ij, bp_ij, min, best_row);
         back_track_vp_case_4(i, j, tree, min, best_row);
 
         back_track_vp_case_5(i, j, tree, Bp_ij, B_ij, b_ij, bp_ij, min, best_row, best_ip, best_jp);
