@@ -113,6 +113,8 @@ void pseudo_loop::compute_energies(cand_pos_t i, cand_pos_t j, sparse_tree &tree
 }
 // Added +1 to fres/tree indices as they are 1 ahead at the moment
 void pseudo_loop::compute_WI(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+    const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
+    scfg::PseudoLoopRuleHelpers rules(tree, mode_config);
     energy_t m1 = INF, m2 = INF, m3 = INF, m4 = INF, m5 = INF;
     cand_pos_t ij = index[i] + j - i;
     // branch 4, one base
@@ -130,7 +132,7 @@ void pseudo_loop::compute_WI(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     }
     m1 += PPS_penalty;
     m2 += PSP_penalty + PPS_penalty;
-    if (tree.tree[j].pair < 0) m3 = get_WI(i, j - 1) + PUP_penalty;
+    if (rules.pair_at(j) < 0) m3 = get_WI(i, j - 1) + PUP_penalty;
     m4 = V->get_energy(i, j) + PPS_penalty;
     m5 = get_WMB(i, j) + PSP_penalty + PPS_penalty;
 
