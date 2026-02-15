@@ -615,13 +615,7 @@ void pseudo_loop::back_track(std::string structure, minimum_fold *f, seq_interva
         if (i >= j) {
             return;
         }
-        f[i].pair = j;
-        f[j].pair = i;
-        this->structure[i] = '[';
-        this->structure[j] = ']';
-        // printf("----> original VP: adding (%d,%d) <-------\n",i,j);
-        f[i].type = P_VP;
-        f[j].type = P_VP;
+        back_track_vp_preamble(cur_interval);
 
         int min = INF, tmp = INF, best_ip = INF, best_jp = INF, best_row = -1, best_r = INF;
         cand_pos_t Bp_ij = tree.Bp(i, j);
