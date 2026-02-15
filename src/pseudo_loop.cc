@@ -168,9 +168,11 @@ void pseudo_loop::compute_WIP(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 void pseudo_loop::compute_VPL(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
 
     cand_pos_t ij = index[i] + j - i;
+    const scfg::PseudoLoopModeConfig mode_config{PB_penalty, TURN};
+    scfg::PseudoLoopRuleHelpers rules(tree, mode_config);
     energy_t m1 = INF;
 
-    cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
+    cand_pos_t min_Bp_j = std::min((cand_pos_tu)rules.border_b(i, j), (cand_pos_tu)rules.border_Bp(i, j));
     for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
         bool can_pair = scfg::can_pair_left_span(tree, i, k);
         if (can_pair) m1 = std::min(m1, static_cast<energy_t>((k - i) * cp_penalty) + get_VP(k, j));
