@@ -120,28 +120,45 @@ void compute_WI_restricted_rules(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_
 }
 
 void compute_WMv_WMp_restricted_rules(PartFuncWMvWMpContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<Node> &tree, const RulesConfig &config) {
-    if (j - i - 1 < ctx.turn()) return;
     const cand_pos_t ij = ctx.index_of(i, j);
-
     pf_t WMv_contributions = 0;
     pf_t WMp_contributions = 0;
 
-    if (is_rule_enabled(config, RuleId::WMv_STEM_V)) {
-        record_rule_hit(RuleId::WMv_STEM_V);
-        WMv_contributions += (ctx.get_energy(i, j) * ctx.exp_MLstem(i, j));
-    }
-    if (is_rule_enabled(config, RuleId::WMp_STEM_WMB)) {
-        record_rule_hit(RuleId::WMp_STEM_WMB);
-        WMp_contributions += (ctx.get_energy_WMB(i, j) * ctx.expPSM_penalty() * ctx.expb_penalty());
-    }
-    if (tree[j].pair < 0) {
-        if (is_rule_enabled(config, RuleId::WMv_EXTEND_UNPAIRED)) {
-            record_rule_hit(RuleId::WMv_EXTEND_UNPAIRED);
-            WMv_contributions += (ctx.get_energy_WMv(i, j - 1) * ctx.expMLbase1());
+    for (RuleId rule : rules_for(NonTerminal::WMv)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_wmv_wmp(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = rule_score_wmv_wmp(rule, i, j, split, ctx, tree);
+            pf_t term = 1;
+            const auto children = expand_wmv_wmp(rule, i, j, split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::V) {
+                    term *= ctx.get_energy(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMv) {
+                    term *= ctx.get_energy_WMv(child.i, child.j);
+                }
+            }
+            WMv_contributions += term * coeff;
         }
-        if (is_rule_enabled(config, RuleId::WMp_EXTEND_UNPAIRED)) {
-            record_rule_hit(RuleId::WMp_EXTEND_UNPAIRED);
-            WMp_contributions += (ctx.get_energy_WMp(i, j - 1) * ctx.expMLbase1());
+    }
+
+    for (RuleId rule : rules_for(NonTerminal::WMp)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_wmv_wmp(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = rule_score_wmv_wmp(rule, i, j, split, ctx, tree);
+            pf_t term = 1;
+            const auto children = expand_wmv_wmp(rule, i, j, split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::WMB) {
+                    term *= ctx.get_energy_WMB(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMp) {
+                    term *= ctx.get_energy_WMp(child.i, child.j);
+                }
+            }
+            WMp_contributions += term * coeff;
         }
     }
 

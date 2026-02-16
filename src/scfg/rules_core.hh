@@ -6,6 +6,7 @@
 #include <vector>
 
 class sparse_tree;
+class Node;
 
 namespace scfg {
 
@@ -13,6 +14,7 @@ class PartFuncWContext;
 class PartFuncVContext;
 class PartFuncWIContext;
 class PartFuncVMContext;
+class PartFuncWMvWMpContext;
 
 struct RuleSpec {
     RuleId id;
@@ -80,6 +82,19 @@ pf_t rule_score_vm(RuleId rule,
                    const RuleSplit &split,
                    PartFuncVMContext &ctx,
                    std::vector<int> &up);
+
+std::vector<RuleSplit> enumerate_splits_wmv_wmp(RuleId rule,
+                                                cand_pos_t i,
+                                                cand_pos_t j,
+                                                PartFuncWMvWMpContext &ctx,
+                                                std::vector<Node> &tree);
+std::vector<RuleChild> expand_wmv_wmp(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
+pf_t rule_score_wmv_wmp(RuleId rule,
+                        cand_pos_t i,
+                        cand_pos_t j,
+                        const RuleSplit &split,
+                        PartFuncWMvWMpContext &ctx,
+                        std::vector<Node> &tree);
 
 } // namespace scfg
 

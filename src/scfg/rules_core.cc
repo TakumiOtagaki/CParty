@@ -382,4 +382,74 @@ pf_t rule_score_vm(RuleId rule,
     }
 }
 
+std::vector<RuleSplit> enumerate_splits_wmv_wmp(RuleId rule,
+                                                cand_pos_t i,
+                                                cand_pos_t j,
+                                                PartFuncWMvWMpContext &ctx,
+                                                std::vector<Node> &tree) {
+    std::vector<RuleSplit> splits;
+    if (j - i - 1 < ctx.turn()) {
+        return splits;
+    }
+    switch (rule) {
+    case RuleId::WMv_STEM_V:
+    case RuleId::WMp_STEM_WMB:
+        splits.push_back({});
+        break;
+    case RuleId::WMv_EXTEND_UNPAIRED:
+    case RuleId::WMp_EXTEND_UNPAIRED:
+        if (tree[j].pair < 0) {
+            splits.push_back({});
+        }
+        break;
+    default:
+        break;
+    }
+    return splits;
+}
+
+std::vector<RuleChild> expand_wmv_wmp(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    (void)split;
+    std::vector<RuleChild> children;
+    switch (rule) {
+    case RuleId::WMv_STEM_V:
+        children.push_back({NonTerminal::V, i, j});
+        break;
+    case RuleId::WMp_STEM_WMB:
+        children.push_back({NonTerminal::WMB, i, j});
+        break;
+    case RuleId::WMv_EXTEND_UNPAIRED:
+        children.push_back({NonTerminal::WMv, i, j - 1});
+        break;
+    case RuleId::WMp_EXTEND_UNPAIRED:
+        children.push_back({NonTerminal::WMp, i, j - 1});
+        break;
+    default:
+        break;
+    }
+    return children;
+}
+
+pf_t rule_score_wmv_wmp(RuleId rule,
+                        cand_pos_t i,
+                        cand_pos_t j,
+                        const RuleSplit &split,
+                        PartFuncWMvWMpContext &ctx,
+                        std::vector<Node> &tree) {
+    (void)split;
+    (void)tree;
+    switch (rule) {
+    case RuleId::WMv_STEM_V:
+        return ctx.exp_MLstem(i, j);
+    case RuleId::WMp_STEM_WMB:
+        return ctx.expPSM_penalty() * ctx.expb_penalty();
+    case RuleId::WMv_EXTEND_UNPAIRED:
+        return ctx.expMLbase1();
+    case RuleId::WMp_EXTEND_UNPAIRED:
+        return ctx.expMLbase1();
+    default:
+        return 0;
+    }
+}
+
 } // namespace scfg
