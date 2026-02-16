@@ -166,35 +166,30 @@ void compute_WMv_WMp_restricted_rules(PartFuncWMvWMpContext &ctx, cand_pos_t i, 
 }
 
 void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
-    if (j - i + 1 < 4) return;
     pf_t contributions = 0;
     const cand_pos_t ij = ctx.index_of(i, j);
-    const cand_pos_t turn = ctx.turn();
 
-    for (cand_pos_t k = i; k < j - turn; ++k) {
-        const pf_t qbt1 = ctx.get_energy(k, j) * ctx.exp_MLstem(k, j);
-        const pf_t qbt2 = ctx.get_energy_WMB(k, j) * ctx.expPSM_penalty() * ctx.expb_penalty();
-        const bool can_pair = scfg::can_pair_left_span(tree, i, k);
-        if (can_pair && is_rule_enabled(config, RuleId::WM_START_V)) {
-            record_rule_hit(RuleId::WM_START_V);
-            contributions += (ctx.expMLbase(k - i) * qbt1);
+    for (RuleId rule : rules_for(NonTerminal::WM)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_wm(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = rule_score_wm(rule, i, j, split, ctx);
+            pf_t term = 1;
+            const auto children = expand_wm(rule, i, j, split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::WM) {
+                    term *= ctx.get_energy_WM(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::V) {
+                    term *= ctx.get_energy(child.i, child.j);
+                    term *= ctx.exp_MLstem(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMB) {
+                    term *= ctx.get_energy_WMB(child.i, child.j);
+                    term *= ctx.expPSM_penalty() * ctx.expb_penalty();
+                }
+            }
+            contributions += term * coeff;
         }
-        if (can_pair && is_rule_enabled(config, RuleId::WM_START_WMB)) {
-            record_rule_hit(RuleId::WM_START_WMB);
-            contributions += (ctx.expMLbase(k - i) * qbt2);
-        }
-        if (is_rule_enabled(config, RuleId::WM_SPLIT_V)) {
-            record_rule_hit(RuleId::WM_SPLIT_V);
-            contributions += (ctx.get_energy_WM(i, k - 1) * qbt1);
-        }
-        if (is_rule_enabled(config, RuleId::WM_SPLIT_WMB)) {
-            record_rule_hit(RuleId::WM_SPLIT_WMB);
-            contributions += (ctx.get_energy_WM(i, k - 1) * qbt2);
-        }
-    }
-    if (tree.tree[j].pair < 0 && is_rule_enabled(config, RuleId::WM_EXTEND_UNPAIRED)) {
-        record_rule_hit(RuleId::WM_EXTEND_UNPAIRED);
-        contributions += ctx.get_energy_WM(i, j - 1) * ctx.expMLbase(1);
     }
     ctx.set_WM(ij, contributions);
 }
