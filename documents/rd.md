@@ -261,3 +261,112 @@ Rule {
 - `RuleId` の表現（enum / struct / テーブル駆動）
 - `SplitSpec` の実装形式（単純分割 / 境界依存 / 複数走査変数）
 - `rule_score` の戻り型を `pf_t` 固定にするか、Energy 型を導入するか
+
+## 14. RuleId / SplitSpec 調査まとめ (2026-02-16)
+`rules_part_func.cc` を基準に、ルール単位と分割パターンを整理した。
+
+### 14.1 RuleId 一覧（非終端別）
+**V**
+- `V_HAIRPIN`
+- `V_INTERNAL`
+- `V_VM`
+
+**WI**
+- `WI_BASE_SINGLE`
+- `WI_SPLIT_V`
+- `WI_SPLIT_WMB`
+- `WI_EXTEND_UNPAIRED`
+
+**W**
+- `W_EXTEND_UNPAIRED`
+- `W_SPLIT_V`
+- `W_SPLIT_WMB`
+
+**VM**
+- `VM_SPLIT_WM_WMv`
+- `VM_SPLIT_WM_WMp`
+- `VM_SPLIT_WMp_BASE`
+
+**WMv/WMp**
+- `WMv_STEM_V`
+- `WMp_STEM_WMB`
+- `WMv_EXTEND_UNPAIRED`
+- `WMp_EXTEND_UNPAIRED`
+
+**WM**
+- `WM_START_V`
+- `WM_START_WMB`
+- `WM_SPLIT_V`
+- `WM_SPLIT_WMB`
+- `WM_EXTEND_UNPAIRED`
+
+**WIP**
+- `WIP_BASE_V`
+- `WIP_BASE_WMB`
+- `WIP_SPLIT_V`
+- `WIP_SPLIT_WMB`
+- `WIP_BASEPAIR_V`
+- `WIP_BASEPAIR_WMB`
+- `WIP_EXTEND_UNPAIRED`
+
+**VPL**
+- `VPL_SPLIT_VP`
+
+**VPR**
+- `VPR_SPLIT_VP_WIP`
+- `VPR_SPLIT_VP_BASEPAIR`
+
+**VP**
+- `VP_WI_CASE1`   // Bp/B 系の WI 二分割
+- `VP_WI_CASE2`   // b/bp 系の WI 二分割
+- `VP_WI_CASE3`   // WI 三分割
+- `VP_STACK`      // get_e_stP * VP(i+1,j-1)
+- `VP_INTERNAL_LOOP`
+- `VP_WIP_VP_LEFT`
+- `VP_VP_WIP_RIGHT`
+- `VP_WIP_VPR`
+- `VP_VPL_WIP`
+
+**WMBW**
+- `WMBW_SPLIT_WMBP_WI`
+
+**WMBP**
+- `WMBP_SPLIT_BE_WMBP_VP`
+- `WMBP_SPLIT_BE_WMBW_VP`
+- `WMBP_DIRECT_VP`
+- `WMBP_SPLIT_BE_WI_VP`
+
+**WMB**
+- `WMB_SPLIT_BE_WMBP_WI`
+- `WMB_DIRECT_WMBP`
+
+**BE**
+- `BE_BASE_SAMEPAIR`
+- `BE_STACK`
+- `BE_INTERNAL_LOOP`
+- `BE_WIP_WIP`
+- `BE_WIP_BASEPAIR`
+- `BE_BASEPAIR_WIP`
+
+### 14.2 SplitSpec 種別（最小セット）
+- **SplitSpec-0: NoSplit**
+  - i,j 固定で完結するルール
+  - 例: `V_HAIRPIN`, `V_INTERNAL`, `V_VM`, `VP_STACK`, `WMBP_DIRECT_VP`, `WMB_DIRECT_WMBP`, `BE_BASE_SAMEPAIR`
+- **SplitSpec-1: SplitK**
+  - 単一変数 `k` を `[lo, hi]` で走査
+  - 例: `W_SPLIT_*`, `WI_SPLIT_*`, `WM_SPLIT_*`, `WIP_SPLIT_*`, `VPL_SPLIT_VP`
+- **SplitSpec-2: SplitK + predicate**
+  - `k` を走査しつつ `weakly_closed` / `can_pair_left_span` 等で追加判定
+  - 例: `W` の分割条件、`WM/WIP` の `can_pair_left_span`
+- **SplitSpec-3: SplitK + data-dependent bounds**
+  - `tree.B/Bp/b/bp` による動的境界
+  - 例: `VPL`, `VPR`
+- **SplitSpec-4: SplitK + SplitL**
+  - 二重変数 `k,l` 走査
+  - 例: `VP_INTERNAL_LOOP`, `BE_INTERNAL_LOOP`
+- **SplitSpec-5: SplitK/L + mixed bounds/predicate**
+  - `MAXLOOP`, `tree.B/Bp/b/bp`, `is_unpaired_position`, `is_empty_region` が混在する複合条件
+  - 例: `VP_INTERNAL_LOOP`（内側ループ）
+- **SplitSpec-6: SplitK + band/parent 条件**
+  - `PartFuncRuleHelpers` の境界判定と親関係判定を含む
+  - 例: `WMBP_SPLIT_*`, `WMBW_SPLIT_*`
