@@ -223,18 +223,20 @@ void compute_WIP_restricted_rules(PartFuncWIPContext &ctx, cand_pos_t i, cand_po
 void compute_VPL_restricted_rules(PartFuncVPLContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
-
-    if (!is_rule_enabled(config, RuleId::VPL_SPLIT_VP)) {
-        ctx.set_VPL(ij, 0);
-        return;
-    }
-
-    cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
-    for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
-        bool can_pair = scfg::can_pair_left_span(tree, i, k);
-        if (can_pair) {
-            record_rule_hit(RuleId::VPL_SPLIT_VP);
-            contributions += (ctx.expcp_pen(k - i) * ctx.get_energy_VP(k, j));
+    for (RuleId rule : rules_for(NonTerminal::VPL)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_vpl(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = rule_score_vpl(rule, i, j, split, ctx);
+            pf_t term = 1;
+            const auto children = expand_vpl(rule, i, j, split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::VP) {
+                    term *= ctx.get_energy_VP(child.i, child.j);
+                }
+            }
+            contributions += term * coeff;
         }
     }
     ctx.set_VPL(ij, contributions);

@@ -630,4 +630,50 @@ pf_t rule_score_wip(RuleId rule,
     }
 }
 
+std::vector<RuleSplit> enumerate_splits_vpl(RuleId rule,
+                                            cand_pos_t i,
+                                            cand_pos_t j,
+                                            PartFuncVPLContext &ctx,
+                                            sparse_tree &tree) {
+    (void)ctx;
+    std::vector<RuleSplit> splits;
+    if (rule != RuleId::VPL_SPLIT_VP) {
+        return splits;
+    }
+    cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
+    for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
+        if (scfg::can_pair_left_span(tree, i, k)) {
+            splits.push_back({k, -1});
+        }
+    }
+    return splits;
+}
+
+std::vector<RuleChild> expand_vpl(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    (void)i;
+    std::vector<RuleChild> children;
+    switch (rule) {
+    case RuleId::VPL_SPLIT_VP:
+        children.push_back({NonTerminal::VP, split.k, j});
+        break;
+    default:
+        break;
+    }
+    return children;
+}
+
+pf_t rule_score_vpl(RuleId rule,
+                    cand_pos_t i,
+                    cand_pos_t j,
+                    const RuleSplit &split,
+                    PartFuncVPLContext &ctx) {
+    (void)j;
+    switch (rule) {
+    case RuleId::VPL_SPLIT_VP:
+        return ctx.expcp_pen(split.k - i);
+    default:
+        return 0;
+    }
+}
+
 } // namespace scfg
