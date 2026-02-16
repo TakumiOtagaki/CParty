@@ -417,17 +417,32 @@ void compute_WM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse
 
 void compute_WIP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWIPContext ctx(owner);
-    compute_WIP_restricted(ctx, i, j, tree);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        compute_WIP_restricted_rules(ctx, i, j, tree, config);
+    } else {
+        compute_WIP_restricted(ctx, i, j, tree);
+    }
 }
 
 void compute_VPL_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalVPLContext ctx(owner);
-    compute_VPL_restricted(ctx, i, j, tree);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        compute_VPL_restricted_rules(ctx, i, j, tree, config);
+    } else {
+        compute_VPL_restricted(ctx, i, j, tree);
+    }
 }
 
 void compute_VPR_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalVPRContext ctx(owner);
-    compute_VPR_restricted(ctx, i, j, tree);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        compute_VPR_restricted_rules(ctx, i, j, tree, config);
+    } else {
+        compute_VPR_restricted(ctx, i, j, tree);
+    }
 }
 
 void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {

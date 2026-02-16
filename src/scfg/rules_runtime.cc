@@ -140,4 +140,70 @@ void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_
     ctx.set_WM(ij, contributions);
 }
 
+void compute_WIP_restricted_rules(PartFuncWIPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
+    const cand_pos_t ij = ctx.index_of(i, j);
+    pf_t contributions = 0;
+    if (is_rule_enabled(config, RuleId::WIP_BASE_V)) {
+        contributions += ctx.get_energy(i, j) * ctx.expbp_penalty();
+    }
+    if (is_rule_enabled(config, RuleId::WIP_BASE_WMB)) {
+        contributions += ctx.get_energy_WMB(i, j) * ctx.expbp_penalty() * ctx.expPSM_penalty();
+    }
+    const cand_pos_t turn = ctx.turn();
+    for (cand_pos_t k = i + 1; k < j - turn - 1; ++k) {
+        bool can_pair = scfg::can_pair_left_span(tree, i, k);
+
+        if (is_rule_enabled(config, RuleId::WIP_SPLIT_V)) {
+            contributions += (ctx.get_energy_WIP(i, k - 1) * ctx.get_energy(k, j) * ctx.expbp_penalty());
+        }
+        if (is_rule_enabled(config, RuleId::WIP_SPLIT_WMB)) {
+            contributions += (ctx.get_energy_WIP(i, k - 1) * ctx.get_energy_WMB(k, j) * ctx.expbp_penalty() * ctx.expPSM_penalty());
+        }
+        if (can_pair && is_rule_enabled(config, RuleId::WIP_BASEPAIR_V)) {
+            contributions += (ctx.expcp_pen(k - i) * ctx.get_energy(k, j) * ctx.expbp_penalty());
+        }
+        if (can_pair && is_rule_enabled(config, RuleId::WIP_BASEPAIR_WMB)) {
+            contributions += (ctx.expcp_pen(k - i) * ctx.get_energy_WMB(k, j) * ctx.expbp_penalty() * ctx.expPSM_penalty());
+        }
+    }
+    if (tree.tree[j].pair < 0 && is_rule_enabled(config, RuleId::WIP_EXTEND_UNPAIRED)) {
+        contributions += (ctx.get_energy_WIP(i, j - 1) * ctx.expcp_pen(1));
+    }
+    ctx.set_WIP(ij, contributions);
+}
+
+void compute_VPL_restricted_rules(PartFuncVPLContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
+    const cand_pos_t ij = ctx.index_of(i, j);
+    pf_t contributions = 0;
+
+    if (!is_rule_enabled(config, RuleId::VPL_SPLIT_VP)) {
+        ctx.set_VPL(ij, 0);
+        return;
+    }
+
+    cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
+    for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
+        bool can_pair = scfg::can_pair_left_span(tree, i, k);
+        if (can_pair) contributions += (ctx.expcp_pen(k - i) * ctx.get_energy_VP(k, j));
+    }
+    ctx.set_VPL(ij, contributions);
+}
+
+void compute_VPR_restricted_rules(PartFuncVPRContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
+    const cand_pos_t ij = ctx.index_of(i, j);
+    pf_t contributions = 0;
+
+    cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
+    for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
+        bool can_pair = scfg::can_pair_right_span(tree, k, j);
+        if (is_rule_enabled(config, RuleId::VPR_SPLIT_VP_WIP)) {
+            contributions += (ctx.get_energy_VP(i, k) * ctx.get_energy_WIP(k + 1, j));
+        }
+        if (can_pair && is_rule_enabled(config, RuleId::VPR_SPLIT_VP_BASEPAIR)) {
+            contributions += (ctx.get_energy_VP(i, k) * ctx.expcp_pen(k - i));
+        }
+    }
+    ctx.set_VPR(ij, contributions);
+}
+
 } // namespace scfg
