@@ -372,6 +372,10 @@ void compute_W_restricted(W_final_pf &owner, sparse_tree &tree) {
 
 pf_t compute_VM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, std::vector<int> &up) {
     LocalVMContext ctx(owner);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        return compute_VM_restricted_rules(ctx, i, j, up, config);
+    }
     return compute_VM_restricted(ctx, i, j, up);
 }
 
