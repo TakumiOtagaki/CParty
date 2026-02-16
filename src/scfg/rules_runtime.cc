@@ -93,29 +93,25 @@ void compute_W_restricted_rules(PartFuncWContext &ctx, sparse_tree &tree, const 
 void compute_WI_restricted_rules(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
-    if (i == j) {
-        if (is_rule_enabled(config, RuleId::WI_BASE_SINGLE)) {
-            record_rule_hit(RuleId::WI_BASE_SINGLE);
-            ctx.set_WI(ij, ctx.expPUP_pen1());
-        } else {
-            ctx.set_WI(ij, 0);
+    for (RuleId rule : rules_for(NonTerminal::WI)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_wi(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = rule_score_wi(rule, i, j, split, ctx);
+            pf_t term = 1;
+            const auto children = expand_wi(rule, i, j, split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::WI) {
+                    term *= ctx.get_WI(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::V) {
+                    term *= ctx.get_energy(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMB) {
+                    term *= ctx.get_energy_WMB(child.i, child.j);
+                }
+            }
+            contributions += term * coeff;
         }
-        return;
-    }
-    const cand_pos_t turn = ctx.turn();
-    for (cand_pos_t k = i; k <= j - turn - 1; ++k) {
-        if (is_rule_enabled(config, RuleId::WI_SPLIT_V)) {
-            record_rule_hit(RuleId::WI_SPLIT_V);
-            contributions += (ctx.get_WI(i, k - 1) * ctx.get_energy(k, j) * ctx.expPPS_penalty());
-        }
-        if (is_rule_enabled(config, RuleId::WI_SPLIT_WMB)) {
-            record_rule_hit(RuleId::WI_SPLIT_WMB);
-            contributions += (ctx.get_WI(i, k - 1) * ctx.get_energy_WMB(k, j) * ctx.expPSP_penalty() * ctx.expPPS_penalty());
-        }
-    }
-    if (tree.tree[j].pair < 0 && is_rule_enabled(config, RuleId::WI_EXTEND_UNPAIRED)) {
-        record_rule_hit(RuleId::WI_EXTEND_UNPAIRED);
-        contributions += (ctx.get_WI(i, j - 1) * ctx.expPUP_pen1());
     }
 
     ctx.set_WI(ij, contributions);
