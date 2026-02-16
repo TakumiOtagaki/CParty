@@ -191,3 +191,73 @@ git commit -m "<short summary>"
 - `compute_BE_restricted` は `pair > 0` を要求するが `W_final_pf::get_BE` は `pair >= 0` を許容している。
 - `PartFuncRuleHelpers::parent_index` は `parent` null を想定しておらず、`sparse_tree` 契約の明文化が必要。
 - `compute_WMBW_restricted` の `tree.tree[j].pair < j` が意図通りか要確認（unpaired だけなら `<0` が自然）。
+
+## 13. ルールベース API 最小契約案 (2026-02-16)
+`rules_for / applicable / expand / rule_score` による最小 API を提案する。
+
+### 13.1 4 つの中核 API
+- `rules_for(nonterminal, i, j, ctx)`:
+  - 対象非終端が取り得るルール候補を列挙する（候補は過不足なく列挙）
+- `applicable(rule, i, j, ctx)`:
+  - 構造制約・境界・親関係・turn などを判定する
+  - 現在 `compute_*` に散在している条件分岐を集約する
+- `expand(rule, i, j, ctx)`:
+  - 右辺の子非終端と区間（i, j, k, l など）を返す
+  - DP 値の参照はしない（純粋に構文木の展開のみ）
+- `rule_score(rule, i, j, ctx)`:
+  - ルール固有の係数（エネルギー・ペナルティ・スケール）を返す
+  - `exp_*`, `get_e_*`, `scale(u)` をここへ集約する
+
+### 13.2 RuleSpec の最小表現（案）
+```
+Rule {
+  lhs: NonTerminal
+  rhs: [Symbol]      // NonTerminal or Terminal (energy / penalty / scale)
+  split: SplitSpec   // k, l の走査範囲を束縛する仕様
+}
+```
+- `SplitSpec` は `k`/`l` の走査範囲と依存境界（`tree.B/Bp/b/bp` など）を明示できる形が必要。
+
+### 13.3 再マッピング例（代表ルール）
+#### W
+- `W(j) -> W(k-1) V(k,j)`
+  - `applicable`: `weakly_closed(1,j)` かつ `weakly_closed(1,k-1)`
+  - `expand`: `(W,1,k-1), (V,k,j)`
+  - `rule_score`: `exp_Extloop(k,j)`
+- `W(j) -> W(k-1) WMB(k,j)`
+  - `rule_score`: `expPS_penalty()`
+- `W(j) -> W(j-1)`
+  - `applicable`: `tree[j].pair < 0`
+  - `rule_score`: `scale1`
+
+#### V
+- `V(i,j) -> Hairpin(i,j)`
+  - `applicable`: paired or unpaired 条件
+  - `rule_score`: `hairpin_energy(i,j)`
+- `V(i,j) -> Internal(i,j)`
+  - `rule_score`: `internal_energy(i,j)`
+- `V(i,j) -> VM(i,j)`
+  - `rule_score`: `vm_energy(i,j)`
+
+#### VP（PK 中核）
+- `rules_for` で `VP` ルール群を列挙（WI/WIP/VPL/VPR/VP の組合せ）
+- `applicable` で `tree.B/Bp/b/bp` 境界・`is_empty_region`・`pair_type` を判定
+- `rule_score` で `scale`, `expap_penalty`, `expbp_penalty_sq`, `get_e_stP`, `get_e_intP` を集約
+
+#### WMBP
+- `PartFuncRuleHelpers` の境界判定は `applicable` に移す
+- `rule_score` に `expPB_penalty` と `apply_double_pb_penalty` をまとめる
+
+#### BE
+- `rule_score` に `get_e_stP`, `get_e_intP`, `scale(u)`, `expcp_pen`, `expap_penalty`, `expbp_penalty_sq` を集約
+
+### 13.4 コア契約（重要）
+- ルール生成と制約判定は完全に分離する。
+- `applicable(rule, ...) == false` のルールは `expand` しない。
+- `rule_score` は「DP値に掛ける係数のみ」を返す。
+- `expand` は DP 値に触れず、子非終端と区間だけを返す。
+
+### 13.5 未決定事項（次の検討項目）
+- `RuleId` の表現（enum / struct / テーブル駆動）
+- `SplitSpec` の実装形式（単純分割 / 境界依存 / 複数走査変数）
+- `rule_score` の戻り型を `pf_t` 固定にするか、Energy 型を導入するか
