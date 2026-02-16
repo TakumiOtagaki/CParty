@@ -159,3 +159,8 @@ git commit -m "<short summary>"
 - 対応案: CLPK 候補に由来種別を持たせ、backtrack 分岐と整合させる。
 - 進捗: `debug-mea-clpk` で候補種別化を実装し、再現ケースでは失敗が解消。strict test は pass。広い検証は未完。
 - Issue: `https://github.com/TakumiOtagaki/CParty/issues/2`
+### 11.1 Strict Test と MEA 出力の扱い
+- `compare_cli_stdout.sh` は stdout の「1〜3行目（seq / restricted / MFE）」のみを比較する。
+- MEA/centroid などの追加行は比較対象外で、stderr の `backtrack failed` も gate に影響しない。
+### 11.2 MEA/centroid の確率入力
+- 現実装の MEA/centroid は、厳密な bpp 行列ではなく `samples` の出現頻度（`count / num_samples`）をペア確率として利用している。
