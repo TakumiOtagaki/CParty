@@ -496,7 +496,12 @@ void compute_BE_restricted(W_final_pf &owner,
                            cand_pos_t jp,
                            sparse_tree &tree) {
     LocalBEContext ctx(owner);
-    compute_BE_restricted(ctx, i, j, ip, jp, tree);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        compute_BE_restricted_rules(ctx, i, j, ip, jp, tree, config);
+    } else {
+        compute_BE_restricted(ctx, i, j, ip, jp, tree);
+    }
 }
 
 } // namespace scfg

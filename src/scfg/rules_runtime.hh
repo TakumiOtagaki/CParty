@@ -19,6 +19,13 @@ void compute_VP_restricted_rules(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_
 void compute_WMBP_restricted_rules(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config);
 void compute_WMBW_restricted_rules(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config);
 void compute_WMB_restricted_rules(PartFuncWMBContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config);
+void compute_BE_restricted_rules(PartFuncBEContext &ctx,
+                                 cand_pos_t i,
+                                 cand_pos_t j,
+                                 cand_pos_t ip,
+                                 cand_pos_t jp,
+                                 sparse_tree &tree,
+                                 const RulesConfig &config);
 
 } // namespace scfg
 
