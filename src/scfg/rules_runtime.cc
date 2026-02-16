@@ -2,6 +2,7 @@
 
 #include "scfg/constraint_oracle.hh"
 #include "scfg/legacy_adapter.hh"
+#include "scfg/rules_core.hh"
 #include "scfg/rules_part_func.hh"
 
 #include <ViennaRNA/params/constants.h>
@@ -12,29 +13,13 @@ namespace scfg {
 
 void compute_V_restricted_rules(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
     const cand_pos_t ij = ctx.index_of(i, j);
-
-    const bool unpaired = (tree.tree[i].pair < -1 && tree.tree[j].pair < -1);
-    const bool paired = (tree.tree[i].pair == j && tree.tree[j].pair == i);
-
     pf_t contributions = 0;
-
-    if (paired || unpaired) {
-        if (is_rule_enabled(config, RuleId::V_HAIRPIN)) {
-            const bool canH = !(tree.up[j - 1] < (j - i - 1));
-            if (canH) {
-                record_rule_hit(RuleId::V_HAIRPIN);
-                contributions += ctx.hairpin_energy(i, j);
-            }
-        }
-
-        if (is_rule_enabled(config, RuleId::V_INTERNAL)) {
-            record_rule_hit(RuleId::V_INTERNAL);
-            contributions += ctx.internal_energy(i, j, tree.up);
-        }
-
-        if (is_rule_enabled(config, RuleId::V_VM)) {
-            record_rule_hit(RuleId::V_VM);
-            contributions += ctx.vm_energy(i, j, tree.up);
+    for (RuleId rule : rules_for(NonTerminal::V)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_v(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            contributions += rule_score_v(rule, i, j, split, ctx, tree);
         }
     }
 

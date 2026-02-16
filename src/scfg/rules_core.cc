@@ -181,4 +181,61 @@ pf_t rule_score_w(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &spli
     }
 }
 
+std::vector<RuleSplit> enumerate_splits_v(RuleId rule,
+                                          cand_pos_t i,
+                                          cand_pos_t j,
+                                          PartFuncVContext &ctx,
+                                          sparse_tree &tree) {
+    (void)ctx;
+    std::vector<RuleSplit> splits;
+    const bool unpaired = (tree.tree[i].pair < -1 && tree.tree[j].pair < -1);
+    const bool paired = (tree.tree[i].pair == j && tree.tree[j].pair == i);
+    if (!(paired || unpaired)) {
+        return splits;
+    }
+
+    switch (rule) {
+    case RuleId::V_HAIRPIN: {
+        const bool canH = !(tree.up[j - 1] < (j - i - 1));
+        if (canH) {
+            splits.push_back({});
+        }
+    } break;
+    case RuleId::V_INTERNAL:
+    case RuleId::V_VM:
+        splits.push_back({});
+        break;
+    default:
+        break;
+    }
+    return splits;
+}
+
+std::vector<RuleChild> expand_v(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    (void)rule;
+    (void)i;
+    (void)j;
+    (void)split;
+    return {};
+}
+
+pf_t rule_score_v(RuleId rule,
+                  cand_pos_t i,
+                  cand_pos_t j,
+                  const RuleSplit &split,
+                  PartFuncVContext &ctx,
+                  sparse_tree &tree) {
+    (void)split;
+    switch (rule) {
+    case RuleId::V_HAIRPIN:
+        return ctx.hairpin_energy(i, j);
+    case RuleId::V_INTERNAL:
+        return ctx.internal_energy(i, j, tree.up);
+    case RuleId::V_VM:
+        return ctx.vm_energy(i, j, tree.up);
+    default:
+        return 0;
+    }
+}
+
 } // namespace scfg

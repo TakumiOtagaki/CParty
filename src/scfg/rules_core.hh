@@ -10,6 +10,7 @@ class sparse_tree;
 namespace scfg {
 
 class PartFuncWContext;
+class PartFuncVContext;
 
 struct RuleSpec {
     RuleId id;
@@ -39,6 +40,19 @@ std::vector<RuleSplit> enumerate_splits_w(RuleId rule,
                                           sparse_tree &tree);
 std::vector<RuleChild> expand_w(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
 pf_t rule_score_w(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWContext &ctx);
+
+std::vector<RuleSplit> enumerate_splits_v(RuleId rule,
+                                          cand_pos_t i,
+                                          cand_pos_t j,
+                                          PartFuncVContext &ctx,
+                                          sparse_tree &tree);
+std::vector<RuleChild> expand_v(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
+pf_t rule_score_v(RuleId rule,
+                  cand_pos_t i,
+                  cand_pos_t j,
+                  const RuleSplit &split,
+                  PartFuncVContext &ctx,
+                  sparse_tree &tree);
 
 } // namespace scfg
 
