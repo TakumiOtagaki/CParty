@@ -461,7 +461,12 @@ void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse
 
 void compute_WMBW_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWMBWContext ctx(owner);
-    compute_WMBW_restricted(ctx, i, j, tree);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        compute_WMBW_restricted_rules(ctx, i, j, tree, config);
+    } else {
+        compute_WMBW_restricted(ctx, i, j, tree);
+    }
 }
 
 void compute_WMBP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
@@ -476,7 +481,12 @@ void compute_WMBP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spar
 
 void compute_WMB_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWMBContext ctx(owner);
-    compute_WMB_restricted(ctx, i, j, tree);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        compute_WMB_restricted_rules(ctx, i, j, tree, config);
+    } else {
+        compute_WMB_restricted(ctx, i, j, tree);
+    }
 }
 
 void compute_BE_restricted(W_final_pf &owner,

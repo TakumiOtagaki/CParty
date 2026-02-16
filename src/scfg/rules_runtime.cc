@@ -470,4 +470,54 @@ void compute_WMBP_restricted_rules(PartFuncWMBPContext &ctx, cand_pos_t i, cand_
     ctx.set_WMBP(ij, contributions);
 }
 
+void compute_WMBW_restricted_rules(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
+    const cand_pos_t ij = ctx.index_of(i, j);
+    pf_t contributions = 0;
+
+    if (tree.tree[j].pair < j && is_rule_enabled(config, RuleId::WMBW_SPLIT_WMBP_WI)) {
+        for (cand_pos_t l = i + 1; l < j; l++) {
+            if (tree.tree[l].pair < 0 && tree.tree[l].parent->index > -1 && tree.tree[j].parent->index > -1
+                && tree.tree[j].parent->index == tree.tree[l].parent->index) {
+                record_rule_hit(RuleId::WMBW_SPLIT_WMBP_WI);
+                contributions += ctx.get_energy_WMBP(i, l) * ctx.get_energy_WI(l + 1, j);
+            }
+        }
+    }
+    ctx.set_WMBW(ij, contributions);
+}
+
+void compute_WMB_restricted_rules(PartFuncWMBContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
+    const cand_pos_t ij = ctx.index_of(i, j);
+    pf_t contributions = 0;
+    if (i == j) {
+        if (is_rule_enabled(config, RuleId::WMB_EMPTY)) {
+            record_rule_hit(RuleId::WMB_EMPTY);
+            ctx.set_WMB(ij, 0);
+        } else {
+            ctx.set_WMB(ij, 0);
+        }
+        return;
+    }
+
+    if (tree.tree[j].pair >= 0 && j > tree.tree[j].pair && tree.tree[j].pair > i &&
+        is_rule_enabled(config, RuleId::WMB_SPLIT_BE_WMBP_WI)) {
+        cand_pos_t bp_j = tree.tree[j].pair;
+        for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {
+            cand_pos_t Bp_lj = tree.Bp(l, j);
+            if (Bp_lj >= 0 && Bp_lj < ctx.n()) {
+                record_rule_hit(RuleId::WMB_SPLIT_BE_WMBP_WI);
+                contributions += ctx.get_BE(bp_j, j, tree.tree[Bp_lj].pair, Bp_lj, tree) *
+                                 ctx.get_energy_WMBP(i, l) *
+                                 ctx.get_energy_WI(l + 1, Bp_lj - 1) * ctx.expPB_penalty();
+            }
+        }
+    }
+
+    if (is_rule_enabled(config, RuleId::WMB_DIRECT_WMBP)) {
+        record_rule_hit(RuleId::WMB_DIRECT_WMBP);
+        contributions += ctx.get_energy_WMBP(i, j);
+    }
+    ctx.set_WMB(ij, contributions);
+}
+
 } // namespace scfg
