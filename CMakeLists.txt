@@ -187,6 +187,11 @@ if(BUILD_TESTING)
     src/fixed_energy_api.cc
   )
   add_executable(
+    fixed_energy_union_test
+    test/fixed_energy_union_test.cc
+    src/fixed_energy_api.cc
+  )
+  add_executable(
     fixed_energy_cli_mfe_energy_alignment_test
     test/fixed_energy_cli_mfe_energy_alignment_test.cc
     src/fixed_energy_api.cc
@@ -259,6 +264,11 @@ if(BUILD_TESTING)
   add_test(
     NAME fixed_energy_breakdown
     COMMAND fixed_energy_breakdown_test
+  )
+
+  add_test(
+    NAME fixed_energy_union
+    COMMAND fixed_energy_union_test
   )
 
   add_test(
