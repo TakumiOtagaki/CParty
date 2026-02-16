@@ -122,8 +122,12 @@ RulesConfig load_rules_config_from_env() {
 
     const char *only_env = std::getenv("SCFG_RULES_ONLY");
     if (only_env) {
+        std::string trimmed_only = trim_copy(only_env);
+        if (trimmed_only.empty()) {
+            return config;
+        }
         config.use_only_list = true;
-        load_rule_id_list(only_env, &config.allowed_rules);
+        load_rule_id_list(trimmed_only.c_str(), &config.allowed_rules);
     }
     return config;
 }

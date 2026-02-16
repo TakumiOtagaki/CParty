@@ -149,8 +149,8 @@ class W_final_pf {
     pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) {
         // Hosna, March 16, 2012,
         // i and j should be at least 3 bases apart
-        if (j - i >= TURN && i >= 1 && i <= ip && ip < jp && jp <= j && j <= n && tree.tree[i].pair >= 0 && tree.tree[j].pair >= 0
-            && tree.tree[ip].pair >= 0 && tree.tree[jp].pair >= 0 && tree.tree[i].pair == j && tree.tree[j].pair == i && tree.tree[ip].pair == jp
+        if (j - i >= TURN && i >= 1 && i <= ip && ip < jp && jp <= j && j <= n && tree.tree[i].pair > 0 && tree.tree[j].pair > 0
+            && tree.tree[ip].pair > 0 && tree.tree[jp].pair > 0 && tree.tree[i].pair == j && tree.tree[j].pair == i && tree.tree[ip].pair == jp
             && tree.tree[jp].pair == ip) {
             // if(i == ip && j == jp && i<j){
             //     return 1;
