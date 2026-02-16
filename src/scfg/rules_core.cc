@@ -1120,4 +1120,140 @@ pf_t rule_score_wmb(RuleId rule,
     }
 }
 
+std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
+                                           cand_pos_t i,
+                                           cand_pos_t j,
+                                           cand_pos_t ip,
+                                           cand_pos_t jp,
+                                           PartFuncBEContext &ctx,
+                                           sparse_tree &tree) {
+    std::vector<RuleSplit> splits;
+    if (!(i >= 1 && i <= ip && ip < jp && jp <= j && j <= ctx.n() && tree.tree[i].pair > 0 && tree.tree[j].pair > 0 &&
+          tree.tree[ip].pair > 0 && tree.tree[jp].pair > 0 && tree.tree[i].pair == j && tree.tree[j].pair == i &&
+          tree.tree[ip].pair == jp && tree.tree[jp].pair == ip)) {
+        return splits;
+    }
+    if (tree.tree[i].pair != j || tree.tree[ip].pair != jp) {
+        return splits;
+    }
+    if (i == ip && j == jp && i < j) {
+        if (rule == RuleId::BE_BASE_SAMEPAIR) {
+            splits.push_back({});
+        }
+        return splits;
+    }
+
+    switch (rule) {
+    case RuleId::BE_STACK:
+        if (tree.tree[i + 1].pair == j - 1) {
+            splits.push_back({});
+        }
+        break;
+    case RuleId::BE_INTERNAL_LOOP:
+    case RuleId::BE_WIP_WIP:
+    case RuleId::BE_WIP_BASEPAIR:
+    case RuleId::BE_BASEPAIR_WIP:
+        for (cand_pos_t l = i + 1; l <= ip; l++) {
+            if (tree.tree[l].pair >= -1 && jp <= tree.tree[l].pair && tree.tree[l].pair < j) {
+                cand_pos_t lp = tree.tree[l].pair;
+                bool empty_region_il = scfg::is_empty_region(tree, i, l);
+                bool empty_region_lpj = scfg::is_empty_region(tree, lp, j);
+                bool weakly_closed_il = tree.weakly_closed(i + 1, l - 1);
+                bool weakly_closed_lpj = tree.weakly_closed(lp + 1, j - 1);
+
+                if (rule == RuleId::BE_INTERNAL_LOOP) {
+                    if (empty_region_il && empty_region_lpj) {
+                        splits.push_back({l, lp});
+                    }
+                } else if (rule == RuleId::BE_WIP_WIP) {
+                    if (weakly_closed_il && weakly_closed_lpj) {
+                        splits.push_back({l, lp});
+                    }
+                } else if (rule == RuleId::BE_WIP_BASEPAIR) {
+                    if (weakly_closed_il && empty_region_lpj) {
+                        splits.push_back({l, lp});
+                    }
+                } else if (rule == RuleId::BE_BASEPAIR_WIP) {
+                    if (empty_region_il && weakly_closed_lpj) {
+                        splits.push_back({l, lp});
+                    }
+                }
+            }
+        }
+        break;
+    default:
+        break;
+    }
+    return splits;
+}
+
+std::vector<RuleChild> expand_be(RuleId rule,
+                                 cand_pos_t i,
+                                 cand_pos_t j,
+                                 cand_pos_t ip,
+                                 cand_pos_t jp,
+                                 const RuleSplit &split) {
+    (void)ip;
+    (void)jp;
+    std::vector<RuleChild> children;
+    switch (rule) {
+    case RuleId::BE_BASE_SAMEPAIR:
+        break;
+    case RuleId::BE_STACK:
+        children.push_back({NonTerminal::BE, i + 1, j - 1});
+        break;
+    case RuleId::BE_INTERNAL_LOOP:
+        children.push_back({NonTerminal::BE, split.k, split.l});
+        break;
+    case RuleId::BE_WIP_WIP:
+        children.push_back({NonTerminal::WIP, i + 1, split.k - 1});
+        children.push_back({NonTerminal::BE, split.k, split.l});
+        children.push_back({NonTerminal::WIP, split.l + 1, j - 1});
+        break;
+    case RuleId::BE_WIP_BASEPAIR:
+        children.push_back({NonTerminal::WIP, i + 1, split.k - 1});
+        children.push_back({NonTerminal::BE, split.k, split.l});
+        break;
+    case RuleId::BE_BASEPAIR_WIP:
+        children.push_back({NonTerminal::BE, split.k, split.l});
+        children.push_back({NonTerminal::WIP, split.l + 1, j - 1});
+        break;
+    default:
+        break;
+    }
+    return children;
+}
+
+pf_t rule_score_be(RuleId rule,
+                   cand_pos_t i,
+                   cand_pos_t j,
+                   cand_pos_t ip,
+                   cand_pos_t jp,
+                   const RuleSplit &split,
+                   PartFuncBEContext &ctx,
+                   sparse_tree &tree) {
+    (void)ip;
+    (void)jp;
+    (void)tree;
+    switch (rule) {
+    case RuleId::BE_BASE_SAMEPAIR:
+        return ctx.scale(2);
+    case RuleId::BE_STACK:
+        return ctx.get_e_stP(i, j) * ctx.scale(2);
+    case RuleId::BE_INTERNAL_LOOP: {
+        cand_pos_t u1 = split.k - i - 1;
+        cand_pos_t u2 = j - split.l - 1;
+        return ctx.get_e_intP(i, split.k, split.l, j) * ctx.scale(u1 + u2 + 2);
+    }
+    case RuleId::BE_WIP_WIP:
+        return ctx.expap_penalty() * ctx.expbp_penalty_sq() * ctx.scale(2);
+    case RuleId::BE_WIP_BASEPAIR:
+        return ctx.expcp_pen(j - split.l - 1) * ctx.expap_penalty() * ctx.expbp_penalty_sq() * ctx.scale(2);
+    case RuleId::BE_BASEPAIR_WIP:
+        return ctx.expcp_pen(split.k - i - 1) * ctx.expap_penalty() * ctx.expbp_penalty_sq() * ctx.scale(2);
+    default:
+        return 0;
+    }
+}
+
 } // namespace scfg
