@@ -451,7 +451,12 @@ void compute_VPR_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
 
 void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalVPContext ctx(owner);
-    compute_VP_restricted(ctx, i, j, tree);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        compute_VP_restricted_rules(ctx, i, j, tree, config);
+    } else {
+        compute_VP_restricted(ctx, i, j, tree);
+    }
 }
 
 void compute_WMBW_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {

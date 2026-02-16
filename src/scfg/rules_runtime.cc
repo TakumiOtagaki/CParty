@@ -1,6 +1,11 @@
 #include "scfg/rules_runtime.hh"
 
+#include "scfg/constraint_oracle.hh"
 #include "scfg/legacy_adapter.hh"
+
+#include <ViennaRNA/params/constants.h>
+
+#include <algorithm>
 
 namespace scfg {
 
@@ -269,6 +274,129 @@ void compute_VPR_restricted_rules(PartFuncVPRContext &ctx, cand_pos_t i, cand_po
         }
     }
     ctx.set_VPR(ij, contributions);
+}
+
+void compute_VP_restricted_rules(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
+    const cand_pos_t ij = ctx.index_of(i, j);
+
+    pf_t contributions = 0;
+
+    cand_pos_t Bp_ij = tree.Bp(i, j);
+    cand_pos_t B_ij = tree.B(i, j);
+    cand_pos_t b_ij = tree.b(i, j);
+    cand_pos_t bp_ij = tree.bp(i, j);
+
+    if (is_rule_enabled(config, RuleId::VP_WI_CASE1)) {
+        if ((tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) < (tree.tree[i].parent->index) &&
+            Bp_ij >= 0 && B_ij >= 0 && bp_ij < 0) {
+            pf_t m1 = (ctx.get_energy_WI(i + 1, Bp_ij - 1) * ctx.get_energy_WI(B_ij + 1, j - 1));
+            m1 *= ctx.scale(2);
+            record_rule_hit(RuleId::VP_WI_CASE1);
+            contributions += m1;
+        }
+    }
+
+    if (is_rule_enabled(config, RuleId::VP_WI_CASE2)) {
+        if ((tree.tree[i].parent->index) < (tree.tree[j].parent->index) && (tree.tree[j].parent->index) > 0 &&
+            b_ij >= 0 && bp_ij >= 0 && Bp_ij < 0) {
+            pf_t m2 = (ctx.get_energy_WI(i + 1, b_ij - 1) * ctx.get_energy_WI(bp_ij + 1, j - 1));
+            m2 *= ctx.scale(2);
+            record_rule_hit(RuleId::VP_WI_CASE2);
+            contributions += m2;
+        }
+    }
+
+    if (is_rule_enabled(config, RuleId::VP_WI_CASE3)) {
+        if ((tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) > 0 && Bp_ij >= 0 && B_ij >= 0 &&
+            b_ij >= 0 && bp_ij >= 0) {
+            pf_t m3 = (ctx.get_energy_WI(i + 1, Bp_ij - 1) * ctx.get_energy_WI(B_ij + 1, b_ij - 1) *
+                       ctx.get_energy_WI(bp_ij + 1, j - 1));
+            m3 *= ctx.scale(2);
+            record_rule_hit(RuleId::VP_WI_CASE3);
+            contributions += m3;
+        }
+    }
+
+    if (is_rule_enabled(config, RuleId::VP_STACK)) {
+        pair_type ptype_closingip1jm1 = ctx.pair_type_of(i + 1, j - 1);
+        if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 && scfg::is_pair_type_allowed(ptype_closingip1jm1)) {
+            pf_t vp_stp = (ctx.get_e_stP(i, j) * ctx.get_energy_VP(i + 1, j - 1));
+            vp_stp *= ctx.scale(2);
+            record_rule_hit(RuleId::VP_STACK);
+            contributions += vp_stp;
+        }
+    }
+
+    if (is_rule_enabled(config, RuleId::VP_INTERNAL_LOOP)) {
+        cand_pos_t min_borders = std::min((cand_pos_tu)Bp_ij, (cand_pos_tu)b_ij);
+        cand_pos_t edge_i = std::min(static_cast<cand_pos_t>(i + MAXLOOP + 1), static_cast<cand_pos_t>(j - TURN - 1));
+        min_borders = std::min(min_borders, edge_i);
+        for (cand_pos_t k = i + 1; k < min_borders; ++k) {
+            if (scfg::is_unpaired_position(tree, k) && scfg::is_empty_region(tree, i, k)) {
+                cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
+                cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
+                max_borders = std::max(max_borders, edge_j);
+                for (cand_pos_t l = j - 1; l > max_borders; --l) {
+                    pair_type ptype_closingkj = ctx.pair_type_of(k, l);
+                    if (k == i + 1 && l == j - 1) continue;
+                    if (scfg::is_unpaired_position(tree, l) && scfg::is_pair_type_allowed(ptype_closingkj) &&
+                        scfg::is_empty_region(tree, l, j)) {
+                        pf_t vp_iloop_kl = (ctx.get_e_intP(i, k, l, j) * ctx.get_energy_VP(k, l));
+                        cand_pos_t u1 = k - i - 1;
+                        cand_pos_t u2 = j - l - 1;
+                        vp_iloop_kl *= ctx.scale(u1 + u2 + 2);
+                        record_rule_hit(RuleId::VP_INTERNAL_LOOP);
+                        contributions += vp_iloop_kl;
+                    }
+                }
+            }
+        }
+    }
+
+    cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
+    cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
+
+    if (is_rule_enabled(config, RuleId::VP_WIP_VP_LEFT)) {
+        for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
+            pf_t m6 = (ctx.get_energy_WIP(i + 1, k - 1) * ctx.get_energy_VP(k, j - 1) *
+                       ctx.expap_penalty() * ctx.expbp_penalty_sq());
+            m6 *= ctx.scale(2);
+            record_rule_hit(RuleId::VP_WIP_VP_LEFT);
+            contributions += m6;
+        }
+    }
+
+    if (is_rule_enabled(config, RuleId::VP_VP_WIP_RIGHT)) {
+        for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
+            pf_t m7 = (ctx.get_energy_VP(i + 1, k) * ctx.get_energy_WIP(k + 1, j - 1) *
+                       ctx.expap_penalty() * ctx.expbp_penalty_sq());
+            m7 *= ctx.scale(2);
+            record_rule_hit(RuleId::VP_VP_WIP_RIGHT);
+            contributions += m7;
+        }
+    }
+
+    if (is_rule_enabled(config, RuleId::VP_WIP_VPR)) {
+        for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
+            pf_t m8 = (ctx.get_energy_WIP(i + 1, k - 1) * ctx.get_energy_VPR(k, j - 1) *
+                       ctx.expap_penalty() * ctx.expbp_penalty_sq());
+            m8 *= ctx.scale(2);
+            record_rule_hit(RuleId::VP_WIP_VPR);
+            contributions += m8;
+        }
+    }
+
+    if (is_rule_enabled(config, RuleId::VP_VPL_WIP)) {
+        for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
+            pf_t m9 = (ctx.get_energy_VPL(i + 1, k) * ctx.get_energy_WIP(k + 1, j - 1) *
+                       ctx.expap_penalty() * ctx.expbp_penalty_sq());
+            m9 *= ctx.scale(2);
+            record_rule_hit(RuleId::VP_VPL_WIP);
+            contributions += m9;
+        }
+    }
+
+    ctx.set_VP(ij, contributions);
 }
 
 } // namespace scfg
