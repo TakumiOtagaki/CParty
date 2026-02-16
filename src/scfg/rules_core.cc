@@ -944,4 +944,108 @@ pf_t rule_score_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &s
     }
 }
 
+std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
+                                             cand_pos_t i,
+                                             cand_pos_t j,
+                                             PartFuncWMBPContext &ctx,
+                                             sparse_tree &tree) {
+    std::vector<RuleSplit> splits;
+    const scfg::PartFuncModeConfig mode_config{ctx.expPB_penalty(), TURN};
+    scfg::PartFuncRuleHelpers rules(tree, mode_config);
+    rules.on_traceback_hook(i, j);
+    rules.on_fixed_parse_hook(i, j);
+
+    switch (rule) {
+    case RuleId::WMBP_SPLIT_BE_WMBP_VP:
+    case RuleId::WMBP_SPLIT_BE_WMBW_VP:
+        if (rules.pair_at(j) < 0) {
+            const cand_pos_t b_ij = rules.border_b(i, j);
+            rules.for_each_split(i, j, [&](cand_pos_t l) {
+                int ext_case = ctx.compute_exterior_cases(l, j, tree);
+                if (rules.allow_exterior_split(l, j, b_ij, ext_case)) {
+                    if (rules.has_valid_band_borders(i, l, j)) {
+                        const cand_pos_t B_lj = rules.border_B(l, j);
+                        const cand_pos_t Bp_lj = rules.border_Bp(l, j);
+                        if (rules.parent_within_interval_and_turn(i, l, j)) {
+                            splits.push_back({l, -1, B_lj, Bp_lj});
+                        }
+                    }
+                }
+            });
+        }
+        break;
+    case RuleId::WMBP_DIRECT_VP:
+        splits.push_back({});
+        break;
+    case RuleId::WMBP_SPLIT_BE_WI_VP:
+        if (rules.pair_at(j) < 0 && rules.pair_at(i) >= 0) {
+            rules.for_each_split(i, j, [&](cand_pos_t l) {
+                if (rules.has_valid_inner_arc_split(i, l, j, ctx.n()) && rules.parent_within_interval_and_turn(i, l, j)) {
+                    const cand_pos_t bp_il = rules.border_bp(i, l);
+                    splits.push_back({l, -1, bp_il, -1});
+                }
+            });
+        }
+        break;
+    default:
+        break;
+    }
+    return splits;
+}
+
+std::vector<RuleChild> expand_wmbp(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    std::vector<RuleChild> children;
+    switch (rule) {
+    case RuleId::WMBP_SPLIT_BE_WMBP_VP:
+        children.push_back({NonTerminal::WMBP, i, split.k - 1});
+        children.push_back({NonTerminal::VP, split.k, j});
+        break;
+    case RuleId::WMBP_SPLIT_BE_WMBW_VP:
+        children.push_back({NonTerminal::WMBW, i, split.k - 1});
+        children.push_back({NonTerminal::VP, split.k, j});
+        break;
+    case RuleId::WMBP_DIRECT_VP:
+        children.push_back({NonTerminal::VP, i, j});
+        break;
+    case RuleId::WMBP_SPLIT_BE_WI_VP:
+        children.push_back({NonTerminal::WI, split.p + 1, split.k - 1});
+        children.push_back({NonTerminal::VP, split.k, j});
+        break;
+    default:
+        break;
+    }
+    return children;
+}
+
+pf_t rule_score_wmbp(RuleId rule,
+                     cand_pos_t i,
+                     cand_pos_t j,
+                     const RuleSplit &split,
+                     PartFuncWMBPContext &ctx,
+                     sparse_tree &tree) {
+    switch (rule) {
+    case RuleId::WMBP_SPLIT_BE_WMBP_VP:
+    case RuleId::WMBP_SPLIT_BE_WMBW_VP: {
+        const scfg::PartFuncModeConfig mode_config{ctx.expPB_penalty(), TURN};
+        scfg::PartFuncRuleHelpers rules(tree, mode_config);
+        rules.on_traceback_hook(i, j);
+        rules.on_fixed_parse_hook(i, j);
+        pf_t m = ctx.get_BE(tree.tree[split.p].pair, split.p, tree.tree[split.q].pair, split.q, tree);
+        return rules.apply_double_pb_penalty(m);
+    }
+    case RuleId::WMBP_DIRECT_VP:
+        return ctx.expPB_penalty();
+    case RuleId::WMBP_SPLIT_BE_WI_VP: {
+        const scfg::PartFuncModeConfig mode_config{ctx.expPB_penalty(), TURN};
+        scfg::PartFuncRuleHelpers rules(tree, mode_config);
+        rules.on_traceback_hook(i, j);
+        rules.on_fixed_parse_hook(i, j);
+        pf_t m = ctx.get_BE(i, tree.tree[i].pair, split.p, tree.tree[split.p].pair, tree);
+        return rules.apply_double_pb_penalty(m);
+    }
+    default:
+        return 0;
+    }
+}
+
 } // namespace scfg
