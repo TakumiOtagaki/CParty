@@ -45,6 +45,8 @@ SET(SOURCE
   src/scfg/constraint_oracle.cc
   src/scfg/legacy_adapter.cc
   src/scfg/part_func_adapter.cc
+  src/scfg/rules_api.cc
+  src/scfg/rules_engine.cc
   src/scfg/rules_pseudo_loop.cc
   src/scfg/rules_part_func.cc
   src/fixed_energy_api.cc

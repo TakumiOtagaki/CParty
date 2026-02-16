@@ -1,0 +1,20 @@
+#ifndef SCFG_RULES_ENGINE_HH_
+#define SCFG_RULES_ENGINE_HH_
+
+#include "scfg/rules_api.hh"
+
+#include <unordered_set>
+
+namespace scfg {
+
+struct RulesConfig {
+    bool use_rules = false;
+    std::unordered_set<RuleId> disabled_rules;
+};
+
+RulesConfig load_rules_config_from_env();
+bool is_rule_enabled(const RulesConfig &config, RuleId rule);
+
+} // namespace scfg
+
+#endif

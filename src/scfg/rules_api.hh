@@ -2,6 +2,7 @@
 #define SCFG_RULES_API_HH_
 
 #include "base_types.hh"
+#include <string_view>
 
 namespace scfg {
 
@@ -122,6 +123,9 @@ enum class SplitKind : unsigned char {
 struct SplitSpec {
     SplitKind kind = SplitKind::None;
 };
+
+const char *rule_id_name(RuleId id);
+bool parse_rule_id(std::string_view name, RuleId *out);
 
 } // namespace scfg
 
