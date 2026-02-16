@@ -62,28 +62,24 @@ void compute_W_restricted_rules(PartFuncWContext &ctx, sparse_tree &tree, const 
 
     for (cand_pos_t j = turn + 1; j <= n; j++) {
         pf_t contributions = 0;
-
-        if (is_rule_enabled(config, RuleId::W_EXTEND_UNPAIRED)) {
-            if (tree.tree[j].pair < 0) {
-                record_rule_hit(RuleId::W_EXTEND_UNPAIRED);
-                contributions += ctx.get_W(j - 1) * ctx.scale1();
-            }
-        }
-
-        if (tree.weakly_closed(1, j)) {
-            for (cand_pos_t k = 1; k <= j - turn - 1; ++k) {
-                if (!tree.weakly_closed(1, k - 1)) continue;
-                pf_t acc = (k > 1) ? ctx.get_W(k - 1) : 1;
-                if (is_rule_enabled(config, RuleId::W_SPLIT_V)) {
-                    record_rule_hit(RuleId::W_SPLIT_V);
-                    contributions += acc * ctx.get_energy(k, j) * ctx.exp_Extloop(k, j);
-                }
-                if (is_rule_enabled(config, RuleId::W_SPLIT_WMB)) {
-                    if (k == 1 || tree.weakly_closed(k, j)) {
-                        record_rule_hit(RuleId::W_SPLIT_WMB);
-                        contributions += acc * ctx.get_energy_WMB(k, j) * ctx.expPS_penalty();
+        for (RuleId rule : rules_for(NonTerminal::W)) {
+            if (!is_rule_enabled(config, rule)) continue;
+            const auto splits = enumerate_splits_w(rule, 1, j, ctx, tree);
+            for (const auto &split : splits) {
+                record_rule_hit(rule);
+                pf_t coeff = rule_score_w(rule, 1, j, split, ctx);
+                pf_t term = 1;
+                const auto children = expand_w(rule, 1, j, split);
+                for (const auto &child : children) {
+                    if (child.nonterminal == NonTerminal::W) {
+                        term *= ctx.get_W(child.j);
+                    } else if (child.nonterminal == NonTerminal::V) {
+                        term *= ctx.get_energy(child.i, child.j);
+                    } else if (child.nonterminal == NonTerminal::WMB) {
+                        term *= ctx.get_energy_WMB(child.i, child.j);
                     }
                 }
+                contributions += term * coeff;
             }
         }
         ctx.set_W(j, contributions);
