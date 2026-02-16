@@ -262,8 +262,8 @@ struct BlossomMatching {
  * @param j end
  * @param e energy of candidate "V(i,j)"
  */
-void register_candidate(std::vector<cand_list_t> &CL, cand_pos_t const &i, cand_pos_t const &j, pf_t const &e) {
-    CL[j].emplace_back(cand_entry_t(i, e));
+void register_candidate(std::vector<cand_list_t> &CL, cand_pos_t const &i, cand_pos_t const &j, pf_t const &e, CandKind kind) {
+    CL[j].emplace_back(cand_entry_t(i, e, kind));
 }
 
 cand_pos_t get_index(std::vector<cand_pos_t> &index, cand_pos_t i, cand_pos_t j) {
@@ -342,17 +342,17 @@ pf_t W_final_pf::compute_MEA(sparse_tree &tree,double gamma){
             if(tree.tree[j].pair<0) M[ij] = M[ijm1] + pu[j];
 
             if(tree.weakly_closed(i,j)){
-                for (auto it = CL[j].begin(); CL[j].end() != it && it->first >= i; ++it) {
-                    cand_pos_t k = it->first;
+                for (auto it = CL[j].begin(); CL[j].end() != it && it->k >= i; ++it) {
+                    cand_pos_t k = it->k;
                     cand_pos_t ikm1 = get_index(index,i,k-1);
-                    EA = it->second + get_value(M,ikm1,i,k-1);
+                    EA = it->score + get_value(M,ikm1,i,k-1);
                     M[ij] = std::max(M[ij], EA);
                 }
 
-                for (auto it = CLPK[j].begin(); CLPK[j].end() != it && it->first >= i; ++it) {
-                    cand_pos_t k = it->first;
+                for (auto it = CLPK[j].begin(); CLPK[j].end() != it && it->k >= i; ++it) {
+                    cand_pos_t k = it->k;
                     cand_pos_t ikm1 = get_index(index,i,k-1);
-                    EA    = it->second + get_value(M,ikm1,i,k-1);
+                    EA    = it->score + get_value(M,ikm1,i,k-1);
                     M[ij] = std::max(M[ij], EA);
                 }
             }
@@ -363,7 +363,7 @@ pf_t W_final_pf::compute_MEA(sparse_tree &tree,double gamma){
                 EA += 2 * gamma * pp[index2].p;
                 if (M[ij] < EA) {
                     M[ij] = EA;
-                    register_candidate(CL,i,j,EA);
+                    register_candidate(CL, i, j, EA, CandKind::Normal);
                 }
                 ++index2;
             }
@@ -394,6 +394,7 @@ pf_t W_final_pf::compute_MEA(sparse_tree &tree,double gamma){
                 EA += 2 * gamma * plpk[index_PK].p;
                 if (M[ij] < EA) {
                     M[ij] = EA;
+                    register_candidate(CLPK, i, j, EA, CandKind::PK_PLPK);
                 }
                 ++index_PK;
             }
@@ -478,6 +479,7 @@ pf_t W_final_pf::compute_MEA(sparse_tree &tree,double gamma){
             }
             if (WMB[ij] > M[ij]) {
                 M[ij] = WMB[ij];
+                register_candidate(CLPK, i, j, WMB[ij], CandKind::PK_WMB);
             }
             
             cand_pos_t ip = tree.tree[i].pair; // i's pair ip should be right side so ip = )
@@ -707,24 +709,28 @@ void mea_backtrack(MEAdat &bdat,sparse_tree &tree,cand_pos_t i,cand_pos_t j, int
         --ijm1;
     }
 
-    for (auto it = bdat.CL[j].begin(); bdat.CL[j].end() != it && it->first >= i; ++it) {
-        cand_pos_t k = it->first;
+    for (auto it = bdat.CL[j].begin(); bdat.CL[j].end() != it && it->k >= i; ++it) {
+        cand_pos_t k = it->k;
         cand_pos_t ikm1 = get_index(bdat.index,i,k-1);
-        if (bdat.M[ij] <= it->second + bdat.M[ikm1] + prec) {
+        if (bdat.M[ij] <= it->score + bdat.M[ikm1] + prec) {
             if (k > i + 3) mea_backtrack(bdat,tree, i, k-1,0);
 
             mea_backtrack(bdat,tree, k, j,1);
             fail = 0;
         }
     }
-    for (auto it = bdat.CLPK[j].begin(); bdat.CLPK[j].end() != it && it->first >= i; ++it) {
-        cand_pos_t k = it->first;
+    for (auto it = bdat.CLPK[j].begin(); bdat.CLPK[j].end() != it && it->k >= i; ++it) {
+        cand_pos_t k = it->k;
         cand_pos_t ikm1 = get_index(bdat.index,i,k-1);
-        if (bdat.M[ij] <= it->second + bdat.M[ikm1] + prec) {
+        if (bdat.M[ij] <= it->score + bdat.M[ikm1] + prec) {
             if (k > i + 3) mea_backtrack(bdat,tree, i, k-1,0);
-
-            mea_backtrack_pk(bdat,tree, k, j,it->second);
-            fail = 0;
+            if (it->kind == CandKind::PK_WMB) {
+                mea_backtrack_pk(bdat,tree, k, j,it->score);
+                fail = 0;
+            } else if (it->kind == CandKind::PK_PLPK) {
+                mea_backtrack_vp(bdat,tree, k, j);
+                fail = 0;
+            }
         }
     }
     if (fail && j > i){

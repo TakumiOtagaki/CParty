@@ -155,6 +155,7 @@ git commit -m "<short summary>"
 - `src/part_func.cc` を削除
 
 ## 11. 既知の課題 (2026-02-16)
-- MEA の backtrack が `CL/CLPK` 空のケースで失敗する（stderr に `backtrack failed` を出して継続）。
-- 既存挙動と整合のため暫定許容。CLPK 候補設計と backtrack 整合は別 issue として追跡。
+- MEA の backtrack が `CL/CLPK` 空のケースで失敗する可能性があり、stderr に `backtrack failed` を出して継続する挙動が既存。
+- 対応案: CLPK 候補に由来種別を持たせ、backtrack 分岐と整合させる。
+- 進捗: `debug-mea-clpk` で候補種別化を実装し、再現ケースでは失敗が解消。strict test は pass。広い検証は未完。
 - Issue: `https://github.com/TakumiOtagaki/CParty/issues/2`

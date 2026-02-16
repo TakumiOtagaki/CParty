@@ -4,9 +4,23 @@
 #include "base_types.hh"
 #include "part_func.hh"
 
+#include <cstdint>
 #include <vector>
 
-typedef std::pair<cand_pos_t, pf_t> cand_entry_t;
+enum class CandKind : uint8_t {
+    Normal,
+    PK_WMB,
+    PK_PLPK,
+};
+
+struct cand_entry_t {
+    cand_pos_t k;
+    pf_t score;
+    CandKind kind;
+    cand_entry_t(cand_pos_t k, pf_t score, CandKind kind)
+        : k(k), score(score), kind(kind) {}
+};
+
 typedef std::vector<cand_entry_t> cand_list_t;
 
 /**
@@ -53,7 +67,7 @@ struct MEAdat {
 };
 
 struct Cand_comp {
-        bool operator()(const cand_entry_t &x, cand_pos_t y) const { return x.first > y; }
+        bool operator()(const cand_entry_t &x, cand_pos_t y) const { return x.k > y; }
 } cand_comp;
 
 /*
