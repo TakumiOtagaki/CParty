@@ -14,6 +14,7 @@ struct RulesConfig {
 
 RulesConfig load_rules_config_from_env();
 bool is_rule_enabled(const RulesConfig &config, RuleId rule);
+const RulesConfig &get_rules_config();
 
 } // namespace scfg
 

@@ -66,4 +66,9 @@ bool is_rule_enabled(const RulesConfig &config, RuleId rule) {
     return true;
 }
 
+const RulesConfig &get_rules_config() {
+    static const RulesConfig config = load_rules_config_from_env();
+    return config;
+}
+
 } // namespace scfg

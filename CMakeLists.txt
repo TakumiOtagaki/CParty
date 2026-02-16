@@ -47,6 +47,7 @@ SET(SOURCE
   src/scfg/part_func_adapter.cc
   src/scfg/rules_api.cc
   src/scfg/rules_engine.cc
+  src/scfg/rules_runtime.cc
   src/scfg/rules_pseudo_loop.cc
   src/scfg/rules_part_func.cc
   src/fixed_energy_api.cc

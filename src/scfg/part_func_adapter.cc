@@ -1,7 +1,9 @@
 #include "scfg/part_func_adapter.hh"
 
 #include "part_func.hh"
+#include "scfg/rules_engine.hh"
 #include "scfg/rules_part_func.hh"
+#include "scfg/rules_runtime.hh"
 
 extern double expPPS_penalty;
 extern double expPSP_penalty;
@@ -360,7 +362,12 @@ class LocalBEContext final : public PartFuncBEContext {
 
 void compute_W_restricted(W_final_pf &owner, sparse_tree &tree) {
     LocalWContext ctx(owner);
-    compute_W_restricted(ctx, tree);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        compute_W_restricted_rules(ctx, tree, config);
+    } else {
+        compute_W_restricted(ctx, tree);
+    }
 }
 
 pf_t compute_VM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, std::vector<int> &up) {
@@ -370,7 +377,12 @@ pf_t compute_VM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, std::v
 
 void compute_V_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalVContext ctx(owner);
-    compute_V_restricted(ctx, i, j, tree);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        compute_V_restricted_rules(ctx, i, j, tree, config);
+    } else {
+        compute_V_restricted(ctx, i, j, tree);
+    }
 }
 
 void compute_WI_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
