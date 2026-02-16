@@ -16,6 +16,7 @@ class PartFuncWIContext;
 class PartFuncVMContext;
 class PartFuncWMvWMpContext;
 class PartFuncWMContext;
+class PartFuncWIPContext;
 
 struct RuleSpec {
     RuleId id;
@@ -108,6 +109,18 @@ pf_t rule_score_wm(RuleId rule,
                    cand_pos_t j,
                    const RuleSplit &split,
                    PartFuncWMContext &ctx);
+
+std::vector<RuleSplit> enumerate_splits_wip(RuleId rule,
+                                            cand_pos_t i,
+                                            cand_pos_t j,
+                                            PartFuncWIPContext &ctx,
+                                            sparse_tree &tree);
+std::vector<RuleChild> expand_wip(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
+pf_t rule_score_wip(RuleId rule,
+                    cand_pos_t i,
+                    cand_pos_t j,
+                    const RuleSplit &split,
+                    PartFuncWIPContext &ctx);
 
 } // namespace scfg
 

@@ -197,38 +197,25 @@ void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_
 void compute_WIP_restricted_rules(PartFuncWIPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
-    if (is_rule_enabled(config, RuleId::WIP_BASE_V)) {
-        record_rule_hit(RuleId::WIP_BASE_V);
-        contributions += ctx.get_energy(i, j) * ctx.expbp_penalty();
-    }
-    if (is_rule_enabled(config, RuleId::WIP_BASE_WMB)) {
-        record_rule_hit(RuleId::WIP_BASE_WMB);
-        contributions += ctx.get_energy_WMB(i, j) * ctx.expbp_penalty() * ctx.expPSM_penalty();
-    }
-    const cand_pos_t turn = ctx.turn();
-    for (cand_pos_t k = i + 1; k < j - turn - 1; ++k) {
-        bool can_pair = scfg::can_pair_left_span(tree, i, k);
-
-        if (is_rule_enabled(config, RuleId::WIP_SPLIT_V)) {
-            record_rule_hit(RuleId::WIP_SPLIT_V);
-            contributions += (ctx.get_energy_WIP(i, k - 1) * ctx.get_energy(k, j) * ctx.expbp_penalty());
+    for (RuleId rule : rules_for(NonTerminal::WIP)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_wip(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = rule_score_wip(rule, i, j, split, ctx);
+            pf_t term = 1;
+            const auto children = expand_wip(rule, i, j, split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::WIP) {
+                    term *= ctx.get_energy_WIP(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::V) {
+                    term *= ctx.get_energy(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMB) {
+                    term *= ctx.get_energy_WMB(child.i, child.j);
+                }
+            }
+            contributions += term * coeff;
         }
-        if (is_rule_enabled(config, RuleId::WIP_SPLIT_WMB)) {
-            record_rule_hit(RuleId::WIP_SPLIT_WMB);
-            contributions += (ctx.get_energy_WIP(i, k - 1) * ctx.get_energy_WMB(k, j) * ctx.expbp_penalty() * ctx.expPSM_penalty());
-        }
-        if (can_pair && is_rule_enabled(config, RuleId::WIP_BASEPAIR_V)) {
-            record_rule_hit(RuleId::WIP_BASEPAIR_V);
-            contributions += (ctx.expcp_pen(k - i) * ctx.get_energy(k, j) * ctx.expbp_penalty());
-        }
-        if (can_pair && is_rule_enabled(config, RuleId::WIP_BASEPAIR_WMB)) {
-            record_rule_hit(RuleId::WIP_BASEPAIR_WMB);
-            contributions += (ctx.expcp_pen(k - i) * ctx.get_energy_WMB(k, j) * ctx.expbp_penalty() * ctx.expPSM_penalty());
-        }
-    }
-    if (tree.tree[j].pair < 0 && is_rule_enabled(config, RuleId::WIP_EXTEND_UNPAIRED)) {
-        record_rule_hit(RuleId::WIP_EXTEND_UNPAIRED);
-        contributions += (ctx.get_energy_WIP(i, j - 1) * ctx.expcp_pen(1));
     }
     ctx.set_WIP(ij, contributions);
 }

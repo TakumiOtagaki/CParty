@@ -537,4 +537,97 @@ pf_t rule_score_wm(RuleId rule,
     }
 }
 
+std::vector<RuleSplit> enumerate_splits_wip(RuleId rule,
+                                            cand_pos_t i,
+                                            cand_pos_t j,
+                                            PartFuncWIPContext &ctx,
+                                            sparse_tree &tree) {
+    std::vector<RuleSplit> splits;
+    const cand_pos_t turn = ctx.turn();
+    switch (rule) {
+    case RuleId::WIP_BASE_V:
+    case RuleId::WIP_BASE_WMB:
+        splits.push_back({});
+        break;
+    case RuleId::WIP_SPLIT_V:
+    case RuleId::WIP_SPLIT_WMB: {
+        for (cand_pos_t k = i + 1; k < j - turn - 1; ++k) {
+            splits.push_back({k, -1});
+        }
+    } break;
+    case RuleId::WIP_BASEPAIR_V:
+    case RuleId::WIP_BASEPAIR_WMB: {
+        for (cand_pos_t k = i + 1; k < j - turn - 1; ++k) {
+            if (scfg::can_pair_left_span(tree, i, k)) {
+                splits.push_back({k, -1});
+            }
+        }
+    } break;
+    case RuleId::WIP_EXTEND_UNPAIRED:
+        if (tree.tree[j].pair < 0) {
+            splits.push_back({});
+        }
+        break;
+    default:
+        break;
+    }
+    return splits;
+}
+
+std::vector<RuleChild> expand_wip(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    std::vector<RuleChild> children;
+    switch (rule) {
+    case RuleId::WIP_BASE_V:
+        children.push_back({NonTerminal::V, i, j});
+        break;
+    case RuleId::WIP_BASE_WMB:
+        children.push_back({NonTerminal::WMB, i, j});
+        break;
+    case RuleId::WIP_SPLIT_V:
+        children.push_back({NonTerminal::WIP, i, split.k - 1});
+        children.push_back({NonTerminal::V, split.k, j});
+        break;
+    case RuleId::WIP_SPLIT_WMB:
+        children.push_back({NonTerminal::WIP, i, split.k - 1});
+        children.push_back({NonTerminal::WMB, split.k, j});
+        break;
+    case RuleId::WIP_BASEPAIR_V:
+        children.push_back({NonTerminal::V, split.k, j});
+        break;
+    case RuleId::WIP_BASEPAIR_WMB:
+        children.push_back({NonTerminal::WMB, split.k, j});
+        break;
+    case RuleId::WIP_EXTEND_UNPAIRED:
+        children.push_back({NonTerminal::WIP, i, j - 1});
+        break;
+    default:
+        break;
+    }
+    return children;
+}
+
+pf_t rule_score_wip(RuleId rule,
+                    cand_pos_t i,
+                    cand_pos_t j,
+                    const RuleSplit &split,
+                    PartFuncWIPContext &ctx) {
+    (void)j;
+    switch (rule) {
+    case RuleId::WIP_BASE_V:
+    case RuleId::WIP_SPLIT_V:
+        return ctx.expbp_penalty();
+    case RuleId::WIP_BASE_WMB:
+    case RuleId::WIP_SPLIT_WMB:
+        return ctx.expbp_penalty() * ctx.expPSM_penalty();
+    case RuleId::WIP_BASEPAIR_V:
+        return ctx.expcp_pen(split.k - i) * ctx.expbp_penalty();
+    case RuleId::WIP_BASEPAIR_WMB:
+        return ctx.expcp_pen(split.k - i) * ctx.expbp_penalty() * ctx.expPSM_penalty();
+    case RuleId::WIP_EXTEND_UNPAIRED:
+        return ctx.expcp_pen(1);
+    default:
+        return 0;
+    }
+}
+
 } // namespace scfg
