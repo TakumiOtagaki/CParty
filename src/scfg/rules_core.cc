@@ -900,4 +900,48 @@ pf_t rule_score_vp(RuleId rule,
     }
 }
 
+std::vector<RuleSplit> enumerate_splits_wmbw(RuleId rule,
+                                             cand_pos_t i,
+                                             cand_pos_t j,
+                                             PartFuncWMBWContext &ctx,
+                                             sparse_tree &tree) {
+    (void)ctx;
+    std::vector<RuleSplit> splits;
+    if (rule != RuleId::WMBW_SPLIT_WMBP_WI) {
+        return splits;
+    }
+    if (!(tree.tree[j].pair < j)) {
+        return splits;
+    }
+    for (cand_pos_t l = i + 1; l < j; l++) {
+        if (tree.tree[l].pair < 0 && tree.tree[l].parent->index > -1 && tree.tree[j].parent->index > -1
+            && tree.tree[j].parent->index == tree.tree[l].parent->index) {
+            splits.push_back({l, -1});
+        }
+    }
+    return splits;
+}
+
+std::vector<RuleChild> expand_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    std::vector<RuleChild> children;
+    if (rule == RuleId::WMBW_SPLIT_WMBP_WI) {
+        children.push_back({NonTerminal::WMBP, i, split.k});
+        children.push_back({NonTerminal::WI, split.k + 1, j});
+    }
+    return children;
+}
+
+pf_t rule_score_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWMBWContext &ctx) {
+    (void)i;
+    (void)j;
+    (void)split;
+    (void)ctx;
+    switch (rule) {
+    case RuleId::WMBW_SPLIT_WMBP_WI:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
 } // namespace scfg

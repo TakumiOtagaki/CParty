@@ -369,14 +369,22 @@ void compute_WMBP_restricted_rules(PartFuncWMBPContext &ctx, cand_pos_t i, cand_
 void compute_WMBW_restricted_rules(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
-
-    if (tree.tree[j].pair < j && is_rule_enabled(config, RuleId::WMBW_SPLIT_WMBP_WI)) {
-        for (cand_pos_t l = i + 1; l < j; l++) {
-            if (tree.tree[l].pair < 0 && tree.tree[l].parent->index > -1 && tree.tree[j].parent->index > -1
-                && tree.tree[j].parent->index == tree.tree[l].parent->index) {
-                record_rule_hit(RuleId::WMBW_SPLIT_WMBP_WI);
-                contributions += ctx.get_energy_WMBP(i, l) * ctx.get_energy_WI(l + 1, j);
+    for (RuleId rule : rules_for(NonTerminal::WMBW)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_wmbw(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = rule_score_wmbw(rule, i, j, split, ctx);
+            pf_t term = 1;
+            const auto children = expand_wmbw(rule, i, j, split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::WMBP) {
+                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WI) {
+                    term *= ctx.get_energy_WI(child.i, child.j);
+                }
             }
+            contributions += term * coeff;
         }
     }
     ctx.set_WMBW(ij, contributions);
