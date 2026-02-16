@@ -676,4 +676,63 @@ pf_t rule_score_vpl(RuleId rule,
     }
 }
 
+std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
+                                            cand_pos_t i,
+                                            cand_pos_t j,
+                                            PartFuncVPRContext &ctx,
+                                            sparse_tree &tree) {
+    (void)ctx;
+    std::vector<RuleSplit> splits;
+    const cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
+    switch (rule) {
+    case RuleId::VPR_SPLIT_VP_WIP:
+        for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
+            splits.push_back({k, -1});
+        }
+        break;
+    case RuleId::VPR_SPLIT_VP_BASEPAIR:
+        for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
+            if (scfg::can_pair_right_span(tree, k, j)) {
+                splits.push_back({k, -1});
+            }
+        }
+        break;
+    default:
+        break;
+    }
+    return splits;
+}
+
+std::vector<RuleChild> expand_vpr(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    std::vector<RuleChild> children;
+    switch (rule) {
+    case RuleId::VPR_SPLIT_VP_WIP:
+        children.push_back({NonTerminal::VP, i, split.k});
+        children.push_back({NonTerminal::WIP, split.k + 1, j});
+        break;
+    case RuleId::VPR_SPLIT_VP_BASEPAIR:
+        children.push_back({NonTerminal::VP, i, split.k});
+        break;
+    default:
+        break;
+    }
+    return children;
+}
+
+pf_t rule_score_vpr(RuleId rule,
+                    cand_pos_t i,
+                    cand_pos_t j,
+                    const RuleSplit &split,
+                    PartFuncVPRContext &ctx) {
+    (void)j;
+    switch (rule) {
+    case RuleId::VPR_SPLIT_VP_WIP:
+        return 1;
+    case RuleId::VPR_SPLIT_VP_BASEPAIR:
+        return ctx.expcp_pen(split.k - i);
+    default:
+        return 0;
+    }
+}
+
 } // namespace scfg

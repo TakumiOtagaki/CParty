@@ -245,17 +245,22 @@ void compute_VPL_restricted_rules(PartFuncVPLContext &ctx, cand_pos_t i, cand_po
 void compute_VPR_restricted_rules(PartFuncVPRContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
-
-    cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
-    for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
-        bool can_pair = scfg::can_pair_right_span(tree, k, j);
-        if (is_rule_enabled(config, RuleId::VPR_SPLIT_VP_WIP)) {
-            record_rule_hit(RuleId::VPR_SPLIT_VP_WIP);
-            contributions += (ctx.get_energy_VP(i, k) * ctx.get_energy_WIP(k + 1, j));
-        }
-        if (can_pair && is_rule_enabled(config, RuleId::VPR_SPLIT_VP_BASEPAIR)) {
-            record_rule_hit(RuleId::VPR_SPLIT_VP_BASEPAIR);
-            contributions += (ctx.get_energy_VP(i, k) * ctx.expcp_pen(k - i));
+    for (RuleId rule : rules_for(NonTerminal::VPR)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_vpr(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = rule_score_vpr(rule, i, j, split, ctx);
+            pf_t term = 1;
+            const auto children = expand_vpr(rule, i, j, split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::VP) {
+                    term *= ctx.get_energy_VP(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WIP) {
+                    term *= ctx.get_energy_WIP(child.i, child.j);
+                }
+            }
+            contributions += term * coeff;
         }
     }
     ctx.set_VPR(ij, contributions);
