@@ -1054,11 +1054,14 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
                                             PartFuncWMBContext &ctx,
                                             sparse_tree &tree) {
     std::vector<RuleSplit> splits;
-    switch (rule) {
-    case RuleId::WMB_EMPTY:
-        if (i == j) {
+    if (i == j) {
+        if (rule == RuleId::WMB_EMPTY) {
             splits.push_back({});
         }
+        return splits;
+    }
+    switch (rule) {
+    case RuleId::WMB_EMPTY:
         break;
     case RuleId::WMB_DIRECT_WMBP:
         splits.push_back({});
