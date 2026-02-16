@@ -68,6 +68,17 @@ Rule Object + Constraint Oracle を使って単一パス評価を実装する。
 - パーサ実装は `rules_for`, `applicable_rules`, `rule_score`, `expand` の分離インターフェースで進める
 - 詳細擬似コードは `documents/scfg_fixed_structure_parsing_pseudocode.md` を参照
 
+## 5.1 進捗メモ (2026-02-16 以降)
+- `rules_core` を新設し、`rules_for` を RuleSpec テーブル起点に統一
+- `SplitKind` を `None / K / KL` に簡略化
+- `rules_runtime` から `rules_core` への接続を **全非終端で完了**
+  - `V/W/VM/WI/WMv/WMp/WM/WIP/VPL/VPR/VP/WMBW/WMBP/WMB/BE`
+- `WMB` の `i==j` は **WMB_EMPTY のみ**に制限（legacy 互換）
+- `get_structure_energy_union(seq, G, G')` を追加
+  - `G` は `()` のみ、`G'` は `[]` のみを許可
+  - `G ∪ G'` を fixed-structure path に合成して評価
+- `fixed_energy_union_test` を追加し、`union` と `merged` の一致を確認
+
 ## 6. 実行制約
 - 当面は `-d2` のみを対象に実装・検証する
 - オプション差分 (`-p`, `-k`, `-r`, `-d0`) は別フェーズで扱う
