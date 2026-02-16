@@ -42,8 +42,9 @@ bool is_truthy_value(const char *env_value) {
 }
 
 std::map<RuleId, long long> &rule_hit_counts() {
-    static std::map<RuleId, long long> counts;
-    return counts;
+    // Heap-allocate to avoid static destruction ordering issues with atexit.
+    static auto *counts = new std::map<RuleId, long long>();
+    return *counts;
 }
 
 void dump_rule_hit_counts() {
