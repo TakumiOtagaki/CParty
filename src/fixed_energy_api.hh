@@ -11,6 +11,9 @@ namespace cparty {
 // Evaluates a fixed-structure energy path. Story 011 exposes the callable API
 // and strict validation contract; scoring internals are expanded in later stories.
 double get_structure_energy(const std::string &seq, const std::string &db_full);
+double get_structure_energy_union(const std::string &seq,
+                                  const std::string &structure_g,
+                                  const std::string &structure_gprime);
 
 namespace internal {
 

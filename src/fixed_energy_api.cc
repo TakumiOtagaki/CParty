@@ -15,6 +15,8 @@ struct NormalizedInput {
   std::vector<int> pair_map;
 };
 
+NormalizedInput normalize_input(const std::string &seq, const std::string &db_full);
+
 enum class SharedStateKind {
   kW,
   kWI,
@@ -139,6 +141,70 @@ void validate_structure(const std::string &db_full, const size_t expected_length
   if (!round_stack.empty() || !square_stack.empty()) {
     fail_invalid_input("unbalanced structure: missing closing bracket");
   }
+}
+
+void validate_structure_subset(const std::string &db,
+                               const size_t expected_length,
+                               const char open_bracket,
+                               const char close_bracket,
+                               const std::string &label) {
+  if (db.empty()) {
+    fail_invalid_input(label + " is empty");
+  }
+  if (db.size() != expected_length) {
+    fail_invalid_input("sequence/" + label + " length mismatch");
+  }
+
+  std::vector<size_t> stack;
+  stack.reserve(db.size());
+
+  for (size_t i = 0; i < db.size(); ++i) {
+    const char c = db[i];
+    if (c == '.') {
+      continue;
+    }
+    if (c == open_bracket) {
+      stack.push_back(i);
+      continue;
+    }
+    if (c == close_bracket) {
+      if (stack.empty()) {
+        fail_invalid_input("unbalanced " + label + ": closing bracket without opener");
+      }
+      stack.pop_back();
+      continue;
+    }
+    fail_invalid_input(label + " contains unsupported symbol at position " + std::to_string(i + 1));
+  }
+
+  if (!stack.empty()) {
+    fail_invalid_input("unbalanced " + label + ": missing closing bracket");
+  }
+}
+
+NormalizedInput normalize_union_input(const std::string &seq,
+                                      const std::string &structure_g,
+                                      const std::string &structure_gprime) {
+  validate_sequence(seq);
+  validate_structure_subset(structure_g, seq.size(), '(', ')', "G");
+  validate_structure_subset(structure_gprime, seq.size(), '[', ']', "G'");
+
+  std::string merged;
+  merged.resize(seq.size(), '.');
+  for (size_t i = 0; i < seq.size(); ++i) {
+    const char g = structure_g[i];
+    const char gp = structure_gprime[i];
+    if (g != '.' && gp != '.') {
+      fail_invalid_input("G and G' overlap at position " + std::to_string(i + 1));
+    }
+    if (g != '.') {
+      merged[i] = g;
+    } else if (gp != '.') {
+      merged[i] = gp;
+    }
+  }
+
+  return normalize_input(seq, merged);
 }
 
 NormalizedInput normalize_input(const std::string &seq, const std::string &db_full) {
@@ -593,6 +659,13 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(co
 
 double get_structure_energy(const std::string &seq, const std::string &db_full) {
   const NormalizedInput normalized = normalize_input(seq, db_full);
+  return structure_energy_breakdown_from_normalized(normalized).total_energy;
+}
+
+double get_structure_energy_union(const std::string &seq,
+                                  const std::string &structure_g,
+                                  const std::string &structure_gprime) {
+  const NormalizedInput normalized = normalize_union_input(seq, structure_g, structure_gprime);
   return structure_energy_breakdown_from_normalized(normalized).total_energy;
 }
 
