@@ -276,11 +276,13 @@ Rule {
 - `WI_SPLIT_V`
 - `WI_SPLIT_WMB`
 - `WI_EXTEND_UNPAIRED`
+Note: `WI_BASE_SINGLE` の係数は `expPUP_pen1`。
 
 **W**
 - `W_EXTEND_UNPAIRED`
 - `W_SPLIT_V`
 - `W_SPLIT_WMB`
+Note: `W_SPLIT_*` は `k == 1` のとき左項が `1` になる特例がある（`W_EMPTY` 相当の扱いが必要）。
 
 **VM**
 - `VM_SPLIT_WM_WMv`
@@ -293,6 +295,7 @@ Rule {
 - `WMp_STEM_WMB`
 - `WMv_EXTEND_UNPAIRED`
 - `WMp_EXTEND_UNPAIRED`
+Note: `*_EXTEND_UNPAIRED` は `tree.tree[j].pair < 0` が必要。
 
 **WM**
 - `WM_START_V`
@@ -300,6 +303,7 @@ Rule {
 - `WM_SPLIT_V`
 - `WM_SPLIT_WMB`
 - `WM_EXTEND_UNPAIRED`
+Note: `WM_START_*` と `WM_SPLIT_*` の両方で `can_pair_left_span` が必要。
 
 **WIP**
 - `WIP_BASE_V`
@@ -309,6 +313,7 @@ Rule {
 - `WIP_BASEPAIR_V`
 - `WIP_BASEPAIR_WMB`
 - `WIP_EXTEND_UNPAIRED`
+Note: `WIP_EXTEND_UNPAIRED` は `tree.tree[j].pair < 0` が必要。
 
 **VPL**
 - `VPL_SPLIT_VP`
