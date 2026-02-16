@@ -23,7 +23,7 @@ std::string trim_copy(const std::string &value) {
     return value.substr(start, end - start);
 }
 
-std::vector<std::string> split_csv(const std::string &value) {
+std::vector<std::string> split_csv_debug(const std::string &value) {
     std::vector<std::string> parts;
     size_t start = 0;
     while (start <= value.size()) {
@@ -73,7 +73,7 @@ bool is_rules_mode_enabled(const char *env_value) {
 void load_rule_id_list(const char *env_value, std::unordered_set<RuleId> *out) {
     if (!env_value) return;
     std::string raw(env_value);
-    for (const auto &token : split_csv(raw)) {
+    for (const auto &token : split_csv_debug(raw)) {
         std::string trimmed = trim_copy(token);
         if (trimmed.empty()) continue;
         RuleId id;
