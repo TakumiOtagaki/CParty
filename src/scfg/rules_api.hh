@@ -112,12 +112,8 @@ enum class RuleId : unsigned short {
 
 enum class SplitKind : unsigned char {
     None,
-    SplitK,
-    SplitKPredicate,
-    SplitKDataBounds,
-    SplitKSplitL,
-    SplitKSplitLMixed,
-    SplitKBandParent,
+    K,
+    KL,
 };
 
 struct SplitSpec {
