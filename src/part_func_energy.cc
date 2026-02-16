@@ -3,14 +3,6 @@
 
 #include <math.h>
 
-static void ensure_pair_matrix_initialized() {
-    static bool initialized = false;
-    if (!initialized) {
-        make_pair_matrix();
-        initialized = true;
-    }
-}
-
 pf_t W_final_pf::exp_Extloop(cand_pos_t i, cand_pos_t j) {
     ensure_pair_matrix_initialized();
     pair_type tt = pair[S_[i]][S_[j]];

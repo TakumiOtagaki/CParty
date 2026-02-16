@@ -4,14 +4,6 @@
 
 #include <iostream>
 
-static void ensure_pair_matrix_initialized() {
-    static bool initialized = false;
-    if (!initialized) {
-        make_pair_matrix();
-        initialized = true;
-    }
-}
-
 pf_t W_final_pf::hfold_pf(sparse_tree &tree) {
     ensure_pair_matrix_initialized();
 

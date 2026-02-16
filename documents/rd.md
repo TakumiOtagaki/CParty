@@ -153,3 +153,8 @@ git commit -m "<short summary>"
 - `src/part_func_driver.cc`
 - `src/part_func_init.cc`
 - `src/part_func.cc` を削除
+
+## 11. 既知の課題 (2026-02-16)
+- MEA の backtrack が `CL/CLPK` 空のケースで失敗する（stderr に `backtrack failed` を出して継続）。
+- 既存挙動と整合のため暫定許容。CLPK 候補設計と backtrack 整合は別 issue として追跡。
+- Issue: `https://github.com/TakumiOtagaki/CParty/issues/2`

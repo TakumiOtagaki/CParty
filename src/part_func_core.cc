@@ -1,14 +1,6 @@
 #include "part_func.hh"
 #include "scfg/part_func_adapter.hh"
 
-static void ensure_pair_matrix_initialized() {
-    static bool initialized = false;
-    if (!initialized) {
-        make_pair_matrix();
-        initialized = true;
-    }
-}
-
 pf_t W_final_pf::compute_internal_restricted(cand_pos_t i, cand_pos_t j, std::vector<int> &up) {
     ensure_pair_matrix_initialized();
     pf_t v_iloop = 0;

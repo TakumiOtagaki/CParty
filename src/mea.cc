@@ -330,12 +330,12 @@ pf_t W_final_pf::compute_MEA(sparse_tree &tree,double gamma){
     for(cand_pos_t i = n; i>0;--i){
         cand_pos_t ii = get_index(index,i,i);
         M[ii] = pu[i];
-        if (pp[index_BE].i == i){
+        if (index_BE < pp.size() && pp[index_BE].i == i){
             BE_linear[i] = 2 * gamma * pp[index_BE].p;
             BE[ii] = 2 * gamma * pp[index_BE].p;
             index_BE++;
         }
-        if ((pp[index2].i == i) && (pp[index2].i > pp[index2].j)) ++index2;
+        if (index2 < pp.size() && (pp[index2].i == i) && (pp[index2].i > pp[index2].j)) ++index2;
         for(cand_pos_t j = i;j<=n;++j){
             cand_pos_t ij = get_index(index,i,j);
             cand_pos_t ijm1 = get_index(index,i,j-1);
@@ -357,7 +357,7 @@ pf_t W_final_pf::compute_MEA(sparse_tree &tree,double gamma){
                 }
             }
 
-            if (!pp.empty() && (pp[index2].i == i) && (pp[index2].j == j)) {
+            if (index2 < pp.size() && (pp[index2].i == i) && (pp[index2].j == j)) {
                 cand_pos_t ipjm1 = get_index(index,i+1,j-1);
                 EA = get_value(M,ipjm1,i+1,j-1);
                 EA += 2 * gamma * pp[index2].p;
@@ -367,7 +367,7 @@ pf_t W_final_pf::compute_MEA(sparse_tree &tree,double gamma){
                 }
                 ++index2;
             }
-            if (!plpk.empty() && (plpk[index_PK].i == i) && (plpk[index_PK].j == j)) {
+            if (index_PK < plpk.size() && (plpk[index_PK].i == i) && (plpk[index_PK].j == j)) {
                 cand_pos_t bp_ij = tree.bp(i,j);
                 cand_pos_t Bp_ij = tree.Bp(i,j);
                 cand_pos_t b_ij = tree.b(i,j);
@@ -476,9 +476,8 @@ pf_t W_final_pf::compute_MEA(sparse_tree &tree,double gamma){
                 WMB[ij] = tmp;
                 
             }
-            if(WMB[ij] > M[ij]){
-                M[ij] = std::max(M[ij],WMB[ij]);
-                register_candidate(CLPK,i,j,WMB[ij]);
+            if (WMB[ij] > M[ij]) {
+                M[ij] = WMB[ij];
             }
             
             cand_pos_t ip = tree.tree[i].pair; // i's pair ip should be right side so ip = )
@@ -729,7 +728,20 @@ void mea_backtrack(MEAdat &bdat,sparse_tree &tree,cand_pos_t i,cand_pos_t j, int
         }
     }
     if (fail && j > i){
-        printf("backtrack failed for MEA at %d and %d\n",i,j);
-        exit(0);
+        if (std::getenv("MEA_BACKTRACK_DEBUG")) {
+            fprintf(stderr,
+                    "backtrack failed for MEA at %d and %d | M=%.8f M_prev=%.8f pu=%.8f prec=%.8f CL=%zu CLPK=%zu\n",
+                    i,
+                    j,
+                    bdat.M[ij],
+                    bdat.M[ijm1],
+                    bdat.pu[j],
+                    prec,
+                    bdat.CL[j].size(),
+                    bdat.CLPK[j].size());
+        } else {
+            fprintf(stderr, "backtrack failed for MEA at %d and %d\n", i, j);
+        }
+        return;
     }
 }

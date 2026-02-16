@@ -1,14 +1,6 @@
 #include "part_func.hh"
 #include "scfg/part_func_adapter.hh"
 
-static void ensure_pair_matrix_initialized() {
-    static bool initialized = false;
-    if (!initialized) {
-        make_pair_matrix();
-        initialized = true;
-    }
-}
-
 void W_final_pf::compute_pk_energies(cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     ensure_pair_matrix_initialized();
 

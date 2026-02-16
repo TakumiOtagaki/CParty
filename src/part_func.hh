@@ -27,6 +27,14 @@ struct SzudzikHash {
     }
 };
 
+inline void ensure_pair_matrix_initialized() {
+    static bool initialized = false;
+    if (!initialized) {
+        make_pair_matrix();
+        initialized = true;
+    }
+}
+
 inline cand_pos_t boustrophedon_at(cand_pos_t start, cand_pos_t end, cand_pos_t pos) {
     cand_pos_t count = pos - 1;
     cand_pos_t advance = (cand_pos_t)(count / 2);

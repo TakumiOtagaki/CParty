@@ -1,13 +1,5 @@
 #include "part_func.hh"
 
-static void ensure_pair_matrix_initialized() {
-    static bool initialized = false;
-    if (!initialized) {
-        make_pair_matrix();
-        initialized = true;
-    }
-}
-
 W_final_pf::W_final_pf(std::string &seq, std::string &MFE_structure, bool pk_free,bool pk_only,bool fatgraph, int dangle, double energy, int num_samples, bool PSplot)
     : exp_params_(scale_pf_parameters()) {
     ensure_pair_matrix_initialized();
