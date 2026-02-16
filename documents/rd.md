@@ -286,6 +286,7 @@ Rule {
 - `VM_SPLIT_WM_WMv`
 - `VM_SPLIT_WM_WMp`
 - `VM_SPLIT_WMp_BASE`
+- `VM_SCALE2` // 合計後に `scale2` を掛ける全体係数
 
 **WMv/WMp**
 - `WMv_STEM_V`
@@ -321,7 +322,7 @@ Rule {
 - `VP_WI_CASE2`   // b/bp 系の WI 二分割
 - `VP_WI_CASE3`   // WI 三分割
 - `VP_STACK`      // get_e_stP * VP(i+1,j-1)
-- `VP_INTERNAL_LOOP`
+- `VP_INTERNAL_LOOP` // `k == i+1 && l == j-1` は除外する `skip` 条件が必要
 - `VP_WIP_VP_LEFT`
 - `VP_VP_WIP_RIGHT`
 - `VP_WIP_VPR`
@@ -339,6 +340,7 @@ Rule {
 **WMB**
 - `WMB_SPLIT_BE_WMBP_WI`
 - `WMB_DIRECT_WMBP`
+- `WMB_EMPTY` // `i == j` の base ケース (`0` を返す)
 
 **BE**
 - `BE_BASE_SAMEPAIR`
