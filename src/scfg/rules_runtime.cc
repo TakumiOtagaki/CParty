@@ -351,33 +351,23 @@ void compute_WMBW_restricted_rules(PartFuncWMBWContext &ctx, cand_pos_t i, cand_
 void compute_WMB_restricted_rules(PartFuncWMBContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
-    if (i == j) {
-        if (is_rule_enabled(config, RuleId::WMB_EMPTY)) {
-            record_rule_hit(RuleId::WMB_EMPTY);
-            ctx.set_WMB(ij, 0);
-        } else {
-            ctx.set_WMB(ij, 0);
-        }
-        return;
-    }
-
-    if (tree.tree[j].pair >= 0 && j > tree.tree[j].pair && tree.tree[j].pair > i &&
-        is_rule_enabled(config, RuleId::WMB_SPLIT_BE_WMBP_WI)) {
-        cand_pos_t bp_j = tree.tree[j].pair;
-        for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {
-            cand_pos_t Bp_lj = tree.Bp(l, j);
-            if (Bp_lj >= 0 && Bp_lj < ctx.n()) {
-                record_rule_hit(RuleId::WMB_SPLIT_BE_WMBP_WI);
-                contributions += ctx.get_BE(bp_j, j, tree.tree[Bp_lj].pair, Bp_lj, tree) *
-                                 ctx.get_energy_WMBP(i, l) *
-                                 ctx.get_energy_WI(l + 1, Bp_lj - 1) * ctx.expPB_penalty();
+    for (RuleId rule : rules_for(NonTerminal::WMB)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_wmb(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = rule_score_wmb(rule, i, j, split, ctx, tree);
+            pf_t term = 1;
+            const auto children = expand_wmb(rule, i, j, split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::WMBP) {
+                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WI) {
+                    term *= ctx.get_energy_WI(child.i, child.j);
+                }
             }
+            contributions += term * coeff;
         }
-    }
-
-    if (is_rule_enabled(config, RuleId::WMB_DIRECT_WMBP)) {
-        record_rule_hit(RuleId::WMB_DIRECT_WMBP);
-        contributions += ctx.get_energy_WMBP(i, j);
     }
     ctx.set_WMB(ij, contributions);
 }

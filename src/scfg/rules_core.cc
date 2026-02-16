@@ -1048,4 +1048,76 @@ pf_t rule_score_wmbp(RuleId rule,
     }
 }
 
+std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
+                                            cand_pos_t i,
+                                            cand_pos_t j,
+                                            PartFuncWMBContext &ctx,
+                                            sparse_tree &tree) {
+    std::vector<RuleSplit> splits;
+    switch (rule) {
+    case RuleId::WMB_EMPTY:
+        if (i == j) {
+            splits.push_back({});
+        }
+        break;
+    case RuleId::WMB_DIRECT_WMBP:
+        splits.push_back({});
+        break;
+    case RuleId::WMB_SPLIT_BE_WMBP_WI:
+        if (tree.tree[j].pair >= 0 && j > tree.tree[j].pair && tree.tree[j].pair > i) {
+            cand_pos_t bp_j = tree.tree[j].pair;
+            for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {
+                cand_pos_t Bp_lj = tree.Bp(l, j);
+                if (Bp_lj >= 0 && Bp_lj < ctx.n()) {
+                    splits.push_back({l, -1, bp_j, Bp_lj});
+                }
+            }
+        }
+        break;
+    default:
+        break;
+    }
+    return splits;
+}
+
+std::vector<RuleChild> expand_wmb(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    std::vector<RuleChild> children;
+    switch (rule) {
+    case RuleId::WMB_EMPTY:
+        break;
+    case RuleId::WMB_DIRECT_WMBP:
+        children.push_back({NonTerminal::WMBP, i, j});
+        break;
+    case RuleId::WMB_SPLIT_BE_WMBP_WI:
+        children.push_back({NonTerminal::WMBP, i, split.k});
+        children.push_back({NonTerminal::WI, split.k + 1, split.q - 1});
+        break;
+    default:
+        break;
+    }
+    return children;
+}
+
+pf_t rule_score_wmb(RuleId rule,
+                    cand_pos_t i,
+                    cand_pos_t j,
+                    const RuleSplit &split,
+                    PartFuncWMBContext &ctx,
+                    sparse_tree &tree) {
+    (void)i;
+    (void)j;
+    switch (rule) {
+    case RuleId::WMB_EMPTY:
+        return 0;
+    case RuleId::WMB_DIRECT_WMBP:
+        return 1;
+    case RuleId::WMB_SPLIT_BE_WMBP_WI: {
+        pf_t m = ctx.get_BE(split.p, tree.tree[split.p].pair, tree.tree[split.q].pair, split.q, tree);
+        return m * ctx.expPB_penalty();
+    }
+    default:
+        return 0;
+    }
+}
+
 } // namespace scfg
