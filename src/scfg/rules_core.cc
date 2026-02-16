@@ -317,4 +317,69 @@ pf_t rule_score_wi(RuleId rule,
     }
 }
 
+std::vector<RuleSplit> enumerate_splits_vm(RuleId rule,
+                                           cand_pos_t i,
+                                           cand_pos_t j,
+                                           PartFuncVMContext &ctx,
+                                           std::vector<int> &up) {
+    std::vector<RuleSplit> splits;
+    const cand_pos_t turn = ctx.turn();
+    switch (rule) {
+    case RuleId::VM_SPLIT_WM_WMv:
+    case RuleId::VM_SPLIT_WM_WMp: {
+        for (cand_pos_t k = i + 1; k <= j - turn - 1; ++k) {
+            splits.push_back({k, -1});
+        }
+    } break;
+    case RuleId::VM_SPLIT_WMp_BASE: {
+        for (cand_pos_t k = i + 1; k <= j - turn - 1; ++k) {
+            if (up[k - 1] >= (k - (i + 1))) {
+                splits.push_back({k, -1});
+            }
+        }
+    } break;
+    default:
+        break;
+    }
+    return splits;
+}
+
+std::vector<RuleChild> expand_vm(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    std::vector<RuleChild> children;
+    switch (rule) {
+    case RuleId::VM_SPLIT_WM_WMv:
+        children.push_back({NonTerminal::WM, i + 1, split.k - 1});
+        children.push_back({NonTerminal::WMv, split.k, j - 1});
+        break;
+    case RuleId::VM_SPLIT_WM_WMp:
+        children.push_back({NonTerminal::WM, i + 1, split.k - 1});
+        children.push_back({NonTerminal::WMp, split.k, j - 1});
+        break;
+    case RuleId::VM_SPLIT_WMp_BASE:
+        children.push_back({NonTerminal::WMp, split.k, j - 1});
+        break;
+    default:
+        break;
+    }
+    return children;
+}
+
+pf_t rule_score_vm(RuleId rule,
+                   cand_pos_t i,
+                   cand_pos_t j,
+                   const RuleSplit &split,
+                   PartFuncVMContext &ctx,
+                   std::vector<int> &up) {
+    (void)split;
+    (void)up;
+    switch (rule) {
+    case RuleId::VM_SPLIT_WM_WMv:
+    case RuleId::VM_SPLIT_WM_WMp:
+    case RuleId::VM_SPLIT_WMp_BASE:
+        return ctx.exp_Mbloop(i, j) * ctx.expMLclosing();
+    default:
+        return 0;
+    }
+}
+
 } // namespace scfg
