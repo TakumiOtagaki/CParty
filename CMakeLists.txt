@@ -46,6 +46,7 @@ SET(SOURCE
   src/scfg/legacy_adapter.cc
   src/scfg/part_func_adapter.cc
   src/scfg/rules_api.cc
+  src/scfg/rules_core.cc
   src/scfg/rules_engine.cc
   src/scfg/rules_runtime.cc
   src/scfg/rules_pseudo_loop.cc

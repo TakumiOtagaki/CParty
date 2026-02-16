@@ -3,6 +3,7 @@
 #include "scfg/rules_api.hh"
 
 #include <cctype>
+#include <cstdio>
 #include <cstdlib>
 #include <map>
 #include <string>
@@ -126,8 +127,16 @@ RulesConfig load_rules_config_from_env() {
         if (trimmed_only.empty()) {
             return config;
         }
+        std::unordered_set<RuleId> parsed_only;
+        load_rule_id_list(trimmed_only.c_str(), &parsed_only);
+        if (parsed_only.empty()) {
+            if (rules_debug_enabled()) {
+                std::fprintf(stderr, "SCFG_RULES_ONLY_IGNORED=1\n");
+            }
+            return config;
+        }
         config.use_only_list = true;
-        load_rule_id_list(trimmed_only.c_str(), &config.allowed_rules);
+        config.allowed_rules = std::move(parsed_only);
     }
     return config;
 }

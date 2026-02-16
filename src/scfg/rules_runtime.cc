@@ -530,6 +530,10 @@ void compute_BE_restricted_rules(PartFuncBEContext &ctx,
     if (!(i >= 1 && i <= ip && ip < jp && jp <= j && j <= ctx.n() && tree.tree[i].pair > 0 && tree.tree[j].pair > 0 &&
           tree.tree[ip].pair > 0 && tree.tree[jp].pair > 0 && tree.tree[i].pair == j && tree.tree[j].pair == i &&
           tree.tree[ip].pair == jp && tree.tree[jp].pair == ip)) {
+        if (i >= 1 && i <= ctx.n() && ip >= i && ip <= ctx.n()) {
+            cand_pos_t iip = ctx.index_of(i, ip);
+            ctx.set_BE(iip, 0);
+        }
         return;
     }
 
