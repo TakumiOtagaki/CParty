@@ -1,5 +1,7 @@
 #include "scfg/rules_runtime.hh"
 
+#include "scfg/legacy_adapter.hh"
+
 namespace scfg {
 
 void compute_V_restricted_rules(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
@@ -55,6 +57,87 @@ void compute_W_restricted_rules(PartFuncWContext &ctx, sparse_tree &tree, const 
         }
         ctx.set_W(j, contributions);
     }
+}
+
+void compute_WI_restricted_rules(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
+    const cand_pos_t ij = ctx.index_of(i, j);
+    pf_t contributions = 0;
+    if (i == j) {
+        if (is_rule_enabled(config, RuleId::WI_BASE_SINGLE)) {
+            ctx.set_WI(ij, ctx.expPUP_pen1());
+        } else {
+            ctx.set_WI(ij, 0);
+        }
+        return;
+    }
+    const cand_pos_t turn = ctx.turn();
+    for (cand_pos_t k = i; k <= j - turn - 1; ++k) {
+        if (is_rule_enabled(config, RuleId::WI_SPLIT_V)) {
+            contributions += (ctx.get_WI(i, k - 1) * ctx.get_energy(k, j) * ctx.expPPS_penalty());
+        }
+        if (is_rule_enabled(config, RuleId::WI_SPLIT_WMB)) {
+            contributions += (ctx.get_WI(i, k - 1) * ctx.get_energy_WMB(k, j) * ctx.expPSP_penalty() * ctx.expPPS_penalty());
+        }
+    }
+    if (tree.tree[j].pair < 0 && is_rule_enabled(config, RuleId::WI_EXTEND_UNPAIRED)) {
+        contributions += (ctx.get_WI(i, j - 1) * ctx.expPUP_pen1());
+    }
+
+    ctx.set_WI(ij, contributions);
+}
+
+void compute_WMv_WMp_restricted_rules(PartFuncWMvWMpContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<Node> &tree, const RulesConfig &config) {
+    if (j - i - 1 < ctx.turn()) return;
+    const cand_pos_t ij = ctx.index_of(i, j);
+
+    pf_t WMv_contributions = 0;
+    pf_t WMp_contributions = 0;
+
+    if (is_rule_enabled(config, RuleId::WMv_STEM_V)) {
+        WMv_contributions += (ctx.get_energy(i, j) * ctx.exp_MLstem(i, j));
+    }
+    if (is_rule_enabled(config, RuleId::WMp_STEM_WMB)) {
+        WMp_contributions += (ctx.get_energy_WMB(i, j) * ctx.expPSM_penalty() * ctx.expb_penalty());
+    }
+    if (tree[j].pair < 0) {
+        if (is_rule_enabled(config, RuleId::WMv_EXTEND_UNPAIRED)) {
+            WMv_contributions += (ctx.get_energy_WMv(i, j - 1) * ctx.expMLbase1());
+        }
+        if (is_rule_enabled(config, RuleId::WMp_EXTEND_UNPAIRED)) {
+            WMp_contributions += (ctx.get_energy_WMp(i, j - 1) * ctx.expMLbase1());
+        }
+    }
+
+    ctx.set_WMv_WMp(ij, WMv_contributions, WMp_contributions);
+}
+
+void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
+    if (j - i + 1 < 4) return;
+    pf_t contributions = 0;
+    const cand_pos_t ij = ctx.index_of(i, j);
+    const cand_pos_t turn = ctx.turn();
+
+    for (cand_pos_t k = i; k < j - turn; ++k) {
+        const pf_t qbt1 = ctx.get_energy(k, j) * ctx.exp_MLstem(k, j);
+        const pf_t qbt2 = ctx.get_energy_WMB(k, j) * ctx.expPSM_penalty() * ctx.expb_penalty();
+        const bool can_pair = scfg::can_pair_left_span(tree, i, k);
+        if (can_pair && is_rule_enabled(config, RuleId::WM_START_V)) {
+            contributions += (ctx.expMLbase(k - i) * qbt1);
+        }
+        if (can_pair && is_rule_enabled(config, RuleId::WM_START_WMB)) {
+            contributions += (ctx.expMLbase(k - i) * qbt2);
+        }
+        if (is_rule_enabled(config, RuleId::WM_SPLIT_V)) {
+            contributions += (ctx.get_energy_WM(i, k - 1) * qbt1);
+        }
+        if (is_rule_enabled(config, RuleId::WM_SPLIT_WMB)) {
+            contributions += (ctx.get_energy_WM(i, k - 1) * qbt2);
+        }
+    }
+    if (tree.tree[j].pair < 0 && is_rule_enabled(config, RuleId::WM_EXTEND_UNPAIRED)) {
+        contributions += ctx.get_energy_WM(i, j - 1) * ctx.expMLbase(1);
+    }
+    ctx.set_WM(ij, contributions);
 }
 
 } // namespace scfg

@@ -387,17 +387,32 @@ void compute_V_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_
 
 void compute_WI_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWIContext ctx(owner);
-    compute_WI_restricted(ctx, i, j, tree);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        compute_WI_restricted_rules(ctx, i, j, tree, config);
+    } else {
+        compute_WI_restricted(ctx, i, j, tree);
+    }
 }
 
 void compute_WMv_WMp_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, std::vector<Node> &tree) {
     LocalWMvWMpContext ctx(owner);
-    compute_WMv_WMp_restricted(ctx, i, j, tree);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        compute_WMv_WMp_restricted_rules(ctx, i, j, tree, config);
+    } else {
+        compute_WMv_WMp_restricted(ctx, i, j, tree);
+    }
 }
 
 void compute_WM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWMContext ctx(owner);
-    compute_WM_restricted(ctx, i, j, tree);
+    const auto &config = get_rules_config();
+    if (config.use_rules) {
+        compute_WM_restricted_rules(ctx, i, j, tree, config);
+    } else {
+        compute_WM_restricted(ctx, i, j, tree);
+    }
 }
 
 void compute_WIP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {

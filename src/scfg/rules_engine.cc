@@ -1,5 +1,7 @@
 #include "scfg/rules_engine.hh"
 
+#include "scfg/rules_api.hh"
+
 #include <cctype>
 #include <cstdlib>
 #include <string>
@@ -32,10 +34,56 @@ std::vector<std::string> split_csv(const std::string &value) {
     return parts;
 }
 
-bool is_rules_mode_enabled(const char *env_value) {
+bool is_truthy_value(const char *env_value) {
     if (!env_value) return false;
     std::string value = trim_copy(env_value);
-    return value == "rules" || value == "RULES" || value == "1" || value == "true";
+    return value == "1" || value == "true" || value == "TRUE" || value == "rules" || value == "RULES";
+}
+
+bool is_rules_mode_enabled(const char *env_value) {
+    return is_truthy_value(env_value);
+}
+
+void load_rule_id_list(const char *env_value, std::unordered_set<RuleId> *out) {
+    if (!env_value) return;
+    std::string raw(env_value);
+    for (const auto &token : split_csv(raw)) {
+        std::string trimmed = trim_copy(token);
+        if (trimmed.empty()) continue;
+        RuleId id;
+        if (parse_rule_id(trimmed, &id)) {
+            out->insert(id);
+        }
+    }
+}
+
+void maybe_print_rules_config(const RulesConfig &config) {
+    if (!rules_debug_enabled()) return;
+    static bool printed = false;
+    if (printed) return;
+    printed = true;
+
+    std::fprintf(stderr, "SCFG_RULES_MODE=%s\n", config.use_rules ? "rules" : "legacy");
+    if (config.use_only_list) {
+        std::fprintf(stderr, "SCFG_RULES_ONLY=");
+        bool first = true;
+        for (const auto &rule : config.allowed_rules) {
+            if (!first) std::fprintf(stderr, ",");
+            first = false;
+            std::fprintf(stderr, "%s", rule_id_name(rule));
+        }
+        std::fprintf(stderr, "\n");
+    }
+    if (!config.disabled_rules.empty()) {
+        std::fprintf(stderr, "SCFG_RULES_DISABLE=");
+        bool first = true;
+        for (const auto &rule : config.disabled_rules) {
+            if (!first) std::fprintf(stderr, ",");
+            first = false;
+            std::fprintf(stderr, "%s", rule_id_name(rule));
+        }
+        std::fprintf(stderr, "\n");
+    }
 }
 
 } // namespace
@@ -44,22 +92,20 @@ RulesConfig load_rules_config_from_env() {
     RulesConfig config;
     config.use_rules = is_rules_mode_enabled(std::getenv("SCFG_RULES_MODE"));
 
-    const char *disable_env = std::getenv("SCFG_RULES_DISABLE");
-    if (!disable_env) return config;
+    load_rule_id_list(std::getenv("SCFG_RULES_DISABLE"), &config.disabled_rules);
 
-    std::string raw(disable_env);
-    for (const auto &token : split_csv(raw)) {
-        std::string trimmed = trim_copy(token);
-        if (trimmed.empty()) continue;
-        RuleId id;
-        if (parse_rule_id(trimmed, &id)) {
-            config.disabled_rules.insert(id);
-        }
+    const char *only_env = std::getenv("SCFG_RULES_ONLY");
+    if (only_env) {
+        config.use_only_list = true;
+        load_rule_id_list(only_env, &config.allowed_rules);
     }
     return config;
 }
 
 bool is_rule_enabled(const RulesConfig &config, RuleId rule) {
+    if (config.use_only_list && config.allowed_rules.find(rule) == config.allowed_rules.end()) {
+        return false;
+    }
     if (config.disabled_rules.find(rule) != config.disabled_rules.end()) {
         return false;
     }
@@ -68,7 +114,12 @@ bool is_rule_enabled(const RulesConfig &config, RuleId rule) {
 
 const RulesConfig &get_rules_config() {
     static const RulesConfig config = load_rules_config_from_env();
+    maybe_print_rules_config(config);
     return config;
+}
+
+bool rules_debug_enabled() {
+    return is_truthy_value(std::getenv("SCFG_RULES_DEBUG"));
 }
 
 } // namespace scfg
