@@ -164,3 +164,30 @@ git commit -m "<short summary>"
 - MEA/centroid などの追加行は比較対象外で、stderr の `backtrack failed` も gate に影響しない。
 ### 11.2 MEA/centroid の確率入力
 - 現実装の MEA/centroid は、厳密な bpp 行列ではなく `samples` の出現頻度（`count / num_samples`）をペア確率として利用している。
+
+## 12. SCFG ルール棚卸しメモ (2026-02-16)
+`src/scfg/rules_part_func.cc` を起点に、非終端ごとのルールと依存関係を整理した。
+
+### 12.1 ルール一覧（概要）
+- `V`: Hairpin / Internal / VM
+- `WI`: PK 内部ループの分割・伸張
+- `W`: 外側 W（V/WMB 分割）
+- `VM`: マルチループ閉じ
+- `WMv/WMp`: マルチループの stem 開始・伸張
+- `WM`: マルチループ本体
+- `WIP`: PK 内部ループ系の分割・伸張
+- `VPL/VPR`: VP 補助
+- `VP`: PK 中核（WI/WIP/VPL/VPR 組み合わせ + stP/intP）
+- `WMBW/WMBP/WMB`: PK band/外部ループ
+- `BE`: band/exterior
+
+### 12.2 依存関係の代表例
+- `V` は `hairpin_energy / internal_energy / vm_energy` と `tree.up`
+- `W` は `V/WMB` と `exp_Extloop/expPS_penalty/scale1`
+- `VP` は `WI/WIP/VPL/VPR` と `get_e_stP/get_e_intP`, `pair_type_of`, `tree.B/Bp/b/bp`
+- `WMBP/WMB/BE` は `BE/WI/VP` と `expPB_penalty`, `PartFuncRuleHelpers` の境界判定
+
+### 12.3 初期レビューで見つかった不整合候補
+- `compute_BE_restricted` は `pair > 0` を要求するが `W_final_pf::get_BE` は `pair >= 0` を許容している。
+- `PartFuncRuleHelpers::parent_index` は `parent` null を想定しておらず、`sparse_tree` 契約の明文化が必要。
+- `compute_WMBW_restricted` の `tree.tree[j].pair < j` が意図通りか要確認（unpaired だけなら `<0` が自然）。
