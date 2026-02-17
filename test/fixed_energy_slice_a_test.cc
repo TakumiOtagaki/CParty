@@ -34,8 +34,8 @@ void expect_trace_equals(const std::string &seq,
                ", got " + trace[i].rule);
     expect(rules_core_trace[i].state == trace[i].state,
            "rules_core state mismatch at step " + std::to_string(i));
-    expect(!rules_core_trace[i].rule.empty(),
-           "rules_core rule missing at step " + std::to_string(i));
+    expect(rules_core_trace[i].rule == trace[i].rule,
+           "rules_core rule mismatch at step " + std::to_string(i));
   }
 }
 
@@ -56,21 +56,20 @@ void expect_invalid(const std::string &seq, const std::string &db_full) {
 
 int main() {
   expect_trace_equals("AUGCUA", "((..))",
-                      {"W", "WI", "V", "V", "V", "V", "V"},
-                      {"W_TO_WI", "WI_TO_V", "V_PAIR_WRAPPED", "V_PAIR_WRAPPED",
-                       "V_UNPAIRED", "V_UNPAIRED", "V_EMPTY"});
+                      {"W", "V"},
+                      {"W_SPLIT_V", "V_INTERNAL"});
   expect_trace_equals("AUGCUA", "......",
-                      {"W", "WI", "V", "V", "V", "V", "V", "V", "V"},
-                      {"W_TO_WI", "WI_TO_V", "V_UNPAIRED", "V_UNPAIRED", "V_UNPAIRED",
-                       "V_UNPAIRED", "V_UNPAIRED", "V_UNPAIRED", "V_EMPTY"});
+                      {"W", "W", "W", "W", "W", "W"},
+                      {"W_EXTEND_UNPAIRED", "W_EXTEND_UNPAIRED", "W_EXTEND_UNPAIRED",
+                       "W_EXTEND_UNPAIRED", "W_EXTEND_UNPAIRED", "W_EXTEND_UNPAIRED"});
 
   expect(cparty::get_structure_energy("AUGCUA", "((..))") == -2.0,
          "shared path energy must match pair-wrapped count");
   expect(cparty::get_structure_energy("AUGCUA", "......") == 0.0,
          "shared path energy must stay zero for fully-unpaired");
 
-  // Balanced but not representable by V-only wrapped/unpaired recursion.
-  expect_invalid("AUGC", "()()");
+  // Slice-A rules_core path is pk-free only.
+  expect_invalid("AUGC", "[[]]");
 
   std::cout << "fixed_energy_slice_a=ok\n";
   return EXIT_SUCCESS;

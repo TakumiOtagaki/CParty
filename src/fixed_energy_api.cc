@@ -838,55 +838,132 @@ SharedEvaluationResult evaluate_shared_from_normalized(const NormalizedInput &ct
   return out;
 }
 
-std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_from_normalized(const NormalizedInput &ctx) {
+std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_shared_from_normalized(const NormalizedInput &ctx) {
   return evaluate_shared_from_normalized(ctx, SharedParseMode{false, false, false}).trace;
+}
+
+bool split_matches(const scfg::RuleSplit &lhs, const scfg::RuleSplit &rhs) {
+  return lhs.k == rhs.k && lhs.l == rhs.l && lhs.p == rhs.p && lhs.q == rhs.q;
+}
+
+std::string nonterminal_name(const scfg::NonTerminal nonterminal) {
+  switch (nonterminal) {
+    case scfg::NonTerminal::W:
+      return "W";
+    case scfg::NonTerminal::WI:
+      return "WI";
+    case scfg::NonTerminal::V:
+      return "V";
+    default:
+      return "UNKNOWN";
+  }
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_rules_core_from_normalized(const NormalizedInput &ctx) {
   if (!is_pk_free_structure(ctx.db_full)) {
     fail_invalid_input("rules_core slice-a trace requires pk_free structure");
   }
-  const auto shared_trace = trace_rule_chain_slice_a_from_normalized(ctx);
   const int n = static_cast<int>(ctx.db_full.size());
   sparse_tree tree(ctx.db_full, n);
   RuleCoreStubWContext wctx(n);
-  RuleCoreStubWIContext wictx;
   RuleCoreStubVContext vctx;
 
+  struct Item {
+    scfg::NonTerminal nonterminal;
+    cand_pos_t i;
+    cand_pos_t j;
+  };
+
+  std::vector<Item> stack;
+  stack.push_back({scfg::NonTerminal::W, 1, n});
+
   std::vector<internal::RuleTraceStep> out;
-  out.reserve(shared_trace.size());
-  for (const auto &step : shared_trace) {
-    if (step.state == "W") {
-      const auto applicable = scfg::applicable_rules_w(step.i, step.j, wctx, tree);
-      if (applicable.empty()) {
-        fail_invalid_input("rules_core slice-a trace found no W rules");
-      }
-      out.push_back({step.state, step.i, step.j, scfg::rule_id_name(applicable.front().rule)});
-      continue;
-    }
-    if (step.state == "WI") {
-      const auto applicable = scfg::applicable_rules_wi(step.i, step.j, wictx, tree);
-      if (applicable.empty()) {
-        fail_invalid_input("rules_core slice-a trace found no WI rules");
-      }
-      out.push_back({step.state, step.i, step.j, scfg::rule_id_name(applicable.front().rule)});
-      continue;
-    }
-    if (step.state == "V") {
-      if (step.i > step.j) {
-        out.push_back({step.state, step.i, step.j, "V_EMPTY"});
+  while (!stack.empty()) {
+    const Item cur = stack.back();
+    stack.pop_back();
+
+    if (cur.nonterminal == scfg::NonTerminal::W) {
+      if (cur.i > cur.j) {
         continue;
       }
-      const auto applicable = scfg::applicable_rules_v(step.i, step.j, vctx, tree);
-      if (applicable.empty()) {
-        fail_invalid_input("rules_core slice-a trace found no V rules");
+      scfg::RuleId selected_rule = scfg::RuleId::W_EXTEND_UNPAIRED;
+      scfg::RuleSplit selected_split;
+      std::vector<scfg::RuleChild> children;
+      if (tree.tree[cur.j].pair < 0) {
+        selected_rule = scfg::RuleId::W_EXTEND_UNPAIRED;
+        children = scfg::expand_w(selected_rule, cur.i, cur.j, selected_split);
+      } else {
+        const cand_pos_t k = tree.tree[cur.j].pair;
+        if (k < cur.i) {
+          fail_invalid_input("rules_core slice-a trace found invalid W split");
+        }
+        selected_rule = scfg::RuleId::W_SPLIT_V;
+        selected_split.k = k;
+        children = scfg::expand_w(selected_rule, cur.i, cur.j, selected_split);
       }
-      out.push_back({step.state, step.i, step.j, scfg::rule_id_name(applicable.front().rule)});
+
+      const auto applicable = scfg::applicable_rules_w(cur.i, cur.j, wctx, tree);
+      bool matched = false;
+      for (const auto &entry : applicable) {
+        if (entry.rule == selected_rule && split_matches(entry.split, selected_split)) {
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        fail_invalid_input("rules_core slice-a trace could not validate W rule selection");
+      }
+
+      out.push_back({nonterminal_name(cur.nonterminal), cur.i, cur.j, scfg::rule_id_name(selected_rule)});
+      for (auto it = children.rbegin(); it != children.rend(); ++it) {
+        stack.push_back({it->nonterminal, it->i, it->j});
+      }
       continue;
     }
-    fail_invalid_input("rules_core slice-a trace hit unexpected state " + step.state);
+
+    if (cur.nonterminal == scfg::NonTerminal::V) {
+      if (cur.i > cur.j) {
+        fail_invalid_input("rules_core slice-a trace encountered empty V span");
+      }
+      if (tree.tree[cur.i].pair != cur.j) {
+        fail_invalid_input("rules_core slice-a trace encountered unpaired V span");
+      }
+
+      const auto child_count = tree.tree[cur.i].children.size();
+      scfg::RuleId selected_rule = scfg::RuleId::V_HAIRPIN;
+      if (child_count == 0) {
+        selected_rule = scfg::RuleId::V_HAIRPIN;
+      } else if (child_count == 1) {
+        selected_rule = scfg::RuleId::V_INTERNAL;
+      } else {
+        selected_rule = scfg::RuleId::V_VM;
+      }
+
+      const auto applicable = scfg::applicable_rules_v(cur.i, cur.j, vctx, tree);
+      bool matched = false;
+      for (const auto &entry : applicable) {
+        if (entry.rule == selected_rule) {
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        fail_invalid_input("rules_core slice-a trace could not validate V rule selection");
+      }
+
+      out.push_back({nonterminal_name(cur.nonterminal), cur.i, cur.j, scfg::rule_id_name(selected_rule)});
+      continue;
+    }
+
+    fail_invalid_input("rules_core slice-a trace hit unexpected state " +
+                       nonterminal_name(cur.nonterminal));
   }
+
   return out;
+}
+
+std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_from_normalized(const NormalizedInput &ctx) {
+  return trace_rule_chain_slice_a_rules_core_from_normalized(ctx);
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_b_from_normalized(const NormalizedInput &ctx) {
@@ -1284,7 +1361,7 @@ EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(const NormalizedInput &ctx) {
   std::vector<internal::RuleTraceStep> out;
-  const auto slice_a_trace = trace_rule_chain_slice_a_from_normalized(ctx);
+  const auto slice_a_trace = trace_rule_chain_slice_a_shared_from_normalized(ctx);
   out.reserve(slice_a_trace.size());
   for (const auto &step : slice_a_trace) {
     if (step.state == "V") {
