@@ -79,6 +79,51 @@ Rule Object + Constraint Oracle を使って単一パス評価を実装する。
   - `G ∪ G'` を fixed-structure path に合成して評価
 - `fixed_energy_union_test` を追加し、`union` と `merged` の一致を確認
 
+## 5.2 k-type 設計メモ (2026-02-17)
+### 5.2.1 前提
+- k-type = `()` と `[]` が混在し、相互に交差しうる
+- `[]` を band（pseudoknot）側とみなす
+- pk-free / h-type は既存 `sparse_tree` で継続運用
+
+### 5.2.2 B/Bp/b/bp の解釈（pk-free）
+`sparse_tree` の実装より：
+- `bp(i,l)` = 区間 `[i,l]` における「最も内側の左境界」（未ペア `l` の親の左端）
+- `Bp(l,j)` = 区間 `[l,j]` における「最も内側の右境界」（未ペア `l` の親の右端）
+- `b(i,l)` = 区間 `[i,l]` における「最も外側の左境界」（LCA 起点の外側）
+- `B(l,j)` = 区間 `[l,j]` における「最も外側の右境界」（LCA 起点の外側）
+
+### 5.2.3 k-type 構造 view（草案）
+- `round_tree` = `()` のみで構成する `sparse_tree`
+- `square_tree` = `[]` のみで構成する `sparse_tree`（band 側）
+- B/Bp/b/bp は `square_tree` 由来とする
+- `is_unpaired(i)` は round/square の両方で未ペアのとき true
+- `weakly_closed(i,j)` は band view（square）の結果を使用
+
+### 5.2.4 rules_core 関数ごとの view マッピング（草案）
+※ “band view” は `square_tree` を指す
+- `enumerate_splits_w` / `enumerate_splits_wi`:
+  - `weakly_closed` は band view
+  - `tree[j].pair < 0` 判定は **any-pair**（round or square）で未ペアなら true とする
+- `enumerate_splits_v` / `rule_score_v`:
+  - **round view**
+  - `pair(i,j)` は round のみで評価（`V` は通常の塩基対を表すため）
+- `enumerate_splits_vm` / `enumerate_splits_wmv_wmp` / `enumerate_splits_wm`:
+  - **round view**
+  - `can_pair_left_span/right_span` は round view
+- `enumerate_splits_wip` / `enumerate_splits_vpl` / `enumerate_splits_vpr` / `enumerate_splits_vp`:
+  - **band view**（`square_tree` の B/Bp/b/bp を使用）
+  - `pair_at(i)` / `parent_index(i)` は band view
+  - `is_unpaired_position` は **any-pair** で未ペアを判定
+- `enumerate_splits_wmbw` / `enumerate_splits_wmbp` / `enumerate_splits_wmb` / `enumerate_splits_be`:
+  - **band view**
+  - `weakly_closed` / `parent_index` / `pair_at` は band view
+  - `is_empty_region` は any-pair の空区間判定が必要
+
+### 5.2.5 次の実装ステップ（予定）
+- k-type 用の `StructureView` / `Oracle` を用意（round/square の dual-tree を内包）
+- rules_core の `enumerate_splits_*` に view を注入できるよう抽象化
+- k-type 専用 path を追加し、slice D から段階導入
+
 ## 6. 実行制約
 - 当面は `-d2` のみを対象に実装・検証する
 - オプション差分 (`-p`, `-k`, `-r`, `-d0`) は別フェーズで扱う
