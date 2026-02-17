@@ -110,11 +110,11 @@ while IFS=$'\t' read -r case_id seq g; do
 
   legacy_bt=0
   current_bt=0
-  if grep -q "Backtracking failed" "$stdout_legacy"; then
+  if grep -qi "backtracking failed" "$stdout_legacy"; then
     legacy_bt=1
     legacy_backtrack_fail=$((legacy_backtrack_fail + 1))
   fi
-  if grep -q "Backtracking failed" "$stdout_current"; then
+  if grep -qi "backtracking failed" "$stdout_current"; then
     current_bt=1
     current_backtrack_fail=$((current_backtrack_fail + 1))
   fi

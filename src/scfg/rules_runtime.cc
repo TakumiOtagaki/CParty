@@ -8,6 +8,9 @@
 #include <ViennaRNA/params/constants.h>
 
 #include <algorithm>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
 
 namespace scfg {
 
@@ -168,6 +171,18 @@ void compute_WMv_WMp_restricted_rules(PartFuncWMvWMpContext &ctx, cand_pos_t i, 
 void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
     pf_t contributions = 0;
     const cand_pos_t ij = ctx.index_of(i, j);
+    const char *trace_env = std::getenv("CPARTY_PF_TRACE_WM");
+    bool trace = false;
+    if (trace_env && *trace_env != '\0' && std::strcmp(trace_env, "0") != 0) {
+        const char *comma = std::strchr(trace_env, ',');
+        if (comma) {
+            const int ti = std::atoi(trace_env);
+            const int tj = std::atoi(comma + 1);
+            if (ti == i && tj == j) {
+                trace = true;
+            }
+        }
+    }
 
     for (RuleId rule : rules_for(NonTerminal::WM)) {
         if (!is_rule_enabled(config, rule)) continue;
@@ -175,8 +190,8 @@ void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = rule_score_wm(rule, i, j, split, ctx);
-            pf_t term = 1;
             const auto children = expand_wm(rule, i, j, split);
+            pf_t term = 1;
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WM) {
                     term *= ctx.get_energy_WM(child.i, child.j);
@@ -189,9 +204,24 @@ void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_
                 }
             }
             contributions += term * coeff;
+            if (trace) {
+                std::cerr << "[PF_TRACE_WM_RULES] rule=" << rule_id_name(rule)
+                          << " i=" << i
+                          << " j=" << j
+                          << " k=" << split.k
+                          << " term=" << term
+                          << " coeff=" << coeff
+                          << std::endl;
+            }
         }
     }
     ctx.set_WM(ij, contributions);
+    if (trace) {
+        std::cerr << "[PF_TRACE_WM_RULES] i=" << i
+                  << " j=" << j
+                  << " total=" << contributions
+                  << std::endl;
+    }
 }
 
 void compute_WIP_restricted_rules(PartFuncWIPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {

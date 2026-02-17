@@ -471,7 +471,11 @@ std::vector<RuleSplit> enumerate_splits_wm(RuleId rule,
     case RuleId::WM_START_WMB:
     case RuleId::WM_SPLIT_V:
     case RuleId::WM_SPLIT_WMB: {
-        for (cand_pos_t k = i; k < j - turn; ++k) {
+        cand_pos_t k_start = i;
+        if (rule == RuleId::WM_SPLIT_V || rule == RuleId::WM_SPLIT_WMB) {
+            k_start = i + 1;
+        }
+        for (cand_pos_t k = k_start; k < j - turn; ++k) {
             if (rule == RuleId::WM_START_V || rule == RuleId::WM_START_WMB) {
                 if (!scfg::can_pair_left_span(tree, i, k)) continue;
             }
