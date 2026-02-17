@@ -36,6 +36,9 @@ std::vector<RuleTraceStep> trace_rule_chain_zw_only(const std::string &seq,
 // Story 014 slice-A shared parser trace: W/WI/V states on shared DP path.
 std::vector<RuleTraceStep> trace_rule_chain_slice_a(const std::string &seq,
                                                     const std::string &db_full);
+// Slice-A rules-core compatibility trace (rule ids from scfg::rules_core).
+std::vector<RuleTraceStep> trace_rule_chain_slice_a_rules_core(const std::string &seq,
+                                                               const std::string &db_full);
 
 // Story 015 slice-B shared parser trace: VM/WM/WMv/WMp are traversed on pair paths.
 std::vector<RuleTraceStep> trace_rule_chain_slice_b(const std::string &seq,

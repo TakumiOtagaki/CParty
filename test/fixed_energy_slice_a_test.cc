@@ -20,8 +20,10 @@ void expect_trace_equals(const std::string &seq,
                          const std::vector<std::string> &expected_states,
                          const std::vector<std::string> &expected_rules) {
   const auto trace = cparty::internal::trace_rule_chain_slice_a(seq, db_full);
+  const auto rules_core_trace = cparty::internal::trace_rule_chain_slice_a_rules_core(seq, db_full);
   expect(trace.size() == expected_states.size(), "unexpected trace length");
   expect(trace.size() == expected_rules.size(), "unexpected expected rule length");
+  expect(rules_core_trace.size() == trace.size(), "rules_core trace length mismatch");
 
   for (size_t i = 0; i < trace.size(); ++i) {
     expect(trace[i].state == expected_states[i],
@@ -30,6 +32,10 @@ void expect_trace_equals(const std::string &seq,
     expect(trace[i].rule == expected_rules[i],
            "rule mismatch at step " + std::to_string(i) + ": expected " + expected_rules[i] +
                ", got " + trace[i].rule);
+    expect(rules_core_trace[i].state == trace[i].state,
+           "rules_core state mismatch at step " + std::to_string(i));
+    expect(!rules_core_trace[i].rule.empty(),
+           "rules_core rule missing at step " + std::to_string(i));
   }
 }
 

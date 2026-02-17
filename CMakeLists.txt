@@ -144,62 +144,70 @@ include_directories(src)
 
 include(CTest)
 if(BUILD_TESTING)
+  set(FIXED_ENERGY_TEST_SOURCES
+    src/fixed_energy_api.cc
+    src/sparse_tree.cc
+    src/scfg/constraint_oracle.cc
+    src/scfg/legacy_adapter.cc
+    src/scfg/rules_api.cc
+    src/scfg/rules_core.cc
+  )
   add_executable(multi_secstruct_schema_test test/multi_secstruct_schema_test.cc)
   add_executable(api_cli_density2_energy_alignment_test test/api_cli_density2_energy_alignment_test.cc)
   add_executable(
     api_structure_energy_validation_test
     test/api_structure_energy_validation_test.cc
-    src/fixed_energy_api.cc
+    ${FIXED_ENERGY_TEST_SOURCES}
   )
   add_executable(
     fixed_energy_internal_test
     test/fixed_energy_internal_test.cc
-    src/fixed_energy_api.cc
+    ${FIXED_ENERGY_TEST_SOURCES}
   )
   add_executable(
     fixed_energy_rollout_plan_test
     test/fixed_energy_rollout_plan_test.cc
-    src/fixed_energy_api.cc
+    ${FIXED_ENERGY_TEST_SOURCES}
   )
   add_executable(
     fixed_energy_slice_a_test
     test/fixed_energy_slice_a_test.cc
-    src/fixed_energy_api.cc
+    ${FIXED_ENERGY_TEST_SOURCES}
   )
   add_executable(
     fixed_energy_slice_b_test
     test/fixed_energy_slice_b_test.cc
-    src/fixed_energy_api.cc
+    ${FIXED_ENERGY_TEST_SOURCES}
   )
   add_executable(
     fixed_energy_slice_c_test
     test/fixed_energy_slice_c_test.cc
-    src/fixed_energy_api.cc
+    ${FIXED_ENERGY_TEST_SOURCES}
   )
   add_executable(
     fixed_energy_slice_d_test
     test/fixed_energy_slice_d_test.cc
-    src/fixed_energy_api.cc
+    ${FIXED_ENERGY_TEST_SOURCES}
   )
   add_executable(
     fixed_energy_breakdown_test
     test/fixed_energy_breakdown_test.cc
-    src/fixed_energy_api.cc
+    ${FIXED_ENERGY_TEST_SOURCES}
   )
   add_executable(
     fixed_energy_union_test
     test/fixed_energy_union_test.cc
-    src/fixed_energy_api.cc
+    ${FIXED_ENERGY_TEST_SOURCES}
   )
   add_executable(
     fixed_energy_union_energy_tool
     test/fixed_energy_union_energy_tool.cc
-    src/fixed_energy_api.cc
+    ${FIXED_ENERGY_TEST_SOURCES}
   )
   add_executable(
     fixed_energy_cli_mfe_energy_alignment_test
     test/fixed_energy_cli_mfe_energy_alignment_test.cc
-    src/fixed_energy_api.cc
+    ${FIXED_ENERGY_TEST_SOURCES}
   )
   add_executable(
     can_pair_policy_test

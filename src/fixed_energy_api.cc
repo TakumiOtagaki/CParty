@@ -1,5 +1,11 @@
 #include "fixed_energy_api.hh"
 
+#include "scfg/rules_core.hh"
+#include "scfg/rules_part_func.hh"
+#include "sparse_tree.hh"
+
+#include <ViennaRNA/params/constants.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <stdexcept>
@@ -8,6 +14,47 @@
 
 namespace cparty {
 namespace {
+
+class RuleCoreStubWContext final : public scfg::PartFuncWContext {
+ public:
+  explicit RuleCoreStubWContext(int n) : n_(n) {}
+  cand_pos_t n() const override { return n_; }
+  pf_t scale1() const override { return 0; }
+  pf_t get_W(cand_pos_t) const override { return 0; }
+  pf_t get_energy(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_energy_WMB(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t exp_Extloop(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t expPS_penalty() const override { return 0; }
+  void set_W(cand_pos_t, pf_t) override {}
+  cand_pos_t turn() const override { return TURN; }
+
+ private:
+  cand_pos_t n_;
+};
+
+class RuleCoreStubWIContext final : public scfg::PartFuncWIContext {
+ public:
+  RuleCoreStubWIContext() = default;
+  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
+  void set_WI(cand_pos_t, pf_t) override {}
+  pf_t get_WI(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_energy(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_energy_WMB(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t expPPS_penalty() const override { return 0; }
+  pf_t expPSP_penalty() const override { return 0; }
+  pf_t expPUP_pen1() const override { return 0; }
+  cand_pos_t turn() const override { return TURN; }
+
+};
+
+class RuleCoreStubVContext final : public scfg::PartFuncVContext {
+ public:
+  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
+  void set_V(cand_pos_t, pf_t) override {}
+  pf_t hairpin_energy(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t internal_energy(cand_pos_t, cand_pos_t, std::vector<int> &) override { return 0; }
+  pf_t vm_energy(cand_pos_t, cand_pos_t, std::vector<int> &) override { return 0; }
+};
 
 struct NormalizedInput {
   std::string seq;
@@ -245,6 +292,10 @@ NormalizedInput normalize_input(const std::string &seq, const std::string &db_fu
     }
   }
   return out;
+}
+
+bool is_pk_free_structure(const std::string &db_full) {
+  return db_full.find('[') == std::string::npos && db_full.find(']') == std::string::npos;
 }
 
 std::vector<SharedRuleKind> rules_for(const SharedStateKind state_kind, const SharedParseMode mode) {
@@ -616,6 +667,53 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_from_normalized(co
   return evaluate_shared_from_normalized(ctx, SharedParseMode{false, false, false}).trace;
 }
 
+std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_rules_core_from_normalized(const NormalizedInput &ctx) {
+  if (!is_pk_free_structure(ctx.db_full)) {
+    fail_invalid_input("rules_core slice-a trace requires pk_free structure");
+  }
+  const auto shared_trace = trace_rule_chain_slice_a_from_normalized(ctx);
+  const int n = static_cast<int>(ctx.db_full.size());
+  sparse_tree tree(ctx.db_full, n);
+  RuleCoreStubWContext wctx(n);
+  RuleCoreStubWIContext wictx;
+  RuleCoreStubVContext vctx;
+
+  std::vector<internal::RuleTraceStep> out;
+  out.reserve(shared_trace.size());
+  for (const auto &step : shared_trace) {
+    if (step.state == "W") {
+      const auto applicable = scfg::applicable_rules_w(step.i, step.j, wctx, tree);
+      if (applicable.empty()) {
+        fail_invalid_input("rules_core slice-a trace found no W rules");
+      }
+      out.push_back({step.state, step.i, step.j, scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "WI") {
+      const auto applicable = scfg::applicable_rules_wi(step.i, step.j, wictx, tree);
+      if (applicable.empty()) {
+        fail_invalid_input("rules_core slice-a trace found no WI rules");
+      }
+      out.push_back({step.state, step.i, step.j, scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "V") {
+      if (step.i > step.j) {
+        out.push_back({step.state, step.i, step.j, "V_EMPTY"});
+        continue;
+      }
+      const auto applicable = scfg::applicable_rules_v(step.i, step.j, vctx, tree);
+      if (applicable.empty()) {
+        fail_invalid_input("rules_core slice-a trace found no V rules");
+      }
+      out.push_back({step.state, step.i, step.j, scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    fail_invalid_input("rules_core slice-a trace hit unexpected state " + step.state);
+  }
+  return out;
+}
+
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_b_from_normalized(const NormalizedInput &ctx) {
   return evaluate_shared_from_normalized(ctx, SharedParseMode{true, false, false}).trace;
 }
@@ -679,6 +777,11 @@ std::vector<RuleTraceStep> trace_rule_chain_zw_only(const std::string &seq,
 std::vector<RuleTraceStep> trace_rule_chain_slice_a(const std::string &seq,
                                                     const std::string &db_full) {
   return trace_rule_chain_slice_a_from_normalized(normalize_input(seq, db_full));
+}
+
+std::vector<RuleTraceStep> trace_rule_chain_slice_a_rules_core(const std::string &seq,
+                                                               const std::string &db_full) {
+  return trace_rule_chain_slice_a_rules_core_from_normalized(normalize_input(seq, db_full));
 }
 
 std::vector<RuleTraceStep> trace_rule_chain_slice_b(const std::string &seq,
