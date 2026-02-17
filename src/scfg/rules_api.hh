@@ -116,8 +116,12 @@ enum class SplitKind : unsigned char {
     KL,
 };
 
+constexpr size_t kRuleIdCount = static_cast<size_t>(RuleId::BE_BASEPAIR_WIP) + 1;
+
 struct SplitSpec {
     SplitKind kind = SplitKind::None;
+    bool uses_p = false;
+    bool uses_q = false;
 };
 
 const char *rule_id_name(RuleId id);

@@ -49,6 +49,8 @@ struct ApplicableRule {
     RuleSplit split;
 };
 
+const RuleSpec &rule_spec(RuleId rule);
+
 // Returns the full candidate rule list for a non-terminal, before applicability filtering.
 const std::vector<RuleId> &rules_for(NonTerminal nonterminal);
 
