@@ -907,11 +907,13 @@ std::string nonterminal_name(const scfg::NonTerminal nonterminal) {
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_rules_core_from_normalized(const NormalizedInput &ctx) {
-  if (!is_pk_free_structure(ctx.db_full)) {
-    fail_invalid_input("rules_core slice-a trace requires pk_free structure");
+  if (!is_pk_free_structure(ctx.db_full) && !is_h_type_structure(ctx.db_full)) {
+    fail_invalid_input("rules_core slice-a trace requires pk_free or h_type structure");
   }
-  const int n = static_cast<int>(ctx.db_full.size());
-  sparse_tree tree(ctx.db_full, n);
+  const std::string tree_db =
+      is_h_type_structure(ctx.db_full) ? normalize_h_type_brackets(ctx.db_full) : ctx.db_full;
+  const int n = static_cast<int>(tree_db.size());
+  sparse_tree tree(tree_db, n);
   RuleCoreStubWContext wctx(n);
   RuleCoreStubVContext vctx;
 
@@ -1018,12 +1020,14 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_b_shared_from_normal
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_b_rules_core_from_normalized(const NormalizedInput &ctx) {
-  if (!is_pk_free_structure(ctx.db_full)) {
-    fail_invalid_input("rules_core slice-b trace requires pk_free structure");
+  if (!is_pk_free_structure(ctx.db_full) && !is_h_type_structure(ctx.db_full)) {
+    fail_invalid_input("rules_core slice-b trace requires pk_free or h_type structure");
   }
   const auto shared_trace = trace_rule_chain_slice_b_shared_from_normalized(ctx);
-  const int n = static_cast<int>(ctx.db_full.size());
-  sparse_tree tree(ctx.db_full, n);
+  const std::string tree_db =
+      is_h_type_structure(ctx.db_full) ? normalize_h_type_brackets(ctx.db_full) : ctx.db_full;
+  const int n = static_cast<int>(tree_db.size());
+  sparse_tree tree(tree_db, n);
   RuleCoreStubWContext wctx(n);
   RuleCoreStubWIContext wictx;
   RuleCoreStubVContext vctx;
@@ -1123,12 +1127,14 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_c_shared_from_normal
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_c_rules_core_from_normalized(const NormalizedInput &ctx) {
-  if (!is_pk_free_structure(ctx.db_full)) {
-    fail_invalid_input("rules_core slice-c trace requires pk_free structure");
+  if (!is_pk_free_structure(ctx.db_full) && !is_h_type_structure(ctx.db_full)) {
+    fail_invalid_input("rules_core slice-c trace requires pk_free or h_type structure");
   }
   const auto shared_trace = trace_rule_chain_slice_c_shared_from_normalized(ctx);
-  const int n = static_cast<int>(ctx.db_full.size());
-  sparse_tree tree(ctx.db_full, n);
+  const std::string tree_db =
+      is_h_type_structure(ctx.db_full) ? normalize_h_type_brackets(ctx.db_full) : ctx.db_full;
+  const int n = static_cast<int>(tree_db.size());
+  sparse_tree tree(tree_db, n);
   RuleCoreStubWContext wctx(n);
   RuleCoreStubWIContext wictx;
   RuleCoreStubVContext vctx;
@@ -1255,12 +1261,14 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_shared_from_normal
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_rules_core_from_normalized(const NormalizedInput &ctx) {
-  if (!is_pk_free_structure(ctx.db_full)) {
-    fail_invalid_input("rules_core slice-d trace requires pk_free structure");
+  if (!is_pk_free_structure(ctx.db_full) && !is_h_type_structure(ctx.db_full)) {
+    fail_invalid_input("rules_core slice-d trace requires pk_free or h_type structure");
   }
   const auto shared_trace = trace_rule_chain_slice_d_shared_from_normalized(ctx);
-  const int n = static_cast<int>(ctx.db_full.size());
-  sparse_tree tree(ctx.db_full, n);
+  const std::string tree_db =
+      is_h_type_structure(ctx.db_full) ? normalize_h_type_brackets(ctx.db_full) : ctx.db_full;
+  const int n = static_cast<int>(tree_db.size());
+  sparse_tree tree(tree_db, n);
   RuleCoreStubWContext wctx(n);
   RuleCoreStubWIContext wictx;
   RuleCoreStubVContext vctx;
@@ -1672,7 +1680,7 @@ EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput
     }
   }
 
-  const auto trace = is_pk_free_structure(ctx.db_full)
+  const auto trace = (is_pk_free_structure(ctx.db_full) || is_h_type_structure(ctx.db_full))
                          ? trace_rule_chain_slice_d_rules_core_from_normalized(ctx)
                          : trace_rule_chain_slice_d_shared_from_normalized(ctx);
   for (const auto &step : trace) {
