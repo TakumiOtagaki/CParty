@@ -211,6 +211,22 @@ if(BUILD_TESTING)
     test/fixed_energy_cli_mfe_energy_alignment_test.cc
     ${FIXED_ENERGY_TEST_SOURCES}
   )
+  set(FIXED_ENERGY_TEST_TARGETS
+    api_structure_energy_validation_test
+    fixed_energy_internal_test
+    fixed_energy_rollout_plan_test
+    fixed_energy_slice_a_test
+    fixed_energy_slice_b_test
+    fixed_energy_slice_c_test
+    fixed_energy_slice_d_test
+    fixed_energy_breakdown_test
+    fixed_energy_union_test
+    fixed_energy_union_energy_tool
+    fixed_energy_cli_mfe_energy_alignment_test
+  )
+  foreach(target_name ${FIXED_ENERGY_TEST_TARGETS})
+    target_link_libraries(${target_name} PRIVATE RNA)
+  endforeach()
   add_executable(
     can_pair_policy_test
     test/can_pair_policy_test.cc

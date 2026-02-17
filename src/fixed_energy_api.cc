@@ -8,9 +8,19 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdlib>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include <sys/stat.h>
+
+extern "C" {
+#include "ViennaRNA/loops/all.h"
+#include "ViennaRNA/pair_mat.h"
+#include "ViennaRNA/params/io.h"
+}
 
 namespace cparty {
 namespace {
@@ -471,6 +481,25 @@ NormalizedInput normalize_input(const std::string &seq, const std::string &db_fu
 
 bool is_pk_free_structure(const std::string &db_full) {
   return db_full.find('[') == std::string::npos && db_full.find(']') == std::string::npos;
+}
+
+bool file_exists(const std::string &path) {
+  struct stat buffer;
+  return (stat(path.c_str(), &buffer) == 0);
+}
+
+void ensure_vienna_params_loaded(const std::string &seq) {
+  static bool loaded = false;
+  if (loaded) {
+    return;
+  }
+  const std::string params_path = "params/rna_DirksPierce09.par";
+  if (file_exists(params_path)) {
+    vrna_params_load(params_path.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
+  } else if (seq.find('T') != std::string::npos) {
+    vrna_params_load_DNA_Mathews2004();
+  }
+  loaded = true;
 }
 
 std::vector<SharedRuleKind> rules_for(const SharedStateKind state_kind, const SharedParseMode mode) {
@@ -1387,12 +1416,226 @@ EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput
     return ctx.db_full[static_cast<size_t>(step.i - 1)] == '.';
   };
 
+  EnergyBreakdown breakdown;
+  breakdown.topology_family = topology_family_for_structure(ctx.db_full);
+
+  const char *real_score_env = std::getenv("CPARTY_FIXED_ENERGY_REAL_SCORE");
+  const bool use_real_score = (real_score_env && *real_score_env != '\0' &&
+                               std::string(real_score_env) != "0");
+
+  if (use_real_score && is_pk_free_structure(ctx.db_full)) {
+    ensure_vienna_params_loaded(ctx.seq);
+    make_pair_matrix();
+    std::unique_ptr<vrna_param_t, void (*)(void *)> params(scale_parameters(), free);
+    params->model_details.dangles = 2;
+    std::unique_ptr<short, void (*)(void *)> S(encode_sequence(ctx.seq.c_str(), 0), free);
+    std::unique_ptr<short, void (*)(void *)> S1(encode_sequence(ctx.seq.c_str(), 1), free);
+
+    const int n = static_cast<int>(ctx.db_full.size());
+    sparse_tree tree(ctx.db_full, n);
+    const int n1 = n + 1;
+    std::vector<double> v_cache(static_cast<size_t>(n1 * n1), INF);
+    std::vector<bool> v_done(static_cast<size_t>(n1 * n1), false);
+    auto v_index = [&](int i, int j) {
+      return static_cast<size_t>(i * n1 + j);
+    };
+
+    auto v_energy = [&](auto &&self, int i, int j) -> double {
+      if (i >= j || i < 1 || j > n) {
+        return INF;
+      }
+      if (tree.tree[i].pair != j) {
+        return INF;
+      }
+      const size_t idx = v_index(i, j);
+      if (v_done[idx]) {
+        return v_cache[idx];
+      }
+      v_done[idx] = true;
+
+      std::vector<std::pair<int, int>> children;
+      for (int child : tree.tree[i].children) {
+        const int partner = tree.tree[child].pair;
+        if (partner > 0 && partner < j) {
+          children.emplace_back(child, partner);
+        }
+      }
+      std::sort(children.begin(), children.end());
+
+      const int ptype_closing = pair[S.get()[i]][S.get()[j]];
+      if (ptype_closing == 0) {
+        v_cache[idx] = INF;
+        return v_cache[idx];
+      }
+
+      if (children.empty()) {
+        v_cache[idx] = E_Hairpin(j - i - 1, ptype_closing, S1.get()[i + 1], S1.get()[j - 1],
+                                 &ctx.seq.c_str()[i - 1], params.get());
+        return v_cache[idx];
+      }
+
+      if (children.size() == 1) {
+        const int k = children.front().first;
+        const int l = children.front().second;
+        const int ptype_inner = pair[S.get()[k]][S.get()[l]];
+        const double loop = E_IntLoop(k - i - 1, j - l - 1, ptype_closing, rtype[ptype_inner],
+                                      S1.get()[i + 1], S1.get()[j - 1],
+                                      S1.get()[k - 1], S1.get()[l + 1], params.get());
+        v_cache[idx] = loop + self(self, k, l);
+        return v_cache[idx];
+      }
+
+      auto ml_stem_energy = [&](int a, int b) -> double {
+        const double vij = self(self, a, b);
+        const double vi1j = self(self, a + 1, b);
+        const double vij1 = self(self, a, b - 1);
+        const double vi1j1 = self(self, a + 1, b - 1);
+
+        double e = INF;
+        double en = INF;
+        pair_type type = pair[S.get()[a]][S.get()[b]];
+        if ((tree.tree[a].pair < -1 && tree.tree[b].pair < -1) || (tree.tree[a].pair == b)) {
+          en = vij;
+          if (en != INF) {
+            if (params->model_details.dangles == 2) {
+              base_type mm5 = a > 1 ? S.get()[a - 1] : -1;
+              base_type mm3 = b < n ? S.get()[b + 1] : -1;
+              en += E_MLstem(type, mm5, mm3, params.get());
+            } else {
+              en += E_MLstem(type, -1, -1, params.get());
+            }
+            e = std::min(e, en);
+          }
+        }
+        if (params->model_details.dangles == 1) {
+          const base_type mm5 = S.get()[a];
+          const base_type mm3 = S.get()[b];
+
+          if (((tree.tree[a + 1].pair < -1 && tree.tree[b].pair < -1) || (tree.tree[a + 1].pair == b)) &&
+              tree.tree[a].pair < 0) {
+            en = (b - a - 1 > TURN) ? vi1j : INF;
+            if (en != INF) {
+              en += params->MLbase;
+              type = pair[S.get()[a + 1]][S.get()[b]];
+              en += E_MLstem(type, mm5, -1, params.get());
+              e = std::min(e, en);
+            }
+          }
+
+          if (((tree.tree[a].pair < -1 && tree.tree[b - 1].pair < -1) || (tree.tree[a].pair == b - 1)) &&
+              tree.tree[b].pair < 0) {
+            en = (b - 1 - a > TURN) ? vij1 : INF;
+            if (en != INF) {
+              en += params->MLbase;
+              type = pair[S.get()[a]][S.get()[b - 1]];
+              en += E_MLstem(type, -1, mm3, params.get());
+              e = std::min(e, en);
+            }
+          }
+
+          if (((tree.tree[a + 1].pair < -1 && tree.tree[b - 1].pair < -1) || (tree.tree[a + 1].pair == b - 1)) &&
+              tree.tree[a].pair < 0 && tree.tree[b].pair < 0) {
+            en = (b - a - 2 > TURN) ? vi1j1 : INF;
+            if (en != INF) {
+              en += 2 * params->MLbase;
+              type = pair[S.get()[a + 1]][S.get()[b - 1]];
+              en += E_MLstem(type, mm5, mm3, params.get());
+              e = std::min(e, en);
+            }
+          }
+        }
+
+        return e;
+      };
+
+      int unpaired = 0;
+      int prev = i;
+      double total = params->MLclosing;
+      for (const auto &child : children) {
+        const int k = child.first;
+        const int l = child.second;
+        unpaired += (k - prev - 1);
+        prev = l;
+        total += ml_stem_energy(k, l);
+        total += self(self, k, l);
+      }
+      unpaired += (j - prev - 1);
+      total += params->MLbase * unpaired;
+      v_cache[idx] = total;
+      return v_cache[idx];
+    };
+
+    auto ext_stem_energy = [&](int i, int j) -> double {
+      double e = INF;
+      double en = INF;
+      pair_type tt = pair[S.get()[i]][S.get()[j]];
+      if ((tree.tree[i].pair < -1 && tree.tree[j].pair < -1) || (tree.tree[i].pair == j && tree.tree[j].pair == i)) {
+        en = v_energy(v_energy, i, j);
+        if (en != INF) {
+          if (params->model_details.dangles == 2) {
+            base_type si1 = i > 1 ? S.get()[i - 1] : -1;
+            base_type sj1 = j < n ? S.get()[j + 1] : -1;
+            en += vrna_E_ext_stem(tt, si1, sj1, params.get());
+          } else {
+            en += vrna_E_ext_stem(tt, -1, -1, params.get());
+          }
+          e = std::min(e, en);
+        }
+      }
+
+      if (params->model_details.dangles == 1) {
+        tt = pair[S.get()[i + 1]][S.get()[j]];
+        if (((tree.tree[i + 1].pair < -1 && tree.tree[j].pair < -1) || (tree.tree[i + 1].pair == j)) &&
+            tree.tree[i].pair < 0) {
+          en = (j - i - 1 > TURN) ? v_energy(v_energy, i + 1, j) : INF;
+          if (en != INF) {
+            base_type si1 = S.get()[i];
+            en += vrna_E_ext_stem(tt, si1, -1, params.get());
+          }
+          e = std::min(e, en);
+        }
+
+        tt = pair[S.get()[i]][S.get()[j - 1]];
+        if (((tree.tree[i].pair < -1 && tree.tree[j - 1].pair < -1) || (tree.tree[i].pair == j - 1)) &&
+            tree.tree[j].pair < 0) {
+          en = (j - i - 1 > TURN) ? v_energy(v_energy, i, j - 1) : INF;
+          if (en != INF) {
+            base_type sj1 = S.get()[j];
+            en += vrna_E_ext_stem(tt, -1, sj1, params.get());
+          }
+          e = std::min(e, en);
+        }
+
+        tt = pair[S.get()[i + 1]][S.get()[j - 1]];
+        if (((tree.tree[i + 1].pair < -1 && tree.tree[j - 1].pair < -1) || (tree.tree[i + 1].pair == j - 1)) &&
+            tree.tree[i].pair < 0 && tree.tree[j].pair < 0) {
+          en = (j - i - 2 > TURN) ? v_energy(v_energy, i + 1, j - 1) : INF;
+          if (en != INF) {
+            base_type si1 = S.get()[i];
+            base_type sj1 = S.get()[j];
+            en += vrna_E_ext_stem(tt, si1, sj1, params.get());
+          }
+          e = std::min(e, en);
+        }
+      }
+      return e;
+    };
+
+    double total_energy = 0.0;
+    std::vector<int> roots = tree.tree[0].children;
+    std::sort(roots.begin(), roots.end());
+    for (int k : roots) {
+      const int l = tree.tree[k].pair;
+      if (l > 0) {
+        total_energy += ext_stem_energy(k, l);
+      }
+    }
+    breakdown.total_energy = total_energy;
+  }
+
   const auto trace = is_pk_free_structure(ctx.db_full)
                          ? trace_rule_chain_slice_d_rules_core_from_normalized(ctx)
                          : trace_rule_chain_slice_d_shared_from_normalized(ctx);
-
-  EnergyBreakdown breakdown;
-  breakdown.topology_family = topology_family_for_structure(ctx.db_full);
   for (const auto &step : trace) {
     ++breakdown.rule_evaluated_count;
     if (step.state == "V" && step.i > step.j) {
@@ -1413,7 +1656,7 @@ EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput
       ++breakdown.family_k_type_rules;
     }
 
-    if (trace_is_pair_wrapped(step)) {
+    if (!use_real_score && trace_is_pair_wrapped(step)) {
       breakdown.total_energy += rule_score(SharedRuleKind::kPairWrapped);
     }
   }
