@@ -147,6 +147,7 @@ if(BUILD_TESTING)
   set(FIXED_ENERGY_TEST_SOURCES
     src/fixed_energy_api.cc
     src/sparse_tree.cc
+    src/scfg/core.cc
     src/scfg/constraint_oracle.cc
     src/scfg/legacy_adapter.cc
     src/scfg/rules_api.cc

@@ -43,6 +43,9 @@ std::vector<RuleTraceStep> trace_rule_chain_slice_a_rules_core(const std::string
 // Story 015 slice-B shared parser trace: VM/WM/WMv/WMp are traversed on pair paths.
 std::vector<RuleTraceStep> trace_rule_chain_slice_b(const std::string &seq,
                                                     const std::string &db_full);
+// Slice-B rules-core compatibility trace (rule ids from scfg::rules_core).
+std::vector<RuleTraceStep> trace_rule_chain_slice_b_rules_core(const std::string &seq,
+                                                               const std::string &db_full);
 
 // Story 016 slice-C shared parser trace: WIP/VP/VPL/VPR are traversed on pair paths.
 std::vector<RuleTraceStep> trace_rule_chain_slice_c(const std::string &seq,
