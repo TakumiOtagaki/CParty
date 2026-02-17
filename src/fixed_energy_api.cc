@@ -1203,7 +1203,7 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_c_from_normalized(co
   return trace_rule_chain_slice_c_rules_core_from_normalized(ctx);
 }
 
-std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_from_normalized(const NormalizedInput &ctx) {
+std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_shared_from_normalized(const NormalizedInput &ctx) {
   return evaluate_shared_from_normalized(ctx, SharedParseMode{true, true, true}).trace;
 }
 
@@ -1211,7 +1211,7 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_rules_core_from_no
   if (!is_pk_free_structure(ctx.db_full)) {
     fail_invalid_input("rules_core slice-d trace requires pk_free structure");
   }
-  const auto shared_trace = trace_rule_chain_slice_d_from_normalized(ctx);
+  const auto shared_trace = trace_rule_chain_slice_d_shared_from_normalized(ctx);
   const int n = static_cast<int>(ctx.db_full.size());
   sparse_tree tree(ctx.db_full, n);
   RuleCoreStubWContext wctx(n);
@@ -1365,6 +1365,10 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_rules_core_from_no
 
 EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput &ctx) {
   return evaluate_shared_from_normalized(ctx, SharedParseMode{true, true, true}).breakdown;
+}
+
+std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_from_normalized(const NormalizedInput &ctx) {
+  return trace_rule_chain_slice_d_rules_core_from_normalized(ctx);
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(const NormalizedInput &ctx) {
