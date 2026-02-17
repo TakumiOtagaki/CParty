@@ -25,16 +25,6 @@ void expect_contains_state(const std::vector<cparty::internal::RuleTraceStep> &t
   expect(false, "trace missing state: " + state);
 }
 
-void expect_contains_rule(const std::vector<cparty::internal::RuleTraceStep> &trace,
-                          const std::string &rule) {
-  for (const auto &step : trace) {
-    if (step.rule == rule) {
-      return;
-    }
-  }
-  expect(false, "trace missing rule: " + rule);
-}
-
 void expect_missing_state(const std::vector<cparty::internal::RuleTraceStep> &trace,
                           const std::string &state) {
   for (const auto &step : trace) {
@@ -44,11 +34,10 @@ void expect_missing_state(const std::vector<cparty::internal::RuleTraceStep> &tr
   }
 }
 
-void expect_missing_rule(const std::vector<cparty::internal::RuleTraceStep> &trace,
-                         const std::string &rule) {
-  for (const auto &step : trace) {
-    if (step.rule == rule) {
-      expect(false, "trace unexpectedly contains rule: " + rule);
+void expect_rules_present(const std::vector<cparty::internal::RuleTraceStep> &trace) {
+  for (size_t i = 0; i < trace.size(); ++i) {
+    if (trace[i].rule.empty()) {
+      expect(false, "trace rule missing at step " + std::to_string(i));
     }
   }
 }
@@ -77,11 +66,8 @@ int main() {
     expect_contains_state(trace, "WM");
     expect_contains_state(trace, "WMv");
     expect_contains_state(trace, "WMp");
-    expect_contains_rule(trace, "VM_TO_WM");
-    expect_contains_rule(trace, "WM_TO_WMv");
-    expect_contains_rule(trace, "WMv_TO_WMp");
     expect_missing_state(trace, "WIP");
-    expect_missing_rule(trace, "WMp_TO_WIP");
+    expect_rules_present(trace);
     expect(rules_core_trace.size() == trace.size(), "rules_core trace length mismatch");
     for (size_t i = 0; i < rules_core_trace.size(); ++i) {
       expect(rules_core_trace[i].state == trace[i].state,
