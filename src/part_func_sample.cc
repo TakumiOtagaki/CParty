@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define debug 0
 
@@ -95,8 +96,13 @@ void W_final_pf::Sample_V(cand_pos_t i, cand_pos_t j, std::string &structure,
     structure[i - 1] = '(';
     structure[j - 1] = ')';
 
+    const char *bt_debug_env = getenv("CPARTY_BT_DEBUG");
+    const bool bt_debug = (bt_debug_env && *bt_debug_env != '\0' && strcmp(bt_debug_env, "0") != 0);
+
     pf_t qbr = get_energy(i, j);
     pf_t V_temp = 0;
+    pf_t hairpin = 0;
+    pf_t internal_sum = 0;
 
     std::pair<cand_pos_tu, cand_pos_tu> base_pair(i, j);
     std::pair<cand_pos_tu, cand_pos_tu> base_pair_reversed(j, i);
@@ -107,7 +113,10 @@ void W_final_pf::Sample_V(cand_pos_t i, cand_pos_t j, std::string &structure,
     pf_t qbt1 = 0;
     bool canH = !(tree.up[j - 1] < (j - i - 1));
 
-    if (canH) V_temp = HairpinE(i, j);
+    if (canH) {
+        hairpin = HairpinE(i, j);
+        V_temp = hairpin;
+    }
 
     qbt1 += V_temp;
     if (qbt1 >= r) return;
@@ -125,6 +134,7 @@ void W_final_pf::Sample_V(cand_pos_t i, cand_pos_t j, std::string &structure,
                                              exp_params_);
                     V_temp *= scale[u1 + u2 + 2];
                     qbt1 += V_temp;
+                    internal_sum += V_temp;
                     if (qbt1 >= r) break;
                 }
             }
@@ -136,9 +146,53 @@ void W_final_pf::Sample_V(cand_pos_t i, cand_pos_t j, std::string &structure,
         return;
     }
 
-    V_temp = get_energy_VM(i, j); // VM includes everything since it includes the basepair (i.e. not like WM2 region), so is this fine?
-    qbt1 += V_temp;
+    pf_t vm_energy = get_energy_VM(i, j); // VM includes everything since it includes the basepair (i.e. not like WM2 region), so is this fine?
+    qbt1 += vm_energy;
     if (qbt1 < r) {
+        if (bt_debug) {
+            fprintf(stderr,
+                    "[BT_DEBUG] Sample_V failure i=%d j=%d qbr=%.9g r=%.9g qbt1=%.9g hairpin=%.9g internal_sum=%.9g vm=%.9g canH=%d up_j=%d loop_len=%d\n",
+                    i, j, qbr, r, qbt1, hairpin, internal_sum, vm_energy, canH ? 1 : 0, tree.up[j - 1], (int)(j - i - 1));
+            fprintf(stderr, "[BT_DEBUG] structure=%s\n", tree.structure.c_str());
+            fprintf(stderr, "[BT_DEBUG] energy_set=%d S_i=%d S_j=%d S1_i=%d S1_j=%d base_i=%c base_j=%c\n",
+                    energy_set,
+                    (int)S_[i], (int)S_[j],
+                    (int)S1_[i], (int)S1_[j],
+                    seq[i - 1], seq[j - 1]);
+            fprintf(stderr, "[BT_DEBUG] up:");
+            for (cand_pos_t t = 1; t <= tree.n; ++t) {
+                fprintf(stderr, " %d", tree.up[t - 1]);
+            }
+            fprintf(stderr, "\n");
+            fprintf(stderr, "[BT_DEBUG] pair:");
+            for (cand_pos_t t = 1; t <= tree.n; ++t) {
+                fprintf(stderr, " %d", tree.tree[t].pair);
+            }
+            fprintf(stderr, "\n");
+            fprintf(stderr, "[BT_DEBUG] V_diag:");
+            for (cand_pos_t d = 1; d <= 3; ++d) {
+                cand_pos_t ki = i + d;
+                cand_pos_t lj = j - d;
+                if (ki < lj) {
+                    fprintf(stderr, " (%d,%d)=%.9g", ki, lj, get_energy(ki, lj));
+                }
+            }
+            fprintf(stderr, "\n");
+            cand_pos_t ki = i + 1;
+            cand_pos_t lj = j - 1;
+            if (ki < lj) {
+                const pair_type ptype_closing = pair[S_[i]][S_[j]];
+                const pair_type ptype_inner = pair[S_[ki]][S_[lj]];
+                cand_pos_t u1 = ki - i - 1;
+                cand_pos_t u2 = j - lj - 1;
+                pf_t vtemp = get_energy(ki, lj)
+                             * exp_E_IntLoop(u1, u2, ptype_closing, rtype[ptype_inner], S1_[i + 1], S1_[j - 1], S1_[ki - 1], S1_[lj + 1], exp_params_);
+                vtemp *= scale[u1 + u2 + 2];
+                fprintf(stderr,
+                        "[BT_DEBUG] intloop_d1 ki=%d lj=%d ptype=%d inner_ptype=%d u1=%d u2=%d vtemp=%.9g\n",
+                        ki, lj, ptype_closing, ptype_inner, (int)u1, (int)u2, vtemp);
+            }
+        }
         printf("Backtracking failed for pair (%d,%d)\n", i, j);
         exit(0);
     }

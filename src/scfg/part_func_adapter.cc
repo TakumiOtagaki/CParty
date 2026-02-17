@@ -255,6 +255,7 @@ class LocalVPContext final : public PartFuncVPContext {
     pf_t get_energy_VPL(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_VPL(i, j); }
     pf_t get_energy_VPR(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_VPR(i, j); }
     pair_type pair_type_of(cand_pos_t i, cand_pos_t j) const override {
+        ensure_pair_matrix_initialized();
         return pair[PartFuncAdapterAccess::S(owner_)[i]][PartFuncAdapterAccess::S(owner_)[j]];
     }
     pf_t get_e_stP(cand_pos_t i, cand_pos_t j) override { return PartFuncAdapterAccess::get_e_stP(owner_, i, j); }

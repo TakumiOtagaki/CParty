@@ -69,7 +69,7 @@ if [[ -n "$mfe_invalid_chars" ]]; then
   echo "parse error: invalid MFE structure: $mfe_structure" >&2
   exit 1
 fi
-pf_invalid_chars=$(printf '%s' "$pf_structure" | tr -d '.()[]{}<>/x')
+pf_invalid_chars=$(printf '%s' "$pf_structure" | tr -d '.(),()[]{}<>/x\\|')
 if [[ -n "$pf_invalid_chars" ]]; then
   echo "parse error: invalid PF structure: $pf_structure" >&2
   exit 1

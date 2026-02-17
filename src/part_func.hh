@@ -27,7 +27,7 @@ struct SzudzikHash {
     }
 };
 
-inline void ensure_pair_matrix_initialized() {
+static inline void ensure_pair_matrix_initialized() {
     static bool initialized = false;
     if (!initialized) {
         make_pair_matrix();

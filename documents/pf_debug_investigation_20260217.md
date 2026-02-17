@@ -93,3 +93,21 @@
   - `S1_` が正しく初期化され、`HairpinE`/`V[1,n]`/`W[n]` が legacy と一致
 - 直近の再確認
   - `seq=GCAUGC, restricted=(....)` で legacy/current の PF エネルギー一致
+
+### 追加更新（2026-02-17 / PM）
+- 根因その2（TU 内 pair 初期化の不足）
+  - `pair`/`alias` がヘッダ内 `static` のため TU ごとに別インスタンス
+  - `ensure_pair_matrix_initialized()` の static ガードが「プログラム全体で 1 回だけ」になり、
+    他 TU の `pair` が未初期化のまま使われる問題が発生
+  - 影響: `Sample_V` / `PartFuncAdapter::pair_type_of` などで `ptype=0` となり、PF が崩れる
+- 対応
+  - `ensure_pair_matrix_initialized()` を `static inline` に変更し TU ごとに初期化
+  - `part_func_adapter.cc` の `pair_type_of()` で明示的に `ensure_pair_matrix_initialized()` 実行
+- 根因その3（legacy 互換の `can_pair_left_span`）
+  - legacy は `k==i` を許容しているが、`scfg::can_pair_left_span` は `k==i` を拒否
+  - WM/VM の項が欠落し、PF エネルギーにズレが生じる
+- 対応
+  - `scfg::can_pair_left_span/right_span` を `split==left/right` で true 扱いに修正
+
+### 現状
+- strict compare（PF 行含む）が 600 ケースで全件一致

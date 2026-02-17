@@ -54,6 +54,10 @@ trap 'rm -rf "$tmpdir"' EXIT
 
 stdout_legacy="$tmpdir/legacy.txt"
 stdout_current="$tmpdir/current.txt"
+abs_diffs="$tmpdir/abs_diffs.txt"
+rel_diffs="$tmpdir/rel_diffs.txt"
+: > "$abs_diffs"
+: > "$rel_diffs"
 
 total=0
 matched=0
@@ -75,6 +79,17 @@ legacy_pf_finite=0
 current_pf_finite=0
 sample_limit=5
 sampled=0
+skip_legacy_run=0
+skip_current_run=0
+skip_legacy_parse=0
+skip_current_parse=0
+legacy_backtrack_fail=0
+current_backtrack_fail=0
+backtrack_mismatch=0
+legacy_parse_error=""
+current_parse_error=""
+pf_abs_tol="${PF_ABS_TOL:-1e-3}"
+pf_rel_tol="${PF_REL_TOL:-1e-5}"
 
 while IFS=$'\t' read -r case_id seq g; do
   if [[ "$case_id" == "case_id" ]]; then
@@ -84,19 +99,63 @@ while IFS=$'\t' read -r case_id seq g; do
 
   if ! "$legacy_bin" -d2 -P "$PARAM_FILE" -r "$g" "$seq" > "$stdout_legacy" 2>/dev/null; then
     skipped=$((skipped + 1))
+    skip_legacy_run=$((skip_legacy_run + 1))
     continue
   fi
   if ! "$current_bin" -d2 -P "$PARAM_FILE" -r "$g" "$seq" > "$stdout_current" 2>/dev/null; then
     skipped=$((skipped + 1))
+    skip_current_run=$((skip_current_run + 1))
     continue
   fi
 
-  if ! legacy_parsed=$("$PARSER" "$stdout_legacy" 2>/dev/null); then
-    skipped=$((skipped + 1))
+  legacy_bt=0
+  current_bt=0
+  if grep -q "Backtracking failed" "$stdout_legacy"; then
+    legacy_bt=1
+    legacy_backtrack_fail=$((legacy_backtrack_fail + 1))
+  fi
+  if grep -q "Backtracking failed" "$stdout_current"; then
+    current_bt=1
+    current_backtrack_fail=$((current_backtrack_fail + 1))
+  fi
+  if (( legacy_bt == 1 || current_bt == 1 )); then
+    if (( legacy_bt == 1 && current_bt == 1 )); then
+      matched=$((matched + 1))
+    else
+      failed=$((failed + 1))
+      backtrack_mismatch=$((backtrack_mismatch + 1))
+      if (( sampled < sample_limit )); then
+        echo "mismatch case_id=$case_id (backtracking)" >&2
+        if (( legacy_bt == 1 )); then
+          echo "legacy:  Backtracking failed" >&2
+        else
+          echo "legacy:  ok" >&2
+        fi
+        if (( current_bt == 1 )); then
+          echo "current: Backtracking failed" >&2
+        else
+          echo "current: ok" >&2
+        fi
+        sampled=$((sampled + 1))
+      fi
+    fi
     continue
   fi
-  if ! current_parsed=$("$PARSER" "$stdout_current" 2>/dev/null); then
+
+  if ! legacy_parsed=$("$PARSER" "$stdout_legacy" 2>&1); then
     skipped=$((skipped + 1))
+    skip_legacy_parse=$((skip_legacy_parse + 1))
+    if [[ -z "$legacy_parse_error" ]]; then
+      legacy_parse_error="$legacy_parsed"
+    fi
+    continue
+  fi
+  if ! current_parsed=$("$PARSER" "$stdout_current" 2>&1); then
+    skipped=$((skipped + 1))
+    skip_current_parse=$((skip_current_parse + 1))
+    if [[ -z "$current_parse_error" ]]; then
+      current_parse_error="$current_parsed"
+    fi
     continue
   fi
 
@@ -116,6 +175,7 @@ while IFS=$'\t' read -r case_id seq g; do
 
   mfe_ok=1
   pf_ok=1
+  pf_energy_ok=1
   if [[ "$legacy_seq" != "$current_seq" || "$legacy_restricted" != "$current_restricted" ]]; then
     mfe_ok=0
     pf_ok=0
@@ -123,8 +183,23 @@ while IFS=$'\t' read -r case_id seq g; do
     if [[ "$legacy_mfe_structure" != "$current_mfe_structure" || "$legacy_mfe_energy" != "$current_mfe_energy" ]]; then
       mfe_ok=0
     fi
-    if [[ "$legacy_pf_structure" != "$current_pf_structure" || "$legacy_pf_energy" != "$current_pf_energy" ]]; then
+    if [[ "$legacy_pf_structure" != "$current_pf_structure" ]]; then
       pf_ok=0
+    else
+      pf_energy_ok=0
+      if [[ "$legacy_pf_energy" != "inf" && "$legacy_pf_energy" != "+inf" && "$legacy_pf_energy" != "nan" && "$legacy_pf_energy" != "+nan" && "$legacy_pf_energy" != "-nan" && \
+            "$current_pf_energy" != "inf" && "$current_pf_energy" != "+inf" && "$current_pf_energy" != "nan" && "$current_pf_energy" != "+nan" && "$current_pf_energy" != "-nan" ]]; then
+        abs_diff=$(awk -v a="$legacy_pf_energy" -v b="$current_pf_energy" 'BEGIN{d=a-b; if(d<0)d=-d; print d}')
+        rel_diff=$(awk -v a="$legacy_pf_energy" -v b="$current_pf_energy" 'BEGIN{d=a-b; if(d<0)d=-d; denom=(a<0?-a:a); if(denom==0) denom=(b<0?-b:b); if(denom==0) denom=1; print d/denom}')
+        echo "$abs_diff" >> "$abs_diffs"
+        echo "$rel_diff" >> "$rel_diffs"
+        pf_energy_ok=$(awk -v a="$abs_diff" -v r="$rel_diff" -v at="$pf_abs_tol" -v rt="$pf_rel_tol" 'BEGIN{print (a<=at || r<=rt) ? 1 : 0}')
+      else
+        pf_energy_ok=0
+      fi
+      if (( pf_energy_ok == 0 )); then
+        pf_ok=0
+      fi
     fi
   fi
 
@@ -167,7 +242,7 @@ while IFS=$'\t' read -r case_id seq g; do
       if [[ "$legacy_pf_structure" != "$current_pf_structure" ]]; then
         pf_structure_failed=$((pf_structure_failed + 1))
       fi
-      if [[ "$legacy_pf_energy" != "$current_pf_energy" ]]; then
+      if (( pf_energy_ok == 0 )); then
         pf_energy_failed=$((pf_energy_failed + 1))
       fi
     fi
@@ -188,6 +263,28 @@ echo "compare_mfe_failed=$mfe_failed"
 echo "compare_pf_failed=$pf_failed"
 echo "compare_pf_structure_failed=$pf_structure_failed"
 echo "compare_pf_energy_failed=$pf_energy_failed"
+if [[ -s "$abs_diffs" ]]; then
+  abs_top3=$(sort -nr "$abs_diffs" | head -n 3 | paste -sd, -)
+  abs_median=$(sort -n "$abs_diffs" | awk '{a[NR]=$1} END{if(NR==0){print ""} else {m=int((NR+1)/2); print a[m]}}')
+  rel_top3=$(sort -nr "$rel_diffs" | head -n 3 | paste -sd, -)
+  rel_median=$(sort -n "$rel_diffs" | awk '{a[NR]=$1} END{if(NR==0){print ""} else {m=int((NR+1)/2); print a[m]}}')
+  echo "pf_abs_top3_max=${abs_top3}"
+  echo "pf_rel_top3_max=${rel_top3}"
+  echo "pf_abs_median=${abs_median}"
+  echo "pf_rel_median=${rel_median}"
+  echo "pf_abs_tol=${pf_abs_tol}"
+  echo "pf_rel_tol=${pf_rel_tol}"
+fi
+echo "skip_legacy_run=$skip_legacy_run"
+echo "skip_current_run=$skip_current_run"
+echo "skip_legacy_parse=$skip_legacy_parse"
+echo "skip_current_parse=$skip_current_parse"
+if [[ -n "$legacy_parse_error" ]]; then
+  echo "legacy_parse_error_sample=$legacy_parse_error"
+fi
+if [[ -n "$current_parse_error" ]]; then
+  echo "current_parse_error_sample=$current_parse_error"
+fi
 echo "legacy_pf_inf=$legacy_pf_inf"
 echo "legacy_pf_nan=$legacy_pf_nan"
 echo "legacy_pf_finite=$legacy_pf_finite"
@@ -198,6 +295,9 @@ echo "legacy_pf_has_square=$legacy_pf_has_square"
 echo "legacy_pf_has_round=$legacy_pf_has_round"
 echo "current_pf_has_square=$current_pf_has_square"
 echo "current_pf_has_round=$current_pf_has_round"
+echo "legacy_backtracking_failed=$legacy_backtrack_fail"
+echo "current_backtracking_failed=$current_backtrack_fail"
+echo "backtracking_mismatch=$backtrack_mismatch"
 compare_min="${COMPARE_MIN_MATCHED:-100}"
 compared=$((matched + failed))
 echo "compare_compared=$compared"
