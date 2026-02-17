@@ -111,3 +111,53 @@
 
 ### 現状
 - strict compare（PF 行含む）が 600 ケースで全件一致
+
+## worktree_legacy との比較について
+- `worktree_legacy/` は `input_structure_given` の use-after-free が残っており、
+  MFE/PF が 0 クリアされるケースが大量に発生する（PF が 0 に見える）
+- `worktree_legacy_debug/` では該当修正済みのため strict compare の基準としては
+  `worktree_legacy_debug/` を使うのが妥当
+- `worktree_legacy/` を使う場合は `input_structure_given` を free 前に退避する修正が必須
+
+## デバッグ経路の要約
+### 1) PF 不一致の原因 1（TU 内 pair 初期化）
+- `pair` / `alias` がヘッダ static で TU ごとに独立
+- `ensure_pair_matrix_initialized()` の static guard がグローバル 1 回に見えて
+  他 TU の pair が未初期化になる
+- `PartFuncAdapter::pair_type_of()` / `Sample_V` などで `ptype=0` が発生し、PF が崩れる
+- 対応: `ensure_pair_matrix_initialized()` を `static inline` 化 + `pair_type_of()` で明示初期化
+
+### 2) PF 不一致の原因 2（can_pair_left_span 条件差）
+- legacy は `k==i` のケースを許容するが `scfg::can_pair_left_span` は拒否
+- WM/VM 経路が欠落し、V/VM/内部ループが小さくなる
+- 対応: `split==left/right` を true に変更
+
+### 3) PF 不一致の原因 3（スコア選択差の可視化）
+- W/WMB/WMBP/VP/WM/VM/V/INTERNAL の各項をトレースし、
+  missing term の場所を段階的に特定
+- `CPARTY_PF_TRACE_*` による診断が有効
+
+## 次にやること（整理）
+1. strict compare の運用基準を `worktree_legacy_debug/` に固定
+2. PF デバッグ用の `CPARTY_PF_TRACE_*` を残すか整理するか判断
+3. `worktree_legacy/` を基準にしたい場合は use-after-free 修正の適用
+4. fixed-energy API の PF 参照テスト設計へ戻る
+
+## 進捗サマリ（2026-02-17 / late）
+### クリア条件（現時点で採用）
+- strict compare（PF 行含む）で `compare_pf_failed=0` かつ `compare_mfe_failed=0`
+- `compare_compared >= compare_min` を満たす
+- PF 構造に `[]` が含まれるケースでも legacy/current が一致
+- PF エネルギーは `inf/nan` を含まない
+
+### 達成状況
+- **達成**: `worktree_legacy_debug/` を基準に strict compare が 600 ケースで全件一致
+- **達成**: PF の `inf`/`nan` と pk 欠落問題を解消
+- **未達**: `worktree_legacy/` 基準だと PF/MFE が 0 になり一致しない
+  - 原因は `input_structure_given` の use-after-free（legacy 側未修正）
+
+### 次のアクション（実行順）
+1. `worktree_legacy_debug/` を基準に strict compare を再実行し、再現性を確認
+2. `worktree_legacy/` を基準にしたい場合は、UAF 修正を適用（要合意）
+3. PF デバッグトレース（`CPARTY_PF_TRACE_*`）の整理方針を決める
+4. fixed-energy API 検証・テスト設計に復帰
