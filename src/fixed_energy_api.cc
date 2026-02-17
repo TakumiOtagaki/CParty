@@ -483,6 +483,24 @@ bool is_pk_free_structure(const std::string &db_full) {
   return db_full.find('[') == std::string::npos && db_full.find(']') == std::string::npos;
 }
 
+bool is_h_type_structure(const std::string &db_full) {
+  const bool has_round = db_full.find('(') != std::string::npos || db_full.find(')') != std::string::npos;
+  const bool has_square = db_full.find('[') != std::string::npos || db_full.find(']') != std::string::npos;
+  return (!has_round && has_square);
+}
+
+std::string normalize_h_type_brackets(const std::string &db_full) {
+  std::string out = db_full;
+  for (char &c : out) {
+    if (c == '[') {
+      c = '(';
+    } else if (c == ']') {
+      c = ')';
+    }
+  }
+  return out;
+}
+
 bool file_exists(const std::string &path) {
   struct stat buffer;
   return (stat(path.c_str(), &buffer) == 0);
@@ -1423,7 +1441,19 @@ EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput
   const bool use_real_score = (real_score_env && *real_score_env != '\0' &&
                                std::string(real_score_env) != "0");
 
-  if (use_real_score && is_pk_free_structure(ctx.db_full)) {
+  std::string h_type_normalized;
+  const std::string *energy_db_ptr = nullptr;
+  if (use_real_score) {
+    if (is_pk_free_structure(ctx.db_full)) {
+      energy_db_ptr = &ctx.db_full;
+    } else if (is_h_type_structure(ctx.db_full)) {
+      h_type_normalized = normalize_h_type_brackets(ctx.db_full);
+      energy_db_ptr = &h_type_normalized;
+    }
+  }
+
+  if (energy_db_ptr != nullptr) {
+    const std::string &energy_db = *energy_db_ptr;
     ensure_vienna_params_loaded(ctx.seq);
     make_pair_matrix();
     std::unique_ptr<vrna_param_t, void (*)(void *)> params(scale_parameters(), free);
@@ -1431,8 +1461,8 @@ EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput
     std::unique_ptr<short, void (*)(void *)> S(encode_sequence(ctx.seq.c_str(), 0), free);
     std::unique_ptr<short, void (*)(void *)> S1(encode_sequence(ctx.seq.c_str(), 1), free);
 
-    const int n = static_cast<int>(ctx.db_full.size());
-    sparse_tree tree(ctx.db_full, n);
+    const int n = static_cast<int>(energy_db.size());
+    sparse_tree tree(energy_db, n);
     const int n1 = n + 1;
     std::vector<double> v_cache(static_cast<size_t>(n1 * n1), INF);
     std::vector<bool> v_done(static_cast<size_t>(n1 * n1), false);
