@@ -192,6 +192,11 @@ if(BUILD_TESTING)
     src/fixed_energy_api.cc
   )
   add_executable(
+    fixed_energy_union_energy_tool
+    test/fixed_energy_union_energy_tool.cc
+    src/fixed_energy_api.cc
+  )
+  add_executable(
     fixed_energy_cli_mfe_energy_alignment_test
     test/fixed_energy_cli_mfe_energy_alignment_test.cc
     src/fixed_energy_api.cc
@@ -269,6 +274,18 @@ if(BUILD_TESTING)
   add_test(
     NAME fixed_energy_union
     COMMAND fixed_energy_union_test
+  )
+
+  add_test(
+    NAME fixed_energy_union_legacy_alignment
+    COMMAND bash -lc
+            "LEGACY_BIN=\"${CMAKE_SOURCE_DIR}/worktree_legacy/build/CParty\"; \
+             if [[ -n \"$CPARTY_LEGACY_BIN\" ]]; then LEGACY_BIN=\"$CPARTY_LEGACY_BIN\"; fi; \
+             \"${CMAKE_SOURCE_DIR}/test/tools/fixed_energy_union_legacy_alignment.sh\" \
+             \"$LEGACY_BIN\" \
+             \"$<TARGET_FILE:fixed_energy_union_energy_tool>\" \
+             \"${CMAKE_SOURCE_DIR}/params/rna_DirksPierce09.par\" \
+             20260217 100 30,50,80"
   )
 
   add_test(

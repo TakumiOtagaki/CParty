@@ -149,7 +149,7 @@ def main(argv: Sequence[str]) -> int:
 
     print("case_id\tseq\tG")
     for i in range(1, args.count + 1):
-    structure = generate_structure(rng, args.length, args.turn)
+        structure = generate_structure(rng, args.length, args.turn)
         seq = assign_sequence(rng, structure)
         validate_pairing(seq, structure)
         print(f"{args.prefix}_{i:04d}\t{seq}\t{structure}")
