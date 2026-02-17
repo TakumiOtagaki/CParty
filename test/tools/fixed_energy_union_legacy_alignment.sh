@@ -121,12 +121,11 @@ for length in "${lengths[@]}"; do
       continue
     fi
 
-    if ! python3 - <<'PY' "$cli_mfe_energy" "$api_energy"; then
+    if ! python3 - "$cli_mfe_energy" "$api_energy" <<'PY'; then
 import math,sys
 a=float(sys.argv[1]); b=float(sys.argv[2])
 sys.exit(0 if math.isfinite(a) and math.isfinite(b) else 1)
 PY
-    then
       skipped=$((skipped + 1))
       continue
     else
@@ -157,14 +156,13 @@ PY
 
     alignment_compared=$((alignment_compared + 1))
 
-    if ! python3 - <<'PY' "$abs_diff" "$scale" "$abs_tol" "$rel_tol"; then
+    if ! python3 - "$abs_diff" "$scale" "$abs_tol" "$rel_tol" <<'PY'; then
 import sys
 d=float(sys.argv[1]); s=float(sys.argv[2])
 abs_tol=float(sys.argv[3]); rel_tol=float(sys.argv[4])
 ok = (d <= abs_tol) or (s > 0.0 and d <= rel_tol * s)
 sys.exit(0 if ok else 1)
 PY
-    then
       alignment_mismatched=$((alignment_mismatched + 1))
     fi
   done < <(tail -n +2 "$cases_file")
