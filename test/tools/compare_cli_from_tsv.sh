@@ -59,6 +59,22 @@ total=0
 matched=0
 skipped=0
 failed=0
+mfe_failed=0
+pf_failed=0
+pf_structure_failed=0
+pf_energy_failed=0
+legacy_pf_inf=0
+current_pf_inf=0
+legacy_pf_nan=0
+current_pf_nan=0
+legacy_pf_has_square=0
+current_pf_has_square=0
+legacy_pf_has_round=0
+current_pf_has_round=0
+legacy_pf_finite=0
+current_pf_finite=0
+sample_limit=5
+sampled=0
 
 while IFS=$'\t' read -r case_id seq g; do
   if [[ "$case_id" == "case_id" ]]; then
@@ -84,10 +100,83 @@ while IFS=$'\t' read -r case_id seq g; do
     continue
   fi
 
-  if [[ "$legacy_parsed" != "$current_parsed" ]]; then
-    failed=$((failed + 1))
+  legacy_seq=$(printf '%s' "$legacy_parsed" | awk -F $'\t' '{print $1}')
+  legacy_restricted=$(printf '%s' "$legacy_parsed" | awk -F $'\t' '{print $2}')
+  legacy_mfe_structure=$(printf '%s' "$legacy_parsed" | awk -F $'\t' '{print $3}')
+  legacy_mfe_energy=$(printf '%s' "$legacy_parsed" | awk -F $'\t' '{print $4}')
+  legacy_pf_structure=$(printf '%s' "$legacy_parsed" | awk -F $'\t' '{print $5}')
+  legacy_pf_energy=$(printf '%s' "$legacy_parsed" | awk -F $'\t' '{print $6}')
+
+  current_seq=$(printf '%s' "$current_parsed" | awk -F $'\t' '{print $1}')
+  current_restricted=$(printf '%s' "$current_parsed" | awk -F $'\t' '{print $2}')
+  current_mfe_structure=$(printf '%s' "$current_parsed" | awk -F $'\t' '{print $3}')
+  current_mfe_energy=$(printf '%s' "$current_parsed" | awk -F $'\t' '{print $4}')
+  current_pf_structure=$(printf '%s' "$current_parsed" | awk -F $'\t' '{print $5}')
+  current_pf_energy=$(printf '%s' "$current_parsed" | awk -F $'\t' '{print $6}')
+
+  mfe_ok=1
+  pf_ok=1
+  if [[ "$legacy_seq" != "$current_seq" || "$legacy_restricted" != "$current_restricted" ]]; then
+    mfe_ok=0
+    pf_ok=0
   else
+    if [[ "$legacy_mfe_structure" != "$current_mfe_structure" || "$legacy_mfe_energy" != "$current_mfe_energy" ]]; then
+      mfe_ok=0
+    fi
+    if [[ "$legacy_pf_structure" != "$current_pf_structure" || "$legacy_pf_energy" != "$current_pf_energy" ]]; then
+      pf_ok=0
+    fi
+  fi
+
+  if [[ "$legacy_pf_structure" == *"["* || "$legacy_pf_structure" == *"]"* ]]; then
+    legacy_pf_has_square=$((legacy_pf_has_square + 1))
+  fi
+  if [[ "$current_pf_structure" == *"["* || "$current_pf_structure" == *"]"* ]]; then
+    current_pf_has_square=$((current_pf_has_square + 1))
+  fi
+  if [[ "$legacy_pf_structure" == *"("* || "$legacy_pf_structure" == *")"* ]]; then
+    legacy_pf_has_round=$((legacy_pf_has_round + 1))
+  fi
+  if [[ "$current_pf_structure" == *"("* || "$current_pf_structure" == *")"* ]]; then
+    current_pf_has_round=$((current_pf_has_round + 1))
+  fi
+  if [[ "$legacy_pf_energy" == "inf" || "$legacy_pf_energy" == "+inf" ]]; then
+    legacy_pf_inf=$((legacy_pf_inf + 1))
+  elif [[ "$legacy_pf_energy" == "nan" || "$legacy_pf_energy" == "+nan" || "$legacy_pf_energy" == "-nan" ]]; then
+    legacy_pf_nan=$((legacy_pf_nan + 1))
+  else
+    legacy_pf_finite=$((legacy_pf_finite + 1))
+  fi
+  if [[ "$current_pf_energy" == "inf" || "$current_pf_energy" == "+inf" ]]; then
+    current_pf_inf=$((current_pf_inf + 1))
+  elif [[ "$current_pf_energy" == "nan" || "$current_pf_energy" == "+nan" || "$current_pf_energy" == "-nan" ]]; then
+    current_pf_nan=$((current_pf_nan + 1))
+  else
+    current_pf_finite=$((current_pf_finite + 1))
+  fi
+
+  if (( mfe_ok == 1 && pf_ok == 1 )); then
     matched=$((matched + 1))
+  else
+    failed=$((failed + 1))
+    if (( mfe_ok == 0 )); then
+      mfe_failed=$((mfe_failed + 1))
+    fi
+    if (( pf_ok == 0 )); then
+      pf_failed=$((pf_failed + 1))
+      if [[ "$legacy_pf_structure" != "$current_pf_structure" ]]; then
+        pf_structure_failed=$((pf_structure_failed + 1))
+      fi
+      if [[ "$legacy_pf_energy" != "$current_pf_energy" ]]; then
+        pf_energy_failed=$((pf_energy_failed + 1))
+      fi
+    fi
+    if (( sampled < sample_limit )); then
+      echo "mismatch case_id=$case_id" >&2
+      echo "legacy:  $legacy_parsed" >&2
+      echo "current: $current_parsed" >&2
+      sampled=$((sampled + 1))
+    fi
   fi
 done < "$cases_tsv"
 
@@ -95,6 +184,20 @@ echo "compare_total=$total"
 echo "compare_matched=$matched"
 echo "compare_failed=$failed"
 echo "compare_skipped=$skipped"
+echo "compare_mfe_failed=$mfe_failed"
+echo "compare_pf_failed=$pf_failed"
+echo "compare_pf_structure_failed=$pf_structure_failed"
+echo "compare_pf_energy_failed=$pf_energy_failed"
+echo "legacy_pf_inf=$legacy_pf_inf"
+echo "legacy_pf_nan=$legacy_pf_nan"
+echo "legacy_pf_finite=$legacy_pf_finite"
+echo "current_pf_inf=$current_pf_inf"
+echo "current_pf_nan=$current_pf_nan"
+echo "current_pf_finite=$current_pf_finite"
+echo "legacy_pf_has_square=$legacy_pf_has_square"
+echo "legacy_pf_has_round=$legacy_pf_has_round"
+echo "current_pf_has_square=$current_pf_has_square"
+echo "current_pf_has_round=$current_pf_has_round"
 compare_min="${COMPARE_MIN_MATCHED:-100}"
 compared=$((matched + failed))
 echo "compare_compared=$compared"

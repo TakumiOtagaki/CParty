@@ -1,8 +1,12 @@
 #include "part_func.hh"
 
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+
 W_final_pf::W_final_pf(std::string &seq, std::string &MFE_structure, bool pk_free,bool pk_only,bool fatgraph, int dangle, double energy, int num_samples, bool PSplot)
     : exp_params_(scale_pf_parameters()) {
-    ensure_pair_matrix_initialized();
+    make_pair_matrix();
     this->seq = seq;
     this->MFE_structure = MFE_structure;
     this->n = seq.length();
@@ -15,6 +19,22 @@ W_final_pf::W_final_pf(std::string &seq, std::string &MFE_structure, bool pk_fre
     exp_params_->model_details.dangles = dangle;
     S_ = encode_sequence(seq.c_str(), 0);
     S1_ = encode_sequence(seq.c_str(), 1);
+    const char *pf_debug_env = std::getenv("CPARTY_PF_DEBUG");
+    static bool seq_logged = false;
+    if (!seq_logged && pf_debug_env && *pf_debug_env != '\0' && std::strcmp(pf_debug_env, "0") != 0) {
+        seq_logged = true;
+        std::cerr << "[PF_DEBUG] encoded_sequence"
+                  << " n=" << n
+                  << " S:";
+        for (cand_pos_t i = 1; i <= n; ++i) {
+            std::cerr << " " << static_cast<int>(S_[i]);
+        }
+        std::cerr << " S1:";
+        for (cand_pos_t i = 1; i <= n; ++i) {
+            std::cerr << " " << static_cast<int>(S1_[i]);
+        }
+        std::cerr << std::endl;
+    }
 
     index.resize(n + 1);
     scale.resize(n + 1);

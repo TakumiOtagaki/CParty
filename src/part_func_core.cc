@@ -1,8 +1,18 @@
 #include "part_func.hh"
 #include "scfg/part_func_adapter.hh"
 
+namespace {
+inline void ensure_local_pair_matrix_initialized() {
+    static bool initialized = false;
+    if (!initialized) {
+        make_pair_matrix();
+        initialized = true;
+    }
+}
+} // namespace
+
 pf_t W_final_pf::compute_internal_restricted(cand_pos_t i, cand_pos_t j, std::vector<int> &up) {
-    ensure_pair_matrix_initialized();
+    ensure_local_pair_matrix_initialized();
     pf_t v_iloop = 0;
     cand_pos_t max_k = std::min(j - TURN - 2, i + MAXLOOP + 1);
     const pair_type ptype_closing = pair[S_[i]][S_[j]];

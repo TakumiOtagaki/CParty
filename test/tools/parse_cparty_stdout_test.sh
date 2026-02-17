@@ -42,7 +42,7 @@ CGGCAACAGCCG
 OUT
 
 parsed=$("$PARSER" "$tmpdir/valid.txt")
-assert_eq "$parsed" $'CGGCAACAGCCG\t((((....))))\t((((....))))\t-3.45' "parses valid static stdout"
+assert_eq "$parsed" $'CGGCAACAGCCG\t((((....))))\t((((....))))\t-3.45\t((((....))))\t-3.45' "parses valid static stdout"
 
 cat > "$tmpdir/missing_result.txt" <<'OUT'
 CGGCAACAGCCG
@@ -70,8 +70,20 @@ if [[ -x "$CPARTY_BIN" ]]; then
   st=$(awk 'BEGIN{RS="";FS="\n"} NR==4{print $3}' "$ROOT_DIR/test/multi.secstruct")
   "$CPARTY_BIN" -d2 -r "$st" "$seq" > "$tmpdir/live.txt" 2>/dev/null
   live_parsed=$("$PARSER" "$tmpdir/live.txt")
-  expected_live=$'CGGCAACAGCCG\t((((....))))\t((((....))))\t-3.45'
-  assert_eq "$live_parsed" "$expected_live" "parses live CParty stdout deterministically"
+  live_seq=$(printf '%s' "$live_parsed" | awk -F $'\t' '{print $1}')
+  live_restricted=$(printf '%s' "$live_parsed" | awk -F $'\t' '{print $2}')
+  live_mfe_struct=$(printf '%s' "$live_parsed" | awk -F $'\t' '{print $3}')
+  live_mfe_energy=$(printf '%s' "$live_parsed" | awk -F $'\t' '{print $4}')
+  live_pf_struct=$(printf '%s' "$live_parsed" | awk -F $'\t' '{print $5}')
+  live_pf_energy=$(printf '%s' "$live_parsed" | awk -F $'\t' '{print $6}')
+  assert_eq "$live_seq" "CGGCAACAGCCG" "live seq matches"
+  assert_eq "$live_restricted" "((((....))))" "live restricted matches"
+  assert_eq "$live_mfe_struct" "((((....))))" "live mfe structure matches"
+  assert_eq "$live_mfe_energy" "-3.45" "live mfe energy matches"
+  if [[ -z "$live_pf_struct" || -z "$live_pf_energy" ]]; then
+    echo "assertion failed: live PF fields missing" >&2
+    exit 1
+  fi
 fi
 
 echo "parse_cparty_stdout_test: PASS"

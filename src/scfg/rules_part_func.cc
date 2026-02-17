@@ -4,6 +4,9 @@
 #include "scfg/constraint_oracle.hh"
 
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
 #include <ViennaRNA/params/constants.h>
 
 namespace scfg {
@@ -61,14 +64,28 @@ void compute_V_restricted(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, spa
     const bool paired = (tree.tree[i].pair == j && tree.tree[j].pair == i);
 
     pf_t contributions = 0;
+    pf_t hairpin = 0;
+    pf_t internal = 0;
+    pf_t vm = 0;
 
     if (paired || unpaired) {
-        bool canH = !(tree.up[j - 1] < (j - i - 1));
-        if (canH) contributions += ctx.hairpin_energy(i, j);
-
-        contributions += ctx.internal_energy(i, j, tree.up);
-
-        contributions += ctx.vm_energy(i, j, tree.up);
+        const bool canH = !(tree.up[j - 1] < (j - i - 1));
+        if (canH) hairpin = ctx.hairpin_energy(i, j);
+        internal = ctx.internal_energy(i, j, tree.up);
+        vm = ctx.vm_energy(i, j, tree.up);
+        contributions = hairpin + internal + vm;
+        const char *pf_debug_env = std::getenv("CPARTY_PF_DEBUG");
+        if (pf_debug_env && *pf_debug_env != '\0' && std::strcmp(pf_debug_env, "0") != 0 && i == 1 && j == tree.n) {
+            std::cerr << "[PF_DEBUG] V_parts"
+                      << " paired=" << paired
+                      << " unpaired=" << unpaired
+                      << " canH=" << canH
+                      << " hairpin=" << hairpin
+                      << " internal=" << internal
+                      << " vm=" << vm
+                      << " total=" << contributions
+                      << std::endl;
+        }
     }
 
     ctx.set_V(ij, contributions);

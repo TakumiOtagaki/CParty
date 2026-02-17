@@ -28,7 +28,6 @@ count="$5"
 lengths_csv="$6"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-PARSER="$ROOT_DIR/test/tools/parse_cparty_stdout.sh"
 GENERATOR="$ROOT_DIR/test/tools/gen_random_seq_struct.py"
 
 abs_tol=1e-7
@@ -44,10 +43,6 @@ if [[ ! -x "$tool_bin" ]]; then
 fi
 if [[ ! -f "$param_file" ]]; then
   echo "error: param file not found: $param_file" >&2
-  exit 2
-fi
-if [[ ! -x "$PARSER" ]]; then
-  echo "error: missing parser script: $PARSER" >&2
   exit 2
 fi
 if [[ ! -f "$GENERATOR" ]]; then
@@ -66,6 +61,7 @@ alignment_compared=0
 alignment_mismatched=0
 skipped=0
 finite_count=0
+nonzero_energy_count=0
 
 IFS=',' read -r -a lengths <<<"$lengths_csv"
 for length in "${lengths[@]}"; do
@@ -92,7 +88,23 @@ for length in "${lengths[@]}"; do
       continue
     fi
 
-    if ! parsed=$("$PARSER" "$stdout_file" 2>/dev/null); then
+    if ! parsed=$(python3 -c 'import re,sys
+path=sys.argv[1]
+lines=[ln.strip() for ln in open(path) if ln.strip()]
+if len(lines) < 3:
+  sys.exit(1)
+seq=lines[0]
+restricted=lines[1]
+mfe_re=re.compile(r"^(\S+)\s+\(([+-]?[0-9]+(?:\.[0-9]+)?)\)$")
+candidates=[]
+for ln in lines[2:]:
+  m=mfe_re.match(ln)
+  if m:
+    candidates.append((m.group(1), m.group(2)))
+if not candidates:
+  sys.exit(2)
+selected=candidates[0]
+print(f"{seq}\t{restricted}\t{selected[0]}\t{selected[1]}")' "$stdout_file" 2>/dev/null); then
       skipped=$((skipped + 1))
       continue
     fi
@@ -130,6 +142,14 @@ PY
       continue
     else
       finite_count=$((finite_count + 1))
+    fi
+
+    if python3 - "$cli_mfe_energy" <<'PY'; then
+import math,sys
+e=float(sys.argv[1])
+sys.exit(0 if math.fabs(e) > 1e-12 else 1)
+PY
+      nonzero_energy_count=$((nonzero_energy_count + 1))
     fi
 
     abs_diff=$(python3 - <<'PY' "$cli_mfe_energy" "$api_energy"
@@ -213,6 +233,7 @@ echo "alignment_compared=$alignment_compared"
 echo "alignment_mismatched=$alignment_mismatched"
 echo "skipped=$skipped"
 echo "finite_rate=${finite_rate}%"
+echo "nonzero_energy_count=$nonzero_energy_count"
 echo "abs_top3_max=$top3_abs"
 echo "rel_top3_max=$top3_rel"
 echo "abs_median=$median_abs"

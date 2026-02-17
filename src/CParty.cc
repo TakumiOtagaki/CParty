@@ -169,6 +169,7 @@ int main(int argc, char *argv[]) {
         vrna_params_load_DNA_Mathews2004();
     }
 
+    const bool input_structure_given = args_info.input_structure_given;
     cmdline_parser_free(&args_info);
 
     std::vector<Hotspot> hotspot_list;
@@ -193,13 +194,37 @@ int main(int argc, char *argv[]) {
     
     pf_t energy,energy_pf,MEA,distance,frequency,diversity;
     std::string MEA_structure,centroid_structure;
+    const char *pf_debug_env = std::getenv("CPARTY_PF_DEBUG");
+    const bool pf_debug = (pf_debug_env && *pf_debug_env != '\0' && std::string(pf_debug_env) != "0");
     for (cand_pos_t i = 0; i < size; ++i) {
         std::string structure = hotspot_list[i].get_structure();
         sparse_tree tree(structure, n);
+        if (pf_debug) {
+            std::cerr << "[PF_DEBUG] seq_len=" << n
+                      << " restricted=" << structure
+                      << " pk_free=" << pk_free
+                      << " pk_only=" << pk_only
+                      << " fatgraph=" << fatgraph
+                      << " dangles=" << dangles
+                      << " input_structure_given=" << input_structure_given
+                      << std::endl;
+        }
         std::string final_structure = hfold(seq, structure, energy, tree, pk_free, pk_only, dangles);
+        if (pf_debug) {
+            std::cerr << "[PF_DEBUG] hfold_out structure=" << final_structure
+                      << " energy=" << energy
+                      << std::endl;
+        }
         std::string final_structure_pf = hfold_pf(seq, final_structure, energy_pf,MEA_structure,MEA,centroid_structure,distance,frequency, diversity, tree, pk_free,pk_only,fatgraph, dangles, energy, num_samples, PSplot);
+        if (pf_debug) {
+            std::cerr << "[PF_DEBUG] hfold_pf_out structure=" << final_structure_pf
+                      << " pf_energy=" << energy_pf
+                      << " num_samples=" << num_samples
+                      << " PSplot=" << PSplot
+                      << std::endl;
+        }
 
-        if (!args_info.input_structure_given && energy > 0.0) {
+        if (!input_structure_given && energy > 0.0) {
             energy = 0.0;
             energy_pf = 0.0;
             final_structure = std::string(n, '.');
