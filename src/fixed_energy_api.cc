@@ -1441,19 +1441,7 @@ EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput
   const bool use_real_score = (real_score_env && *real_score_env != '\0' &&
                                std::string(real_score_env) != "0");
 
-  std::string h_type_normalized;
-  const std::string *energy_db_ptr = nullptr;
-  if (use_real_score) {
-    if (is_pk_free_structure(ctx.db_full)) {
-      energy_db_ptr = &ctx.db_full;
-    } else if (is_h_type_structure(ctx.db_full)) {
-      h_type_normalized = normalize_h_type_brackets(ctx.db_full);
-      energy_db_ptr = &h_type_normalized;
-    }
-  }
-
-  if (energy_db_ptr != nullptr) {
-    const std::string &energy_db = *energy_db_ptr;
+  auto compute_real_score = [&](const std::string &energy_db) -> double {
     ensure_vienna_params_loaded(ctx.seq);
     make_pair_matrix();
     std::unique_ptr<vrna_param_t, void (*)(void *)> params(scale_parameters(), free);
@@ -1660,7 +1648,28 @@ EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput
         total_energy += ext_stem_energy(k, l);
       }
     }
-    breakdown.total_energy = total_energy;
+    return total_energy;
+  };
+
+  if (use_real_score) {
+    if (is_pk_free_structure(ctx.db_full)) {
+      breakdown.total_energy = compute_real_score(ctx.db_full);
+    } else if (is_h_type_structure(ctx.db_full)) {
+      breakdown.total_energy = compute_real_score(normalize_h_type_brackets(ctx.db_full));
+    } else {
+      std::string round_only = ctx.db_full;
+      std::string square_only = ctx.db_full;
+      for (size_t i = 0; i < ctx.db_full.size(); ++i) {
+        const char c = ctx.db_full[i];
+        if (c == '[' || c == ']') {
+          round_only[i] = '.';
+        } else if (c == '(' || c == ')') {
+          square_only[i] = '.';
+        }
+      }
+      breakdown.total_energy =
+          compute_real_score(round_only) + compute_real_score(normalize_h_type_brackets(square_only));
+    }
   }
 
   const auto trace = is_pk_free_structure(ctx.db_full)
