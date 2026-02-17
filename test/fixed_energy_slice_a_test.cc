@@ -39,23 +39,13 @@ void expect_trace_equals(const std::string &seq,
   }
 }
 
-void expect_invalid(const std::string &seq, const std::string &db_full) {
-  bool threw = false;
-  try {
-    (void)cparty::internal::trace_rule_chain_slice_a(seq, db_full);
-  } catch (const std::invalid_argument &) {
-    threw = true;
-  } catch (const std::exception &e) {
-    std::cerr << "expected invalid_argument, got: " << e.what() << "\n";
-    std::exit(EXIT_FAILURE);
-  }
-  expect(threw, "expected invalid_argument");
-}
-
 }  // namespace
 
 int main() {
   expect_trace_equals("AUGCUA", "((..))",
+                      {"W", "V"},
+                      {"W_SPLIT_V", "V_INTERNAL"});
+  expect_trace_equals("AUGCUA", "[[..]]",
                       {"W", "V"},
                       {"W_SPLIT_V", "V_INTERNAL"});
   expect_trace_equals("AUGCUA", "......",
@@ -67,9 +57,6 @@ int main() {
          "shared path energy must match pair-wrapped count");
   expect(cparty::get_structure_energy("AUGCUA", "......") == 0.0,
          "shared path energy must stay zero for fully-unpaired");
-
-  // Slice-A rules_core path is pk-free only.
-  expect_invalid("AUGC", "[[]]");
 
   std::cout << "fixed_energy_slice_a=ok\n";
   return EXIT_SUCCESS;
