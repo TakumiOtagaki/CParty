@@ -53,6 +53,8 @@ void expect_invalid(const std::string &seq, const std::string &db_full) {
 int main() {
   {
     const auto trace = cparty::internal::trace_rule_chain_slice_c("AUGCUA", "((..))");
+    const auto rules_core_trace =
+        cparty::internal::trace_rule_chain_slice_c_rules_core("AUGCUA", "((..))");
     expect_contains_state(trace, "WIP");
     expect_contains_state(trace, "VP");
     expect_contains_state(trace, "VPL");
@@ -62,6 +64,13 @@ int main() {
     expect_contains_rule(trace, "VP_TO_VPL");
     expect_contains_rule(trace, "VPL_TO_VPR");
     expect_contains_rule(trace, "VPR_TO_V");
+    expect(rules_core_trace.size() == trace.size(), "rules_core trace length mismatch");
+    for (size_t i = 0; i < rules_core_trace.size(); ++i) {
+      expect(rules_core_trace[i].state == trace[i].state,
+             "rules_core state mismatch at step " + std::to_string(i));
+      expect(!rules_core_trace[i].rule.empty(),
+             "rules_core rule missing at step " + std::to_string(i));
+    }
   }
 
   expect(cparty::get_structure_energy("AUGCUA", "((..))") == -2.0,
