@@ -1364,7 +1364,61 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_rules_core_from_no
 }
 
 EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput &ctx) {
-  return evaluate_shared_from_normalized(ctx, SharedParseMode{true, true, true}).breakdown;
+  auto trace_is_pair_wrapped = [&](const internal::RuleTraceStep &step) {
+    if (step.state != "V") {
+      return false;
+    }
+    if (step.i <= 0 || step.j <= 0 || step.i > step.j ||
+        static_cast<size_t>(step.i) > ctx.db_full.size()) {
+      return false;
+    }
+    const char left = ctx.db_full[static_cast<size_t>(step.i - 1)];
+    return left == '(' || left == '[';
+  };
+
+  auto trace_is_unpaired = [&](const internal::RuleTraceStep &step) {
+    if (step.state != "V") {
+      return false;
+    }
+    if (step.i <= 0 || step.j <= 0 || step.i > step.j ||
+        static_cast<size_t>(step.i) > ctx.db_full.size()) {
+      return false;
+    }
+    return ctx.db_full[static_cast<size_t>(step.i - 1)] == '.';
+  };
+
+  const auto trace = is_pk_free_structure(ctx.db_full)
+                         ? trace_rule_chain_slice_d_rules_core_from_normalized(ctx)
+                         : trace_rule_chain_slice_d_shared_from_normalized(ctx);
+
+  EnergyBreakdown breakdown;
+  breakdown.topology_family = topology_family_for_structure(ctx.db_full);
+  for (const auto &step : trace) {
+    ++breakdown.rule_evaluated_count;
+    if (step.state == "V" && step.i > step.j) {
+      ++breakdown.empty_rule_count;
+    } else if (trace_is_unpaired(step)) {
+      ++breakdown.unpaired_rule_count;
+    } else if (trace_is_pair_wrapped(step)) {
+      ++breakdown.pair_wrapped_rule_count;
+    } else {
+      ++breakdown.transition_rule_count;
+    }
+
+    if (breakdown.topology_family == "pk_free") {
+      ++breakdown.family_pk_free_rules;
+    } else if (breakdown.topology_family == "h_type") {
+      ++breakdown.family_h_type_rules;
+    } else if (breakdown.topology_family == "k_type") {
+      ++breakdown.family_k_type_rules;
+    }
+
+    if (trace_is_pair_wrapped(step)) {
+      breakdown.total_energy += rule_score(SharedRuleKind::kPairWrapped);
+    }
+  }
+
+  return breakdown;
 }
 
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_from_normalized(const NormalizedInput &ctx) {
