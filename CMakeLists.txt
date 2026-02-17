@@ -152,6 +152,7 @@ if(BUILD_TESTING)
     src/scfg/legacy_adapter.cc
     src/scfg/rules_api.cc
     src/scfg/rules_core.cc
+    src/scfg/rules_part_func.cc
   )
   add_executable(multi_secstruct_schema_test test/multi_secstruct_schema_test.cc)
   add_executable(api_cli_density2_energy_alignment_test test/api_cli_density2_energy_alignment_test.cc)

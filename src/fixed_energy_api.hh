@@ -57,6 +57,9 @@ std::vector<RuleTraceStep> trace_rule_chain_slice_c_rules_core(const std::string
 // Story 017 slice-D shared parser trace: WMB/WMBP/WMBW/BE are traversed on pair paths.
 std::vector<RuleTraceStep> trace_rule_chain_slice_d(const std::string &seq,
                                                     const std::string &db_full);
+// Slice-D rules-core compatibility trace (rule ids from scfg::rules_core).
+std::vector<RuleTraceStep> trace_rule_chain_slice_d_rules_core(const std::string &seq,
+                                                               const std::string &db_full);
 
 // Story 018 scoring/breakdown convergence on the shared parser path.
 EnergyBreakdown get_structure_energy_breakdown(const std::string &seq,

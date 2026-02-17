@@ -171,6 +171,66 @@ class RuleCoreStubVPContext final : public scfg::PartFuncVPContext {
   const std::string &seq_;
 };
 
+class RuleCoreStubWMBWContext final : public scfg::PartFuncWMBWContext {
+ public:
+  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
+  pf_t get_energy_WMBP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_energy_WI(cand_pos_t, cand_pos_t) override { return 0; }
+  void set_WMBW(cand_pos_t, pf_t) override {}
+};
+
+class RuleCoreStubWMBPContext final : public scfg::PartFuncWMBPContext {
+ public:
+  explicit RuleCoreStubWMBPContext(int n) : n_(n) {}
+  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
+  pf_t get_energy_WMBP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_energy_WMBW(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_energy_VP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_energy_WI(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_BE(cand_pos_t, cand_pos_t, cand_pos_t, cand_pos_t, sparse_tree &) override { return 0; }
+  pf_t expPB_penalty() const override { return 1; }
+  cand_pos_t n() const override { return n_; }
+  int compute_exterior_cases(cand_pos_t, cand_pos_t, sparse_tree &) override { return 0; }
+  void set_WMBP(cand_pos_t, pf_t) override {}
+
+ private:
+  cand_pos_t n_;
+};
+
+class RuleCoreStubWMBContext final : public scfg::PartFuncWMBContext {
+ public:
+  explicit RuleCoreStubWMBContext(int n) : n_(n) {}
+  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
+  pf_t get_energy_WMBP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_energy_WI(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_BE(cand_pos_t, cand_pos_t, cand_pos_t, cand_pos_t, sparse_tree &) override { return 0; }
+  pf_t expPB_penalty() const override { return 1; }
+  cand_pos_t n() const override { return n_; }
+  void set_WMB(cand_pos_t, pf_t) override {}
+
+ private:
+  cand_pos_t n_;
+};
+
+class RuleCoreStubBEContext final : public scfg::PartFuncBEContext {
+ public:
+  explicit RuleCoreStubBEContext(int n) : n_(n) {}
+  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
+  cand_pos_t n() const override { return n_; }
+  pf_t get_energy_WIP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_BE(cand_pos_t, cand_pos_t, cand_pos_t, cand_pos_t, sparse_tree &) override { return 0; }
+  pf_t get_e_stP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_e_intP(cand_pos_t, cand_pos_t, cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t expap_penalty() const override { return 0; }
+  pf_t expbp_penalty_sq() const override { return 0; }
+  pf_t expcp_pen(cand_pos_t) const override { return 0; }
+  pf_t scale(cand_pos_t) const override { return 0; }
+  void set_BE(cand_pos_t, pf_t) override {}
+
+ private:
+  cand_pos_t n_;
+};
+
 struct NormalizedInput {
   std::string seq;
   std::string db_full;
@@ -1062,6 +1122,162 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_from_normalized(co
   return evaluate_shared_from_normalized(ctx, SharedParseMode{true, true, true}).trace;
 }
 
+std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_rules_core_from_normalized(const NormalizedInput &ctx) {
+  if (!is_pk_free_structure(ctx.db_full)) {
+    fail_invalid_input("rules_core slice-d trace requires pk_free structure");
+  }
+  const auto shared_trace = trace_rule_chain_slice_d_from_normalized(ctx);
+  const int n = static_cast<int>(ctx.db_full.size());
+  sparse_tree tree(ctx.db_full, n);
+  RuleCoreStubWContext wctx(n);
+  RuleCoreStubWIContext wictx;
+  RuleCoreStubVContext vctx;
+  RuleCoreStubVMContext vmctx;
+  RuleCoreStubWMvWMpContext wmvwmpctx;
+  RuleCoreStubWMContext wmctx;
+  RuleCoreStubWIPContext wipctx;
+  RuleCoreStubVPLContext vplctx;
+  RuleCoreStubVPRContext vprctx;
+  RuleCoreStubVPContext vpctx(ctx.seq);
+  RuleCoreStubWMBWContext wmbwctx;
+  RuleCoreStubWMBPContext wmbpctx(n);
+  RuleCoreStubWMBContext wmbctx(n);
+  RuleCoreStubBEContext bectx(n);
+
+  auto wmv_wmp_rules = [&](scfg::NonTerminal target, cand_pos_t i, cand_pos_t j) {
+    std::vector<scfg::ApplicableRule> out;
+    for (scfg::RuleId rule : scfg::rules_for(target)) {
+      const auto splits = scfg::enumerate_splits_wmv_wmp(rule, i, j, wmvwmpctx, tree.tree);
+      for (const auto &split : splits) {
+        out.push_back({rule, split});
+      }
+    }
+    return out;
+  };
+
+  auto fallback_rule_name = [](scfg::NonTerminal nt) {
+    return scfg::rule_id_name(scfg::rules_for(nt).front());
+  };
+
+  std::vector<internal::RuleTraceStep> out;
+  out.reserve(shared_trace.size());
+  for (const auto &step : shared_trace) {
+    if (step.state == "W") {
+      const auto applicable = scfg::applicable_rules_w(step.i, step.j, wctx, tree);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? fallback_rule_name(scfg::NonTerminal::W)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "WI") {
+      const auto applicable = scfg::applicable_rules_wi(step.i, step.j, wictx, tree);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? fallback_rule_name(scfg::NonTerminal::WI)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "V") {
+      if (step.i > step.j) {
+        out.push_back({step.state, step.i, step.j, "V_EMPTY"});
+        continue;
+      }
+      const auto applicable = scfg::applicable_rules_v(step.i, step.j, vctx, tree);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? fallback_rule_name(scfg::NonTerminal::V)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "VM") {
+      auto applicable = scfg::applicable_rules_vm(step.i, step.j, vmctx, tree.up);
+      if (applicable.empty()) {
+        out.push_back({step.state, step.i, step.j, scfg::rule_id_name(scfg::RuleId::VM_SCALE2)});
+        continue;
+      }
+      out.push_back({step.state, step.i, step.j, scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "WMv") {
+      const auto applicable = wmv_wmp_rules(scfg::NonTerminal::WMv, step.i, step.j);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? scfg::rule_id_name(scfg::RuleId::WMv_EXTEND_UNPAIRED)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "WMp") {
+      const auto applicable = wmv_wmp_rules(scfg::NonTerminal::WMp, step.i, step.j);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? scfg::rule_id_name(scfg::RuleId::WMp_EXTEND_UNPAIRED)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "WM") {
+      const auto applicable = scfg::applicable_rules_wm(step.i, step.j, wmctx, tree);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? scfg::rule_id_name(scfg::RuleId::WM_EXTEND_UNPAIRED)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "WIP") {
+      const auto applicable = scfg::applicable_rules_wip(step.i, step.j, wipctx, tree);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? fallback_rule_name(scfg::NonTerminal::WIP)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "VP") {
+      const auto applicable = scfg::applicable_rules_vp(step.i, step.j, vpctx, tree);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? fallback_rule_name(scfg::NonTerminal::VP)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "VPL") {
+      const auto applicable = scfg::applicable_rules_vpl(step.i, step.j, vplctx, tree);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? fallback_rule_name(scfg::NonTerminal::VPL)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "VPR") {
+      const auto applicable = scfg::applicable_rules_vpr(step.i, step.j, vprctx, tree);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? fallback_rule_name(scfg::NonTerminal::VPR)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "WMBW") {
+      const auto applicable = scfg::applicable_rules_wmbw(step.i, step.j, wmbwctx, tree);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? fallback_rule_name(scfg::NonTerminal::WMBW)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "WMBP") {
+      const auto applicable = scfg::applicable_rules_wmbp(step.i, step.j, wmbpctx, tree);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? fallback_rule_name(scfg::NonTerminal::WMBP)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "WMB") {
+      const auto applicable = scfg::applicable_rules_wmb(step.i, step.j, wmbctx, tree);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? fallback_rule_name(scfg::NonTerminal::WMB)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    if (step.state == "BE") {
+      const auto applicable = scfg::applicable_rules_be(step.i, step.j, step.i, step.j, bectx, tree);
+      out.push_back({step.state, step.i, step.j,
+                     applicable.empty() ? fallback_rule_name(scfg::NonTerminal::BE)
+                                        : scfg::rule_id_name(applicable.front().rule)});
+      continue;
+    }
+    fail_invalid_input("rules_core slice-d trace hit unexpected state " + step.state);
+  }
+  return out;
+}
+
 EnergyBreakdown structure_energy_breakdown_from_normalized(const NormalizedInput &ctx) {
   return evaluate_shared_from_normalized(ctx, SharedParseMode{true, true, true}).breakdown;
 }
@@ -1143,6 +1359,11 @@ std::vector<RuleTraceStep> trace_rule_chain_slice_c_rules_core(const std::string
 std::vector<RuleTraceStep> trace_rule_chain_slice_d(const std::string &seq,
                                                     const std::string &db_full) {
   return trace_rule_chain_slice_d_from_normalized(normalize_input(seq, db_full));
+}
+
+std::vector<RuleTraceStep> trace_rule_chain_slice_d_rules_core(const std::string &seq,
+                                                               const std::string &db_full) {
+  return trace_rule_chain_slice_d_rules_core_from_normalized(normalize_input(seq, db_full));
 }
 
 EnergyBreakdown get_structure_energy_breakdown(const std::string &seq,
