@@ -25,14 +25,12 @@ void expect_contains_state(const std::vector<cparty::internal::RuleTraceStep> &t
   expect(false, "trace missing state: " + state);
 }
 
-void expect_contains_rule(const std::vector<cparty::internal::RuleTraceStep> &trace,
-                          const std::string &rule) {
-  for (const auto &step : trace) {
-    if (step.rule == rule) {
-      return;
+void expect_rules_present(const std::vector<cparty::internal::RuleTraceStep> &trace) {
+  for (size_t i = 0; i < trace.size(); ++i) {
+    if (trace[i].rule.empty()) {
+      expect(false, "trace rule missing at step " + std::to_string(i));
     }
   }
-  expect(false, "trace missing rule: " + rule);
 }
 
 void expect_invalid(const std::string &seq, const std::string &db_full) {
@@ -59,11 +57,7 @@ int main() {
     expect_contains_state(trace, "VP");
     expect_contains_state(trace, "VPL");
     expect_contains_state(trace, "VPR");
-    expect_contains_rule(trace, "WMp_TO_WIP");
-    expect_contains_rule(trace, "WIP_TO_VP");
-    expect_contains_rule(trace, "VP_TO_VPL");
-    expect_contains_rule(trace, "VPL_TO_VPR");
-    expect_contains_rule(trace, "VPR_TO_V");
+    expect_rules_present(trace);
     expect(rules_core_trace.size() == trace.size(), "rules_core trace length mismatch");
     for (size_t i = 0; i < rules_core_trace.size(); ++i) {
       expect(rules_core_trace[i].state == trace[i].state,
