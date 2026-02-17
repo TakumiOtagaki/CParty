@@ -117,6 +117,20 @@ const std::vector<RuleId> &rules_for(NonTerminal nonterminal) {
     return rules[static_cast<size_t>(nonterminal)];
 }
 
+std::vector<ApplicableRule> applicable_rules_w(cand_pos_t i,
+                                               cand_pos_t j,
+                                               PartFuncWContext &ctx,
+                                               sparse_tree &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::W)) {
+        const auto splits = enumerate_splits_w(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
+}
+
 std::vector<RuleSplit> enumerate_splits_w(RuleId rule,
                                           cand_pos_t i,
                                           cand_pos_t j,
@@ -185,6 +199,20 @@ pf_t rule_score_w(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &spli
     }
 }
 
+std::vector<ApplicableRule> applicable_rules_v(cand_pos_t i,
+                                               cand_pos_t j,
+                                               PartFuncVContext &ctx,
+                                               sparse_tree &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::V)) {
+        const auto splits = enumerate_splits_v(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
+}
+
 std::vector<RuleSplit> enumerate_splits_v(RuleId rule,
                                           cand_pos_t i,
                                           cand_pos_t j,
@@ -240,6 +268,20 @@ pf_t rule_score_v(RuleId rule,
     default:
         return 0;
     }
+}
+
+std::vector<ApplicableRule> applicable_rules_wi(cand_pos_t i,
+                                                cand_pos_t j,
+                                                PartFuncWIContext &ctx,
+                                                sparse_tree &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::WI)) {
+        const auto splits = enumerate_splits_wi(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
 }
 
 std::vector<RuleSplit> enumerate_splits_wi(RuleId rule,
@@ -321,6 +363,20 @@ pf_t rule_score_wi(RuleId rule,
     }
 }
 
+std::vector<ApplicableRule> applicable_rules_vm(cand_pos_t i,
+                                                cand_pos_t j,
+                                                PartFuncVMContext &ctx,
+                                                std::vector<int> &up) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::VM)) {
+        const auto splits = enumerate_splits_vm(rule, i, j, ctx, up);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
+}
+
 std::vector<RuleSplit> enumerate_splits_vm(RuleId rule,
                                            cand_pos_t i,
                                            cand_pos_t j,
@@ -384,6 +440,26 @@ pf_t rule_score_vm(RuleId rule,
     default:
         return 0;
     }
+}
+
+std::vector<ApplicableRule> applicable_rules_wmv_wmp(cand_pos_t i,
+                                                     cand_pos_t j,
+                                                     PartFuncWMvWMpContext &ctx,
+                                                     std::vector<Node> &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::WMv)) {
+        const auto splits = enumerate_splits_wmv_wmp(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    for (RuleId rule : rules_for(NonTerminal::WMp)) {
+        const auto splits = enumerate_splits_wmv_wmp(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
 }
 
 std::vector<RuleSplit> enumerate_splits_wmv_wmp(RuleId rule,
@@ -454,6 +530,20 @@ pf_t rule_score_wmv_wmp(RuleId rule,
     default:
         return 0;
     }
+}
+
+std::vector<ApplicableRule> applicable_rules_wm(cand_pos_t i,
+                                                cand_pos_t j,
+                                                PartFuncWMContext &ctx,
+                                                sparse_tree &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::WM)) {
+        const auto splits = enumerate_splits_wm(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
 }
 
 std::vector<RuleSplit> enumerate_splits_wm(RuleId rule,
@@ -542,6 +632,20 @@ pf_t rule_score_wm(RuleId rule,
     default:
         return 0;
     }
+}
+
+std::vector<ApplicableRule> applicable_rules_wip(cand_pos_t i,
+                                                 cand_pos_t j,
+                                                 PartFuncWIPContext &ctx,
+                                                 sparse_tree &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::WIP)) {
+        const auto splits = enumerate_splits_wip(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
 }
 
 std::vector<RuleSplit> enumerate_splits_wip(RuleId rule,
@@ -637,6 +741,20 @@ pf_t rule_score_wip(RuleId rule,
     }
 }
 
+std::vector<ApplicableRule> applicable_rules_vpl(cand_pos_t i,
+                                                 cand_pos_t j,
+                                                 PartFuncVPLContext &ctx,
+                                                 sparse_tree &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::VPL)) {
+        const auto splits = enumerate_splits_vpl(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
+}
+
 std::vector<RuleSplit> enumerate_splits_vpl(RuleId rule,
                                             cand_pos_t i,
                                             cand_pos_t j,
@@ -681,6 +799,20 @@ pf_t rule_score_vpl(RuleId rule,
     default:
         return 0;
     }
+}
+
+std::vector<ApplicableRule> applicable_rules_vpr(cand_pos_t i,
+                                                 cand_pos_t j,
+                                                 PartFuncVPRContext &ctx,
+                                                 sparse_tree &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::VPR)) {
+        const auto splits = enumerate_splits_vpr(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
 }
 
 std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
@@ -740,6 +872,20 @@ pf_t rule_score_vpr(RuleId rule,
     default:
         return 0;
     }
+}
+
+std::vector<ApplicableRule> applicable_rules_vp(cand_pos_t i,
+                                                cand_pos_t j,
+                                                PartFuncVPContext &ctx,
+                                                sparse_tree &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::VP)) {
+        const auto splits = enumerate_splits_vp(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
 }
 
 std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
@@ -904,6 +1050,20 @@ pf_t rule_score_vp(RuleId rule,
     }
 }
 
+std::vector<ApplicableRule> applicable_rules_wmbw(cand_pos_t i,
+                                                  cand_pos_t j,
+                                                  PartFuncWMBWContext &ctx,
+                                                  sparse_tree &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::WMBW)) {
+        const auto splits = enumerate_splits_wmbw(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
+}
+
 std::vector<RuleSplit> enumerate_splits_wmbw(RuleId rule,
                                              cand_pos_t i,
                                              cand_pos_t j,
@@ -946,6 +1106,20 @@ pf_t rule_score_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &s
     default:
         return 0;
     }
+}
+
+std::vector<ApplicableRule> applicable_rules_wmbp(cand_pos_t i,
+                                                  cand_pos_t j,
+                                                  PartFuncWMBPContext &ctx,
+                                                  sparse_tree &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::WMBP)) {
+        const auto splits = enumerate_splits_wmbp(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
 }
 
 std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
@@ -1052,6 +1226,20 @@ pf_t rule_score_wmbp(RuleId rule,
     }
 }
 
+std::vector<ApplicableRule> applicable_rules_wmb(cand_pos_t i,
+                                                 cand_pos_t j,
+                                                 PartFuncWMBContext &ctx,
+                                                 sparse_tree &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::WMB)) {
+        const auto splits = enumerate_splits_wmb(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
+}
+
 std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
                                             cand_pos_t i,
                                             cand_pos_t j,
@@ -1125,6 +1313,22 @@ pf_t rule_score_wmb(RuleId rule,
     default:
         return 0;
     }
+}
+
+std::vector<ApplicableRule> applicable_rules_be(cand_pos_t i,
+                                                cand_pos_t j,
+                                                cand_pos_t ip,
+                                                cand_pos_t jp,
+                                                PartFuncBEContext &ctx,
+                                                sparse_tree &tree) {
+    std::vector<ApplicableRule> out;
+    for (RuleId rule : rules_for(NonTerminal::BE)) {
+        const auto splits = enumerate_splits_be(rule, i, j, ip, jp, ctx, tree);
+        for (const auto &split : splits) {
+            out.push_back({rule, split});
+        }
+    }
+    return out;
 }
 
 std::vector<RuleSplit> enumerate_splits_be(RuleId rule,

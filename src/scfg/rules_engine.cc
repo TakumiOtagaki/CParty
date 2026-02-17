@@ -91,6 +91,7 @@ void maybe_print_rules_config(const RulesConfig &config) {
     printed = true;
 
     std::fprintf(stderr, "SCFG_RULES_MODE=%s\n", config.use_rules ? "rules" : "legacy");
+    std::fprintf(stderr, "SCFG_RULES_APPLICABLE=%d\n", config.use_applicable ? 1 : 0);
     if (config.use_only_list) {
         std::fprintf(stderr, "SCFG_RULES_ONLY=");
         bool first = true;
@@ -118,6 +119,7 @@ void maybe_print_rules_config(const RulesConfig &config) {
 RulesConfig load_rules_config_from_env() {
     RulesConfig config;
     config.use_rules = is_rules_mode_enabled(std::getenv("SCFG_RULES_MODE"));
+    config.use_applicable = is_truthy_value(std::getenv("SCFG_RULES_APPLICABLE"));
 
     load_rule_id_list(std::getenv("SCFG_RULES_DISABLE"), &config.disabled_rules);
 
