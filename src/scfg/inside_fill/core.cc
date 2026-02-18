@@ -88,7 +88,52 @@ pf_t compute_VM_restricted_core(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t
 }
 
 void compute_WI_restricted_core(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
-    compute_WI_restricted_rules(ctx, i, j, tree, config);
+    const cand_pos_t ij = ctx.index_of(i, j);
+    pf_t contributions = 0;
+    if (config.use_applicable) {
+        const auto applicable = applicable_rules_wi(i, j, ctx, tree);
+        for (const auto &entry : applicable) {
+            if (!is_rule_enabled(config, entry.rule)) continue;
+            record_rule_hit(entry.rule);
+            pf_t coeff = transition_weight_wi(entry.rule, i, j, entry.split, ctx);
+            pf_t term = 1;
+            const auto children = expand_wi(entry.rule, i, j, entry.split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::WI) {
+                    term *= ctx.get_WI(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::V) {
+                    term *= ctx.get_V(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMB) {
+                    term *= ctx.get_WMB(child.i, child.j);
+                }
+            }
+            contributions += term * coeff;
+        }
+        ctx.set_WI(ij, contributions);
+        return;
+    }
+    for (RuleId rule : rules_for(NonTerminal::WI)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_wi(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = transition_weight_wi(rule, i, j, split, ctx);
+            pf_t term = 1;
+            const auto children = expand_wi(rule, i, j, split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::WI) {
+                    term *= ctx.get_WI(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::V) {
+                    term *= ctx.get_V(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMB) {
+                    term *= ctx.get_WMB(child.i, child.j);
+                }
+            }
+            contributions += term * coeff;
+        }
+    }
+
+    ctx.set_WI(ij, contributions);
 }
 
 void compute_WMv_WMp_restricted_core(PartFuncWMvWMpContext &ctx,
