@@ -3,6 +3,10 @@
 #include "scfg/rules_core.hh"
 #include "scfg/rules_debug.hh"
 
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+
 namespace scfg {
 
 // 現状は inside_fill の実装に委譲する。今後このファイルで機械的DPコアを実装する。
@@ -277,7 +281,99 @@ void compute_WMv_WMp_restricted_core(PartFuncWMvWMpContext &ctx,
 }
 
 void compute_WM_restricted_core(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
-    compute_WM_restricted_rules(ctx, i, j, tree, config);
+    pf_t contributions = 0;
+    const cand_pos_t ij = ctx.index_of(i, j);
+    const char *trace_env = std::getenv("CPARTY_PF_TRACE_WM");
+    bool trace = false;
+    if (trace_env && *trace_env != '\0' && std::strcmp(trace_env, "0") != 0) {
+        const char *comma = std::strchr(trace_env, ',');
+        if (comma) {
+            const int ti = std::atoi(trace_env);
+            const int tj = std::atoi(comma + 1);
+            if (ti == i && tj == j) {
+                trace = true;
+            }
+        }
+    }
+
+    if (config.use_applicable) {
+        const auto applicable = applicable_rules_wm(i, j, ctx, tree);
+        for (const auto &entry : applicable) {
+            if (!is_rule_enabled(config, entry.rule)) continue;
+            record_rule_hit(entry.rule);
+            pf_t coeff = transition_weight_wm(entry.rule, i, j, entry.split, ctx);
+            const auto children = expand_wm(entry.rule, i, j, entry.split);
+            pf_t term = 1;
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::WM) {
+                    term *= ctx.get_WM(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::V) {
+                    term *= ctx.get_V(child.i, child.j);
+                    term *= ctx.exp_MLstem(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMB) {
+                    term *= ctx.get_WMB(child.i, child.j);
+                    term *= ctx.expPSM_penalty() * ctx.expb_penalty();
+                }
+            }
+            contributions += term * coeff;
+            if (trace) {
+                std::cerr << "[PF_TRACE_WM_RULES] rule=" << rule_id_name(entry.rule)
+                          << " i=" << i
+                          << " j=" << j
+                          << " k=" << entry.split.k
+                          << " term=" << term
+                          << " coeff=" << coeff
+                          << std::endl;
+            }
+        }
+        ctx.set_WM(ij, contributions);
+        if (trace) {
+            std::cerr << "[PF_TRACE_WM_RULES] i=" << i
+                      << " j=" << j
+                      << " total=" << contributions
+                      << std::endl;
+        }
+        return;
+    }
+
+    for (RuleId rule : rules_for(NonTerminal::WM)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_wm(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = transition_weight_wm(rule, i, j, split, ctx);
+            const auto children = expand_wm(rule, i, j, split);
+            pf_t term = 1;
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::WM) {
+                    term *= ctx.get_WM(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::V) {
+                    term *= ctx.get_V(child.i, child.j);
+                    term *= ctx.exp_MLstem(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMB) {
+                    term *= ctx.get_WMB(child.i, child.j);
+                    term *= ctx.expPSM_penalty() * ctx.expb_penalty();
+                }
+            }
+            contributions += term * coeff;
+            if (trace) {
+                std::cerr << "[PF_TRACE_WM_RULES] rule=" << rule_id_name(rule)
+                          << " i=" << i
+                          << " j=" << j
+                          << " k=" << split.k
+                          << " term=" << term
+                          << " coeff=" << coeff
+                          << std::endl;
+            }
+        }
+    }
+    ctx.set_WM(ij, contributions);
+    if (trace) {
+        std::cerr << "[PF_TRACE_WM_RULES] i=" << i
+                  << " j=" << j
+                  << " total=" << contributions
+                  << std::endl;
+    }
 }
 
 void compute_WIP_restricted_core(PartFuncWIPContext &ctx,
