@@ -42,6 +42,11 @@ bool is_truthy_value(const char *env_value) {
     return value == "1" || value == "true" || value == "TRUE" || value == "rules" || value == "RULES";
 }
 
+bool is_truthy_or_default_true(const char *env_value) {
+    if (!env_value) return true;
+    return is_truthy_value(env_value);
+}
+
 bool is_rules_mode_enabled(const char *env_value) {
     return is_truthy_value(env_value);
 }
@@ -98,7 +103,7 @@ RulesConfig load_rules_config_from_env() {
     config.use_rules = is_rules_mode_enabled(std::getenv("SCFG_RULES_MODE"));
     config.use_applicable = is_truthy_value(std::getenv("SCFG_RULES_APPLICABLE"));
     config.use_inside_core = is_truthy_value(std::getenv("SCFG_INSIDE_CORE"));
-    config.use_density2_view = is_truthy_value(std::getenv("SCFG_DENSITY2_VIEW"));
+    config.use_density2_view = is_truthy_or_default_true(std::getenv("SCFG_DENSITY2_VIEW"));
 
     load_rule_id_list(std::getenv("SCFG_RULES_DISABLE"), &config.disabled_rules);
 
