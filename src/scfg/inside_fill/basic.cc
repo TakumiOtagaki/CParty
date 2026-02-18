@@ -56,11 +56,11 @@ pf_t compute_VM_restricted_rules(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_
             const auto children = expand_vm(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WM) {
-                    term *= ctx.get_energy_WM(child.i, child.j);
+                    term *= ctx.get_WM(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMv) {
-                    term *= ctx.get_energy_WMv(child.i, child.j);
+                    term *= ctx.get_WMv(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMp) {
-                    term *= ctx.get_energy_WMp(child.i, child.j);
+                    term *= ctx.get_WMp(child.i, child.j);
                 }
             }
             if (entry.rule == RuleId::VM_SPLIT_WMp_BASE) {
@@ -86,11 +86,11 @@ pf_t compute_VM_restricted_rules(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_
             const auto children = expand_vm(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WM) {
-                    term *= ctx.get_energy_WM(child.i, child.j);
+                    term *= ctx.get_WM(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMv) {
-                    term *= ctx.get_energy_WMv(child.i, child.j);
+                    term *= ctx.get_WMv(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMp) {
-                    term *= ctx.get_energy_WMp(child.i, child.j);
+                    term *= ctx.get_WMp(child.i, child.j);
                 }
             }
             if (rule == RuleId::VM_SPLIT_WMp_BASE) {
@@ -125,9 +125,9 @@ void compute_W_restricted_rules(PartFuncWContext &ctx, sparse_tree &tree, const 
                     if (child.nonterminal == NonTerminal::W) {
                         term *= ctx.get_W(child.j);
                     } else if (child.nonterminal == NonTerminal::V) {
-                        term *= ctx.get_energy(child.i, child.j);
+                        term *= ctx.get_V(child.i, child.j);
                     } else if (child.nonterminal == NonTerminal::WMB) {
-                        term *= ctx.get_energy_WMB(child.i, child.j);
+                        term *= ctx.get_WMB(child.i, child.j);
                     }
                 }
                 contributions += term * coeff;
@@ -147,9 +147,9 @@ void compute_W_restricted_rules(PartFuncWContext &ctx, sparse_tree &tree, const 
                     if (child.nonterminal == NonTerminal::W) {
                         term *= ctx.get_W(child.j);
                     } else if (child.nonterminal == NonTerminal::V) {
-                        term *= ctx.get_energy(child.i, child.j);
+                        term *= ctx.get_V(child.i, child.j);
                     } else if (child.nonterminal == NonTerminal::WMB) {
-                        term *= ctx.get_energy_WMB(child.i, child.j);
+                        term *= ctx.get_WMB(child.i, child.j);
                     }
                 }
                 contributions += term * coeff;
@@ -174,9 +174,9 @@ void compute_WI_restricted_rules(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_
                 if (child.nonterminal == NonTerminal::WI) {
                     term *= ctx.get_WI(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_energy(child.i, child.j);
+                    term *= ctx.get_V(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_energy_WMB(child.i, child.j);
+                    term *= ctx.get_WMB(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -196,9 +196,9 @@ void compute_WI_restricted_rules(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_
                 if (child.nonterminal == NonTerminal::WI) {
                     term *= ctx.get_WI(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_energy(child.i, child.j);
+                    term *= ctx.get_V(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_energy_WMB(child.i, child.j);
+                    term *= ctx.get_WMB(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -223,13 +223,13 @@ void compute_WMv_WMp_restricted_rules(PartFuncWMvWMpContext &ctx, cand_pos_t i, 
             const auto children = expand_wmv_wmp(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_energy(child.i, child.j);
+                    term *= ctx.get_V(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMv) {
-                    term *= ctx.get_energy_WMv(child.i, child.j);
+                    term *= ctx.get_WMv(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_energy_WMB(child.i, child.j);
+                    term *= ctx.get_WMB(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMp) {
-                    term *= ctx.get_energy_WMp(child.i, child.j);
+                    term *= ctx.get_WMp(child.i, child.j);
                 }
             }
             if (entry.rule == RuleId::WMv_STEM_V || entry.rule == RuleId::WMv_EXTEND_UNPAIRED) {
@@ -251,9 +251,9 @@ void compute_WMv_WMp_restricted_rules(PartFuncWMvWMpContext &ctx, cand_pos_t i, 
             const auto children = expand_wmv_wmp(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_energy(child.i, child.j);
+                    term *= ctx.get_V(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMv) {
-                    term *= ctx.get_energy_WMv(child.i, child.j);
+                    term *= ctx.get_WMv(child.i, child.j);
                 }
             }
             WMv_contributions += term * coeff;
@@ -270,9 +270,9 @@ void compute_WMv_WMp_restricted_rules(PartFuncWMvWMpContext &ctx, cand_pos_t i, 
             const auto children = expand_wmv_wmp(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_energy_WMB(child.i, child.j);
+                    term *= ctx.get_WMB(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMp) {
-                    term *= ctx.get_energy_WMp(child.i, child.j);
+                    term *= ctx.get_WMp(child.i, child.j);
                 }
             }
             WMp_contributions += term * coeff;
@@ -308,12 +308,12 @@ void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_
             pf_t term = 1;
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WM) {
-                    term *= ctx.get_energy_WM(child.i, child.j);
+                    term *= ctx.get_WM(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_energy(child.i, child.j);
+                    term *= ctx.get_V(child.i, child.j);
                     term *= ctx.exp_MLstem(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_energy_WMB(child.i, child.j);
+                    term *= ctx.get_WMB(child.i, child.j);
                     term *= ctx.expPSM_penalty() * ctx.expb_penalty();
                 }
             }
@@ -348,12 +348,12 @@ void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_
             pf_t term = 1;
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WM) {
-                    term *= ctx.get_energy_WM(child.i, child.j);
+                    term *= ctx.get_WM(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_energy(child.i, child.j);
+                    term *= ctx.get_V(child.i, child.j);
                     term *= ctx.exp_MLstem(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_energy_WMB(child.i, child.j);
+                    term *= ctx.get_WMB(child.i, child.j);
                     term *= ctx.expPSM_penalty() * ctx.expb_penalty();
                 }
             }

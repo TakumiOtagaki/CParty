@@ -29,11 +29,11 @@ void compute_WIP_restricted_rules(PartFuncWIPContext &ctx, cand_pos_t i, cand_po
             const auto children = expand_wip(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_energy(child.i, child.j);
+                    term *= ctx.get_V(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_energy_WMB(child.i, child.j);
+                    term *= ctx.get_WMB(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -51,11 +51,11 @@ void compute_WIP_restricted_rules(PartFuncWIPContext &ctx, cand_pos_t i, cand_po
             const auto children = expand_wip(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_energy(child.i, child.j);
+                    term *= ctx.get_V(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_energy_WMB(child.i, child.j);
+                    term *= ctx.get_WMB(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -81,11 +81,11 @@ void compute_WIP_restricted_rules(PartFuncWIPContext &ctx,
             const auto children = expand_wip(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_energy(child.i, child.j);
+                    term *= ctx.get_V(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_energy_WMB(child.i, child.j);
+                    term *= ctx.get_WMB(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -103,11 +103,11 @@ void compute_WIP_restricted_rules(PartFuncWIPContext &ctx,
             const auto children = expand_wip(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_energy(child.i, child.j);
+                    term *= ctx.get_V(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_energy_WMB(child.i, child.j);
+                    term *= ctx.get_WMB(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -129,7 +129,7 @@ void compute_VPL_restricted_rules(PartFuncVPLContext &ctx, cand_pos_t i, cand_po
             const auto children = expand_vpl(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -147,7 +147,7 @@ void compute_VPL_restricted_rules(PartFuncVPLContext &ctx, cand_pos_t i, cand_po
             const auto children = expand_vpl(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -173,7 +173,7 @@ void compute_VPL_restricted_rules(PartFuncVPLContext &ctx,
             const auto children = expand_vpl(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -191,7 +191,7 @@ void compute_VPL_restricted_rules(PartFuncVPLContext &ctx,
             const auto children = expand_vpl(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -213,9 +213,9 @@ void compute_VPR_restricted_rules(PartFuncVPRContext &ctx, cand_pos_t i, cand_po
             const auto children = expand_vpr(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -233,9 +233,9 @@ void compute_VPR_restricted_rules(PartFuncVPRContext &ctx, cand_pos_t i, cand_po
             const auto children = expand_vpr(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -261,9 +261,9 @@ void compute_VPR_restricted_rules(PartFuncVPRContext &ctx,
             const auto children = expand_vpr(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -281,9 +281,9 @@ void compute_VPR_restricted_rules(PartFuncVPRContext &ctx,
             const auto children = expand_vpr(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -305,15 +305,15 @@ void compute_VP_restricted_rules(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_
             const auto children = expand_vp(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::VPR) {
-                    term *= ctx.get_energy_VPR(child.i, child.j);
+                    term *= ctx.get_VPR(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::VPL) {
-                    term *= ctx.get_energy_VPL(child.i, child.j);
+                    term *= ctx.get_VPL(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -331,15 +331,15 @@ void compute_VP_restricted_rules(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_
             const auto children = expand_vp(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::VPR) {
-                    term *= ctx.get_energy_VPR(child.i, child.j);
+                    term *= ctx.get_VPR(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::VPL) {
-                    term *= ctx.get_energy_VPL(child.i, child.j);
+                    term *= ctx.get_VPL(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -366,15 +366,15 @@ void compute_VP_restricted_rules(PartFuncVPContext &ctx,
             const auto children = expand_vp(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::VPR) {
-                    term *= ctx.get_energy_VPR(child.i, child.j);
+                    term *= ctx.get_VPR(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::VPL) {
-                    term *= ctx.get_energy_VPL(child.i, child.j);
+                    term *= ctx.get_VPL(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -392,15 +392,15 @@ void compute_VP_restricted_rules(PartFuncVPContext &ctx,
             const auto children = expand_vp(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::VPR) {
-                    term *= ctx.get_energy_VPR(child.i, child.j);
+                    term *= ctx.get_VPR(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::VPL) {
-                    term *= ctx.get_energy_VPL(child.i, child.j);
+                    term *= ctx.get_VPL(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -422,13 +422,13 @@ void compute_WMBP_restricted_rules(PartFuncWMBPContext &ctx, cand_pos_t i, cand_
             const auto children = expand_wmbp(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMBP) {
-                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                    term *= ctx.get_WMBP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMBW) {
-                    term *= ctx.get_energy_WMBW(child.i, child.j);
+                    term *= ctx.get_WMBW(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -446,13 +446,13 @@ void compute_WMBP_restricted_rules(PartFuncWMBPContext &ctx, cand_pos_t i, cand_
             const auto children = expand_wmbp(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMBP) {
-                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                    term *= ctx.get_WMBP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMBW) {
-                    term *= ctx.get_energy_WMBW(child.i, child.j);
+                    term *= ctx.get_WMBW(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -479,13 +479,13 @@ void compute_WMBP_restricted_rules(PartFuncWMBPContext &ctx,
             const auto children = expand_wmbp(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMBP) {
-                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                    term *= ctx.get_WMBP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMBW) {
-                    term *= ctx.get_energy_WMBW(child.i, child.j);
+                    term *= ctx.get_WMBW(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -503,13 +503,13 @@ void compute_WMBP_restricted_rules(PartFuncWMBPContext &ctx,
             const auto children = expand_wmbp(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMBP) {
-                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                    term *= ctx.get_WMBP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMBW) {
-                    term *= ctx.get_energy_WMBW(child.i, child.j);
+                    term *= ctx.get_WMBW(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::VP) {
-                    term *= ctx.get_energy_VP(child.i, child.j);
+                    term *= ctx.get_VP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -531,9 +531,9 @@ void compute_WMBW_restricted_rules(PartFuncWMBWContext &ctx, cand_pos_t i, cand_
             const auto children = expand_wmbw(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMBP) {
-                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                    term *= ctx.get_WMBP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -551,9 +551,9 @@ void compute_WMBW_restricted_rules(PartFuncWMBWContext &ctx, cand_pos_t i, cand_
             const auto children = expand_wmbw(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMBP) {
-                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                    term *= ctx.get_WMBP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -579,9 +579,9 @@ void compute_WMBW_restricted_rules(PartFuncWMBWContext &ctx,
             const auto children = expand_wmbw(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMBP) {
-                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                    term *= ctx.get_WMBP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -599,9 +599,9 @@ void compute_WMBW_restricted_rules(PartFuncWMBWContext &ctx,
             const auto children = expand_wmbw(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMBP) {
-                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                    term *= ctx.get_WMBP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -623,9 +623,9 @@ void compute_WMB_restricted_rules(PartFuncWMBContext &ctx, cand_pos_t i, cand_po
             const auto children = expand_wmb(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMBP) {
-                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                    term *= ctx.get_WMBP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -643,9 +643,9 @@ void compute_WMB_restricted_rules(PartFuncWMBContext &ctx, cand_pos_t i, cand_po
             const auto children = expand_wmb(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMBP) {
-                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                    term *= ctx.get_WMBP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -672,9 +672,9 @@ void compute_WMB_restricted_rules(PartFuncWMBContext &ctx,
             const auto children = expand_wmb(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMBP) {
-                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                    term *= ctx.get_WMBP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -692,9 +692,9 @@ void compute_WMB_restricted_rules(PartFuncWMBContext &ctx,
             const auto children = expand_wmb(rule, i, j, split);
             for (const auto &child : children) {
                 if (child.nonterminal == NonTerminal::WMBP) {
-                    term *= ctx.get_energy_WMBP(child.i, child.j);
+                    term *= ctx.get_WMBP(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_energy_WI(child.i, child.j);
+                    term *= ctx.get_WI(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -734,7 +734,7 @@ void compute_BE_restricted_rules(PartFuncBEContext &ctx,
                 if (child.nonterminal == NonTerminal::BE) {
                     term *= ctx.get_BE(child.i, child.j, ip, jp, tree);
                 } else if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -754,7 +754,7 @@ void compute_BE_restricted_rules(PartFuncBEContext &ctx,
                 if (child.nonterminal == NonTerminal::BE) {
                     term *= ctx.get_BE(child.i, child.j, ip, jp, tree);
                 } else if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -794,7 +794,7 @@ void compute_BE_restricted_rules(PartFuncBEContext &ctx,
                 if (child.nonterminal == NonTerminal::BE) {
                     term *= ctx.get_BE(child.i, child.j, ip, jp, tree);
                 } else if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 }
             }
             contributions += term * coeff;
@@ -814,7 +814,7 @@ void compute_BE_restricted_rules(PartFuncBEContext &ctx,
                 if (child.nonterminal == NonTerminal::BE) {
                     term *= ctx.get_BE(child.i, child.j, ip, jp, tree);
                 } else if (child.nonterminal == NonTerminal::WIP) {
-                    term *= ctx.get_energy_WIP(child.i, child.j);
+                    term *= ctx.get_WIP(child.i, child.j);
                 }
             }
             contributions += term * coeff;

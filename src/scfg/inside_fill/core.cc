@@ -25,9 +25,9 @@ void compute_W_restricted_core(PartFuncWContext &ctx, sparse_tree &tree, const R
                     if (child.nonterminal == NonTerminal::W) {
                         term *= ctx.get_W(child.j);
                     } else if (child.nonterminal == NonTerminal::V) {
-                        term *= ctx.get_energy(child.i, child.j);
+                        term *= ctx.get_V(child.i, child.j);
                     } else if (child.nonterminal == NonTerminal::WMB) {
-                        term *= ctx.get_energy_WMB(child.i, child.j);
+                        term *= ctx.get_WMB(child.i, child.j);
                     }
                 }
                 contributions += term * coeff;
@@ -47,9 +47,9 @@ void compute_W_restricted_core(PartFuncWContext &ctx, sparse_tree &tree, const R
                     if (child.nonterminal == NonTerminal::W) {
                         term *= ctx.get_W(child.j);
                     } else if (child.nonterminal == NonTerminal::V) {
-                        term *= ctx.get_energy(child.i, child.j);
+                        term *= ctx.get_V(child.i, child.j);
                     } else if (child.nonterminal == NonTerminal::WMB) {
-                        term *= ctx.get_energy_WMB(child.i, child.j);
+                        term *= ctx.get_WMB(child.i, child.j);
                     }
                 }
                 contributions += term * coeff;

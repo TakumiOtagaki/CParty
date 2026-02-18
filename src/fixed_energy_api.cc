@@ -31,9 +31,8 @@ class RuleCoreStubWContext final : public scfg::PartFuncWContext {
   cand_pos_t n() const override { return n_; }
   pf_t scale1() const override { return 0; }
   pf_t get_W(cand_pos_t) const override { return 0; }
-  pf_t get_energy(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WMB(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMB(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t exp_Extloop(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t expPS_penalty() const override { return 0; }
   void set_W(cand_pos_t, pf_t) override {}
@@ -49,9 +48,8 @@ class RuleCoreStubWIContext final : public scfg::PartFuncWIContext {
   cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
   void set_WI(cand_pos_t, pf_t) override {}
   pf_t get_WI(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WMB(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMB(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t expPPS_penalty() const override { return 0; }
   pf_t expPSP_penalty() const override { return 0; }
   pf_t expPUP_pen1() const override { return 0; }
@@ -72,9 +70,9 @@ class RuleCoreStubVMContext final : public scfg::PartFuncVMContext {
  public:
   cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
   void set_VM(cand_pos_t, pf_t) override {}
-  pf_t get_energy_WM(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WMv(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WMp(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WM(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMv(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMp(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t exp_Mbloop(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t expMLclosing() const override { return 0; }
   pf_t expMLbase(cand_pos_t) const override { return 0; }
@@ -85,11 +83,10 @@ class RuleCoreStubVMContext final : public scfg::PartFuncVMContext {
 class RuleCoreStubWMvWMpContext final : public scfg::PartFuncWMvWMpContext {
  public:
   cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_energy(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WMB(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WMv(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WMp(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMB(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMv(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMp(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t exp_MLstem(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t expPSM_penalty() const override { return 0; }
   pf_t expb_penalty() const override { return 0; }
@@ -101,12 +98,11 @@ class RuleCoreStubWMvWMpContext final : public scfg::PartFuncWMvWMpContext {
 class RuleCoreStubWMContext final : public scfg::PartFuncWMContext {
  public:
   cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_energy_WM(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WMv(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WMp(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WM(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMv(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMp(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WMB(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMB(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t exp_MLstem(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t expPSM_penalty() const override { return 0; }
   pf_t expb_penalty() const override { return 0; }
@@ -120,10 +116,9 @@ class RuleCoreStubWMContext final : public scfg::PartFuncWMContext {
 class RuleCoreStubWIPContext final : public scfg::PartFuncWIPContext {
  public:
   cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_energy(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WMB(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WIP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMB(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WIP(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t expbp_penalty() const override { return 0; }
   pf_t expPSM_penalty() const override { return 0; }
   pf_t expcp_pen(cand_pos_t) const override { return 0; }
@@ -134,7 +129,7 @@ class RuleCoreStubWIPContext final : public scfg::PartFuncWIPContext {
 class RuleCoreStubVPLContext final : public scfg::PartFuncVPLContext {
  public:
   cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_energy_VP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_VP(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t expcp_pen(cand_pos_t) const override { return 0; }
   void set_VPL(cand_pos_t, pf_t) override {}
 };
@@ -142,8 +137,8 @@ class RuleCoreStubVPLContext final : public scfg::PartFuncVPLContext {
 class RuleCoreStubVPRContext final : public scfg::PartFuncVPRContext {
  public:
   cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_energy_VP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WIP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_VP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WIP(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t expcp_pen(cand_pos_t) const override { return 0; }
   void set_VPR(cand_pos_t, pf_t) override {}
 };
@@ -159,11 +154,11 @@ class RuleCoreStubVPContext final : public scfg::PartFuncVPContext {
   explicit RuleCoreStubVPContext(const std::string &seq) : seq_(seq) {}
 
   cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_energy_WI(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_VP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WIP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_VPL(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_VPR(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WI(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_VP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WIP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_VPL(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_VPR(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
   pair_type pair_type_of(cand_pos_t i, cand_pos_t j) const override {
     if (i < 1 || j < 1 || static_cast<size_t>(i) > seq_.size() ||
@@ -190,8 +185,8 @@ class RuleCoreStubVPContext final : public scfg::PartFuncVPContext {
 class RuleCoreStubWMBWContext final : public scfg::PartFuncWMBWContext {
  public:
   cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_energy_WMBP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WI(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMBP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WI(cand_pos_t, cand_pos_t) override { return 0; }
   void set_WMBW(cand_pos_t, pf_t) override {}
 };
 
@@ -199,10 +194,10 @@ class RuleCoreStubWMBPContext final : public scfg::PartFuncWMBPContext {
  public:
   explicit RuleCoreStubWMBPContext(int n) : n_(n) {}
   cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_energy_WMBP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WMBW(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_VP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WI(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMBP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMBW(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_VP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WI(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t get_BE(cand_pos_t, cand_pos_t, cand_pos_t, cand_pos_t, sparse_tree &) override { return 0; }
   pf_t expPB_penalty() const override { return 1; }
@@ -218,8 +213,8 @@ class RuleCoreStubWMBContext final : public scfg::PartFuncWMBContext {
  public:
   explicit RuleCoreStubWMBContext(int n) : n_(n) {}
   cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_energy_WMBP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_energy_WI(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WMBP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WI(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t get_BE(cand_pos_t, cand_pos_t, cand_pos_t, cand_pos_t, sparse_tree &) override { return 0; }
   pf_t expPB_penalty() const override { return 1; }
@@ -235,7 +230,7 @@ class RuleCoreStubBEContext final : public scfg::PartFuncBEContext {
   explicit RuleCoreStubBEContext(int n) : n_(n) {}
   cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
   cand_pos_t n() const override { return n_; }
-  pf_t get_energy_WIP(cand_pos_t, cand_pos_t) override { return 0; }
+  pf_t get_WIP(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
   pf_t get_BE(cand_pos_t, cand_pos_t, cand_pos_t, cand_pos_t, sparse_tree &) override { return 0; }
   pf_t get_e_stP(cand_pos_t, cand_pos_t) override { return 0; }

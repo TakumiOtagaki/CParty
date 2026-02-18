@@ -74,8 +74,8 @@ void compute_WI_restricted(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, s
     }
     const cand_pos_t turn = ctx.turn();
     for (cand_pos_t k = i; k <= j - turn - 1; ++k) {
-        contributions += (ctx.get_WI(i, k - 1) * ctx.get_energy(k, j) * ctx.expPPS_penalty());
-        contributions += (ctx.get_WI(i, k - 1) * ctx.get_energy_WMB(k, j) * ctx.expPSP_penalty() * ctx.expPPS_penalty());
+        contributions += (ctx.get_WI(i, k - 1) * ctx.get_V(k, j) * ctx.expPPS_penalty());
+        contributions += (ctx.get_WI(i, k - 1) * ctx.get_WMB(k, j) * ctx.expPSP_penalty() * ctx.expPPS_penalty());
     }
     if (tree.tree[j].pair < 0) {
         contributions += (ctx.get_WI(i, j - 1) * ctx.expPUP_pen1());
@@ -106,17 +106,17 @@ void compute_W_restricted(PartFuncWContext &ctx, sparse_tree &tree) {
             for (cand_pos_t k = 1; k <= j - turn - 1; ++k) {
                 if (tree.weakly_closed(1, k - 1)) {
                     pf_t acc = (k > 1) ? ctx.get_W(k - 1) : 1;
-                    const pf_t term_v = acc * ctx.get_energy(k, j) * ctx.exp_Extloop(k, j);
+                    const pf_t term_v = acc * ctx.get_V(k, j) * ctx.exp_Extloop(k, j);
                     contributions += term_v;
                     if (k == 1 || tree.weakly_closed(k, j)) {
-                        const pf_t term_wmb = acc * ctx.get_energy_WMB(k, j) * ctx.expPS_penalty();
+                        const pf_t term_wmb = acc * ctx.get_WMB(k, j) * ctx.expPS_penalty();
                         contributions += term_wmb;
                         if (trace && j == trace_j) {
                             std::cerr << "[PF_TRACE_W] j=" << j
                                       << " k=" << k
                                       << " acc=" << acc
-                                      << " V=" << ctx.get_energy(k, j)
-                                      << " WMB=" << ctx.get_energy_WMB(k, j)
+                                      << " V=" << ctx.get_V(k, j)
+                                      << " WMB=" << ctx.get_WMB(k, j)
                                       << " ext=" << ctx.exp_Extloop(k, j)
                                       << " ps=" << ctx.expPS_penalty()
                                       << " term_v=" << term_v
@@ -127,7 +127,7 @@ void compute_W_restricted(PartFuncWContext &ctx, sparse_tree &tree) {
                         std::cerr << "[PF_TRACE_W] j=" << j
                                   << " k=" << k
                                   << " acc=" << acc
-                                  << " V=" << ctx.get_energy(k, j)
+                                  << " V=" << ctx.get_V(k, j)
                                   << " WMB=skipped"
                                   << " ext=" << ctx.exp_Extloop(k, j)
                                   << " ps=" << ctx.expPS_penalty()
@@ -158,14 +158,14 @@ pf_t compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, s
     const cand_pos_t ij = ctx.index_of(i, j);
     const cand_pos_t turn = ctx.turn();
     for (cand_pos_t k = i + 1; k <= j - turn - 1; ++k) {
-        pf_t term1 = (ctx.get_energy_WM(i + 1, k - 1) * ctx.get_energy_WMv(k, j - 1) *
+        pf_t term1 = (ctx.get_WM(i + 1, k - 1) * ctx.get_WMv(k, j - 1) *
                       ctx.exp_Mbloop(i, j) * ctx.expMLclosing());
-        pf_t term2 = (ctx.get_energy_WM(i + 1, k - 1) * ctx.get_energy_WMp(k, j - 1) *
+        pf_t term2 = (ctx.get_WM(i + 1, k - 1) * ctx.get_WMp(k, j - 1) *
                       ctx.exp_Mbloop(i, j) * ctx.expMLclosing());
         contributions += term1;
         contributions += term2;
         if (up[k - 1] >= (k - (i + 1))) {
-            pf_t term3 = (ctx.expMLbase(k - i - 1) * ctx.get_energy_WMp(k, j - 1) *
+            pf_t term3 = (ctx.expMLbase(k - i - 1) * ctx.get_WMp(k, j - 1) *
                           ctx.exp_Mbloop(i, j) * ctx.expMLclosing());
             contributions += term3;
             if (trace) {
@@ -173,9 +173,9 @@ pf_t compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, s
                           << " term1=" << term1
                           << " term2=" << term2
                           << " term3=" << term3
-                          << " wm=" << ctx.get_energy_WM(i + 1, k - 1)
-                          << " wmv=" << ctx.get_energy_WMv(k, j - 1)
-                          << " wmp=" << ctx.get_energy_WMp(k, j - 1)
+                          << " wm=" << ctx.get_WM(i + 1, k - 1)
+                          << " wmv=" << ctx.get_WMv(k, j - 1)
+                          << " wmp=" << ctx.get_WMp(k, j - 1)
                           << " mlbase=" << ctx.expMLbase(k - i - 1)
                           << std::endl;
             }
@@ -184,9 +184,9 @@ pf_t compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, s
                       << " term1=" << term1
                       << " term2=" << term2
                       << " term3=0"
-                      << " wm=" << ctx.get_energy_WM(i + 1, k - 1)
-                      << " wmv=" << ctx.get_energy_WMv(k, j - 1)
-                      << " wmp=" << ctx.get_energy_WMp(k, j - 1)
+                      << " wm=" << ctx.get_WM(i + 1, k - 1)
+                      << " wmv=" << ctx.get_WMv(k, j - 1)
+                      << " wmp=" << ctx.get_WMp(k, j - 1)
                       << " mlbase=skipped"
                       << std::endl;
         }
@@ -211,11 +211,11 @@ void compute_WMv_WMp_restricted(PartFuncWMvWMpContext &ctx, cand_pos_t i, cand_p
     pf_t WMv_contributions = 0;
     pf_t WMp_contributions = 0;
 
-    WMv_contributions += (ctx.get_energy(i, j) * ctx.exp_MLstem(i, j));
-    WMp_contributions += (ctx.get_energy_WMB(i, j) * ctx.expPSM_penalty() * ctx.expb_penalty());
+    WMv_contributions += (ctx.get_V(i, j) * ctx.exp_MLstem(i, j));
+    WMp_contributions += (ctx.get_WMB(i, j) * ctx.expPSM_penalty() * ctx.expb_penalty());
     if (tree[j].pair < 0) {
-        WMv_contributions += (ctx.get_energy_WMv(i, j - 1) * ctx.expMLbase1());
-        WMp_contributions += (ctx.get_energy_WMp(i, j - 1) * ctx.expMLbase1());
+        WMv_contributions += (ctx.get_WMv(i, j - 1) * ctx.expMLbase1());
+        WMp_contributions += (ctx.get_WMp(i, j - 1) * ctx.expMLbase1());
     }
 
     ctx.set_WMv_WMp(ij, WMv_contributions, WMp_contributions);
@@ -240,8 +240,8 @@ void compute_WM_restricted(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, s
     }
 
     for (cand_pos_t k = i; k < j - turn; ++k) {
-        const pf_t qbt1 = ctx.get_energy(k, j) * ctx.exp_MLstem(k, j);
-        const pf_t qbt2 = ctx.get_energy_WMB(k, j) * ctx.expPSM_penalty() * ctx.expb_penalty();
+        const pf_t qbt1 = ctx.get_V(k, j) * ctx.exp_MLstem(k, j);
+        const pf_t qbt2 = ctx.get_WMB(k, j) * ctx.expPSM_penalty() * ctx.expb_penalty();
         const bool can_pair = scfg::can_pair_left_span(tree, i, k);
         pf_t term1 = 0;
         pf_t term2 = 0;
@@ -251,8 +251,8 @@ void compute_WM_restricted(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, s
             contributions += term1;
             contributions += term2;
         }
-        pf_t term3 = ctx.get_energy_WM(i, k - 1) * qbt1;
-        pf_t term4 = ctx.get_energy_WM(i, k - 1) * qbt2;
+        pf_t term3 = ctx.get_WM(i, k - 1) * qbt1;
+        pf_t term4 = ctx.get_WM(i, k - 1) * qbt2;
         contributions += term3;
         contributions += term4;
         if (trace) {
@@ -263,13 +263,13 @@ void compute_WM_restricted(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, s
                       << " term2=" << term2
                       << " term3=" << term3
                       << " term4=" << term4
-                      << " wm_prev=" << ctx.get_energy_WM(i, k - 1)
-                      << " V=" << ctx.get_energy(k, j)
-                      << " WMB=" << ctx.get_energy_WMB(k, j)
+                      << " wm_prev=" << ctx.get_WM(i, k - 1)
+                      << " V=" << ctx.get_V(k, j)
+                      << " WMB=" << ctx.get_WMB(k, j)
                       << std::endl;
         }
     }
-    if (tree.tree[j].pair < 0) contributions += ctx.get_energy_WM(i, j - 1) * ctx.expMLbase(1);
+    if (tree.tree[j].pair < 0) contributions += ctx.get_WM(i, j - 1) * ctx.expMLbase(1);
     ctx.set_WM(ij, contributions);
     if (trace) {
         std::cerr << "[PF_TRACE_WM] i=" << i
@@ -282,18 +282,18 @@ void compute_WM_restricted(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, s
 void compute_WIP_restricted(PartFuncWIPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
-    contributions += ctx.get_energy(i, j) * ctx.expbp_penalty();
-    contributions += ctx.get_energy_WMB(i, j) * ctx.expbp_penalty() * ctx.expPSM_penalty();
+    contributions += ctx.get_V(i, j) * ctx.expbp_penalty();
+    contributions += ctx.get_WMB(i, j) * ctx.expbp_penalty() * ctx.expPSM_penalty();
     const cand_pos_t turn = ctx.turn();
     for (cand_pos_t k = i + 1; k < j - turn - 1; ++k) {
         bool can_pair = scfg::can_pair_left_span(tree, i, k);
 
-        contributions += (ctx.get_energy_WIP(i, k - 1) * ctx.get_energy(k, j) * ctx.expbp_penalty());
-        contributions += (ctx.get_energy_WIP(i, k - 1) * ctx.get_energy_WMB(k, j) * ctx.expbp_penalty() * ctx.expPSM_penalty());
-        if (can_pair) contributions += (ctx.expcp_pen(k - i) * ctx.get_energy(k, j) * ctx.expbp_penalty());
-        if (can_pair) contributions += (ctx.expcp_pen(k - i) * ctx.get_energy_WMB(k, j) * ctx.expbp_penalty() * ctx.expPSM_penalty());
+        contributions += (ctx.get_WIP(i, k - 1) * ctx.get_V(k, j) * ctx.expbp_penalty());
+        contributions += (ctx.get_WIP(i, k - 1) * ctx.get_WMB(k, j) * ctx.expbp_penalty() * ctx.expPSM_penalty());
+        if (can_pair) contributions += (ctx.expcp_pen(k - i) * ctx.get_V(k, j) * ctx.expbp_penalty());
+        if (can_pair) contributions += (ctx.expcp_pen(k - i) * ctx.get_WMB(k, j) * ctx.expbp_penalty() * ctx.expPSM_penalty());
     }
-    if (tree.tree[j].pair < 0) contributions += (ctx.get_energy_WIP(i, j - 1) * ctx.expcp_pen(1));
+    if (tree.tree[j].pair < 0) contributions += (ctx.get_WIP(i, j - 1) * ctx.expcp_pen(1));
     ctx.set_WIP(ij, contributions);
 }
 
@@ -304,7 +304,7 @@ void compute_VPL_restricted(PartFuncVPLContext &ctx, cand_pos_t i, cand_pos_t j,
     cand_pos_t min_Bp_j = std::min((cand_pos_tu)tree.b(i, j), (cand_pos_tu)tree.Bp(i, j));
     for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
         bool can_pair = scfg::can_pair_left_span(tree, i, k);
-        if (can_pair) contributions += (ctx.expcp_pen(k - i) * ctx.get_energy_VP(k, j));
+        if (can_pair) contributions += (ctx.expcp_pen(k - i) * ctx.get_VP(k, j));
     }
     ctx.set_VPL(ij, contributions);
 }
@@ -315,8 +315,8 @@ void compute_VPR_restricted(PartFuncVPRContext &ctx, cand_pos_t i, cand_pos_t j,
     cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
     for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
         bool can_pair = scfg::can_pair_right_span(tree, k, j);
-        contributions += (ctx.get_energy_VP(i, k) * ctx.get_energy_WIP(k + 1, j));
-        if (can_pair) contributions += (ctx.get_energy_VP(i, k) * ctx.expcp_pen(k - i));
+        contributions += (ctx.get_VP(i, k) * ctx.get_WIP(k + 1, j));
+        if (can_pair) contributions += (ctx.get_VP(i, k) * ctx.expcp_pen(k - i));
     }
     ctx.set_VPR(ij, contributions);
 }
@@ -334,29 +334,29 @@ void compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, s
 
     if ((tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) < (tree.tree[i].parent->index) &&
         Bp_ij >= 0 && B_ij >= 0 && bp_ij < 0) {
-        m1 = (ctx.get_energy_WI(i + 1, Bp_ij - 1) * ctx.get_energy_WI(B_ij + 1, j - 1));
+        m1 = (ctx.get_WI(i + 1, Bp_ij - 1) * ctx.get_WI(B_ij + 1, j - 1));
         m1 *= ctx.scale(2);
         contributions += m1;
     }
 
     if ((tree.tree[i].parent->index) < (tree.tree[j].parent->index) && (tree.tree[j].parent->index) > 0 &&
         b_ij >= 0 && bp_ij >= 0 && Bp_ij < 0) {
-        m2 = (ctx.get_energy_WI(i + 1, b_ij - 1) * ctx.get_energy_WI(bp_ij + 1, j - 1));
+        m2 = (ctx.get_WI(i + 1, b_ij - 1) * ctx.get_WI(bp_ij + 1, j - 1));
         m2 *= ctx.scale(2);
         contributions += m2;
     }
 
     if ((tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) > 0 && Bp_ij >= 0 && B_ij >= 0 &&
         b_ij >= 0 && bp_ij >= 0) {
-        m3 = (ctx.get_energy_WI(i + 1, Bp_ij - 1) * ctx.get_energy_WI(B_ij + 1, b_ij - 1) *
-              ctx.get_energy_WI(bp_ij + 1, j - 1));
+        m3 = (ctx.get_WI(i + 1, Bp_ij - 1) * ctx.get_WI(B_ij + 1, b_ij - 1) *
+              ctx.get_WI(bp_ij + 1, j - 1));
         m3 *= ctx.scale(2);
         contributions += m3;
     }
 
     pair_type ptype_closingip1jm1 = ctx.pair_type_of(i + 1, j - 1);
     if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 && ptype_closingip1jm1 > 0) {
-        m4 = (ctx.get_e_stP(i, j) * ctx.get_energy_VP(i + 1, j - 1));
+        m4 = (ctx.get_e_stP(i, j) * ctx.get_VP(i + 1, j - 1));
         m4 *= ctx.scale(2);
         contributions += m4;
     }
@@ -374,7 +374,7 @@ void compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, s
                 if (k == i + 1 && l == j - 1) continue;
                 if (scfg::is_unpaired_position(tree, l) && scfg::is_pair_type_allowed(ptype_closingkj) &&
                     scfg::is_empty_region(tree, l, j)) {
-                    pf_t vp_iloop_kl = (ctx.get_e_intP(i, k, l, j) * ctx.get_energy_VP(k, l));
+                    pf_t vp_iloop_kl = (ctx.get_e_intP(i, k, l, j) * ctx.get_VP(k, l));
                     cand_pos_t u1 = k - i - 1;
                     cand_pos_t u2 = j - l - 1;
                     vp_iloop_kl *= ctx.scale(u1 + u2 + 2);
@@ -389,7 +389,7 @@ void compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, s
     cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
 
     for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
-        pf_t term = (ctx.get_energy_WIP(i + 1, k - 1) * ctx.get_energy_VP(k, j - 1) *
+        pf_t term = (ctx.get_WIP(i + 1, k - 1) * ctx.get_VP(k, j - 1) *
                      ctx.expap_penalty() * ctx.expbp_penalty_sq());
         term *= ctx.scale(2);
         contributions += term;
@@ -397,7 +397,7 @@ void compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, s
     }
 
     for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
-        pf_t term = (ctx.get_energy_VP(i + 1, k) * ctx.get_energy_WIP(k + 1, j - 1) *
+        pf_t term = (ctx.get_VP(i + 1, k) * ctx.get_WIP(k + 1, j - 1) *
                      ctx.expap_penalty() * ctx.expbp_penalty_sq());
         term *= ctx.scale(2);
         contributions += term;
@@ -405,7 +405,7 @@ void compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, s
     }
 
     for (cand_pos_t k = i + 1; k < min_Bp_j; ++k) {
-        pf_t term = (ctx.get_energy_WIP(i + 1, k - 1) * ctx.get_energy_VPR(k, j - 1) *
+        pf_t term = (ctx.get_WIP(i + 1, k - 1) * ctx.get_VPR(k, j - 1) *
                      ctx.expap_penalty() * ctx.expbp_penalty_sq());
         term *= ctx.scale(2);
         contributions += term;
@@ -413,7 +413,7 @@ void compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, s
     }
 
     for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
-        pf_t term = (ctx.get_energy_VPL(i + 1, k) * ctx.get_energy_WIP(k + 1, j - 1) *
+        pf_t term = (ctx.get_VPL(i + 1, k) * ctx.get_WIP(k + 1, j - 1) *
                      ctx.expap_penalty() * ctx.expbp_penalty_sq());
         term *= ctx.scale(2);
         contributions += term;
@@ -458,7 +458,7 @@ void compute_WMBW_restricted(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t 
         for (cand_pos_t l = i + 1; l < j; l++) {
             if (tree.tree[l].pair < 0 && tree.tree[l].parent->index > -1 && tree.tree[j].parent->index > -1
                 && tree.tree[j].parent->index == tree.tree[l].parent->index) {
-                contributions += ctx.get_energy_WMBP(i, l) * ctx.get_energy_WI(l + 1, j);
+                contributions += ctx.get_WMBP(i, l) * ctx.get_WI(l + 1, j);
             }
         }
     }
@@ -487,7 +487,7 @@ void compute_WMBP_restricted(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t 
                     const cand_pos_t Bp_lj = rules.border_Bp(l, j);
                     if (rules.parent_within_interval_and_turn(i, l, j)) {
                         pf_t m1 = ctx.get_BE(tree.tree[B_lj].pair, B_lj, tree.tree[Bp_lj].pair, Bp_lj, tree) *
-                                  ctx.get_energy_WMBP(i, l - 1) * ctx.get_energy_VP(l, j);
+                                  ctx.get_WMBP(i, l - 1) * ctx.get_VP(l, j);
                         m1 = rules.apply_double_pb_penalty(m1);
                         contributions += m1;
                         m1_sum += m1;
@@ -507,7 +507,7 @@ void compute_WMBP_restricted(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t 
                     const cand_pos_t Bp_lj = rules.border_Bp(l, j);
                     if (rules.parent_within_interval_and_turn(i, l, j)) {
                         pf_t m2 = ctx.get_BE(tree.tree[B_lj].pair, B_lj, tree.tree[Bp_lj].pair, Bp_lj, tree) *
-                                  ctx.get_energy_WMBW(i, l - 1) * ctx.get_energy_VP(l, j);
+                                  ctx.get_WMBW(i, l - 1) * ctx.get_VP(l, j);
                         m2 = rules.apply_double_pb_penalty(m2);
                         contributions += m2;
                         m2_sum += m2;
@@ -517,7 +517,7 @@ void compute_WMBP_restricted(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t 
         });
     }
 
-    m3 = ctx.get_energy_VP(i, j) * ctx.expPB_penalty();
+    m3 = ctx.get_VP(i, j) * ctx.expPB_penalty();
     contributions += m3;
 
     if (rules.pair_at(j) < 0 && rules.pair_at(i) >= 0) {
@@ -525,8 +525,8 @@ void compute_WMBP_restricted(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t 
             if (rules.has_valid_inner_arc_split(i, l, j, ctx.n()) && rules.parent_within_interval_and_turn(i, l, j)) {
                 const cand_pos_t bp_il = rules.border_bp(i, l);
                 pf_t be = ctx.get_BE(i, rules.pair_at(i), bp_il, rules.pair_at(bp_il), tree);
-                pf_t wi = ctx.get_energy_WI(bp_il + 1, l - 1);
-                pf_t vp = ctx.get_energy_VP(l, j);
+                pf_t wi = ctx.get_WI(bp_il + 1, l - 1);
+                pf_t vp = ctx.get_VP(l, j);
                 pf_t m4 = be * wi * vp;
                 m4 = rules.apply_double_pb_penalty(m4);
                 contributions += m4;
@@ -588,15 +588,15 @@ void compute_WMB_restricted(PartFuncWMBContext &ctx, cand_pos_t i, cand_pos_t j,
             cand_pos_t Bp_lj = tree.Bp(l, j);
             if (Bp_lj >= 0 && Bp_lj < ctx.n()) {
                 pf_t term = ctx.get_BE(bp_j, j, tree.tree[Bp_lj].pair, Bp_lj, tree) *
-                            ctx.get_energy_WMBP(i, l) *
-                            ctx.get_energy_WI(l + 1, Bp_lj - 1) * ctx.expPB_penalty();
+                            ctx.get_WMBP(i, l) *
+                            ctx.get_WI(l + 1, Bp_lj - 1) * ctx.expPB_penalty();
                 contributions += term;
                 loop_contrib += term;
             }
         }
     }
 
-    const pf_t wmbp_term = ctx.get_energy_WMBP(i, j);
+    const pf_t wmbp_term = ctx.get_WMBP(i, j);
     contributions += wmbp_term;
     const char *trace_env = std::getenv("CPARTY_PF_TRACE_WMB");
     if (trace_env && *trace_env != '\0' && std::strcmp(trace_env, "0") != 0) {
@@ -664,20 +664,20 @@ void compute_BE_restricted(PartFuncBEContext &ctx,
                 contributions += eintp;
             }
             if (weakly_closed_il && weakly_closed_lpj) {
-                pf_t m3 = ctx.get_energy_WIP(i + 1, l - 1) * ctx.get_BE(l, lp, ip, jp, tree) *
-                          ctx.get_energy_WIP(lp + 1, j - 1) * ctx.expap_penalty() * ctx.expbp_penalty_sq();
+                pf_t m3 = ctx.get_WIP(i + 1, l - 1) * ctx.get_BE(l, lp, ip, jp, tree) *
+                          ctx.get_WIP(lp + 1, j - 1) * ctx.expap_penalty() * ctx.expbp_penalty_sq();
                 m3 *= ctx.scale(2);
                 contributions += m3;
             }
             if (weakly_closed_il && empty_region_lpj) {
-                pf_t m4 = ctx.get_energy_WIP(i + 1, l - 1) * ctx.get_BE(l, lp, ip, jp, tree) *
+                pf_t m4 = ctx.get_WIP(i + 1, l - 1) * ctx.get_BE(l, lp, ip, jp, tree) *
                           ctx.expcp_pen(j - lp - 1) * ctx.expap_penalty() * ctx.expbp_penalty_sq();
                 m4 *= ctx.scale(2);
                 contributions += m4;
             }
             if (empty_region_il && weakly_closed_lpj) {
                 pf_t m5 = ctx.expcp_pen(l - i - 1) * ctx.get_BE(l, lp, ip, jp, tree) *
-                          ctx.get_energy_WIP(lp + 1, j - 1) * ctx.expap_penalty() * ctx.expbp_penalty_sq();
+                          ctx.get_WIP(lp + 1, j - 1) * ctx.expap_penalty() * ctx.expbp_penalty_sq();
                 m5 *= ctx.scale(2);
                 contributions += m5;
             }

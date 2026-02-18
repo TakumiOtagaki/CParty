@@ -24,9 +24,8 @@ class PartFuncWIContext {
     virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
     virtual void set_WI(cand_pos_t ij, pf_t value) = 0;
     virtual pf_t get_WI(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_V(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMB(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t expPPS_penalty() const = 0;
     virtual pf_t expPSP_penalty() const = 0;
     virtual pf_t expPUP_pen1() const = 0;
@@ -42,9 +41,8 @@ class PartFuncWContext {
     virtual cand_pos_t n() const = 0;
     virtual pf_t scale1() const = 0;
     virtual pf_t get_W(cand_pos_t j) const = 0;
-    virtual pf_t get_energy(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_V(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMB(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t exp_Extloop(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t expPS_penalty() const = 0;
     virtual void set_W(cand_pos_t j, pf_t value) = 0;
@@ -59,9 +57,9 @@ class PartFuncVMContext {
 
     virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
     virtual void set_VM(cand_pos_t ij, pf_t value) = 0;
-    virtual pf_t get_energy_WM(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WMv(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WMp(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WM(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMv(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMp(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t exp_Mbloop(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t expMLclosing() const = 0;
     virtual pf_t expMLbase(cand_pos_t length) const = 0;
@@ -76,11 +74,10 @@ class PartFuncWMvWMpContext {
     virtual ~PartFuncWMvWMpContext() = default;
 
     virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
-    virtual pf_t get_energy(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_V(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WMv(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WMp(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMB(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMv(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMp(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t exp_MLstem(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t expPSM_penalty() const = 0;
     virtual pf_t expb_penalty() const = 0;
@@ -96,12 +93,11 @@ class PartFuncWMContext {
     virtual ~PartFuncWMContext() = default;
 
     virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
-    virtual pf_t get_energy_WM(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WMv(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WMp(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WM(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMv(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMp(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_V(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMB(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t exp_MLstem(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t expPSM_penalty() const = 0;
     virtual pf_t expb_penalty() const = 0;
@@ -119,10 +115,9 @@ class PartFuncWIPContext {
     virtual ~PartFuncWIPContext() = default;
 
     virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
-    virtual pf_t get_energy(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_V(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMB(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WIP(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t expbp_penalty() const = 0;
     virtual pf_t expPSM_penalty() const = 0;
     virtual pf_t expcp_pen(cand_pos_t length) const = 0;
@@ -137,7 +132,7 @@ class PartFuncVPLContext {
     virtual ~PartFuncVPLContext() = default;
 
     virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
-    virtual pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_VP(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t expcp_pen(cand_pos_t length) const = 0;
     virtual void set_VPL(cand_pos_t ij, pf_t value) = 0;
 };
@@ -149,8 +144,8 @@ class PartFuncVPRContext {
     virtual ~PartFuncVPRContext() = default;
 
     virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
-    virtual pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_VP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WIP(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t expcp_pen(cand_pos_t length) const = 0;
     virtual void set_VPR(cand_pos_t ij, pf_t value) = 0;
 };
@@ -162,11 +157,11 @@ class PartFuncVPContext {
     virtual ~PartFuncVPContext() = default;
 
     virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
-    virtual pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_VPL(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_VPR(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WI(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_VP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WIP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_VPL(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_VPR(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_V(cand_pos_t i, cand_pos_t j) = 0;
     virtual pair_type pair_type_of(cand_pos_t i, cand_pos_t j) const = 0;
     virtual pf_t get_e_stP(cand_pos_t i, cand_pos_t j) = 0;
@@ -186,8 +181,8 @@ class PartFuncWMBWContext {
     virtual ~PartFuncWMBWContext() = default;
 
     virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
-    virtual pf_t get_energy_WMBP(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMBP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WI(cand_pos_t i, cand_pos_t j) = 0;
     virtual void set_WMBW(cand_pos_t ij, pf_t value) = 0;
 };
 
@@ -198,10 +193,10 @@ class PartFuncWMBPContext {
     virtual ~PartFuncWMBPContext() = default;
 
     virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
-    virtual pf_t get_energy_WMBP(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WMBW(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMBP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMBW(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_VP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WI(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_V(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) = 0;
     virtual pf_t expPB_penalty() const = 0;
@@ -217,8 +212,8 @@ class PartFuncWMBContext {
     virtual ~PartFuncWMBContext() = default;
 
     virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
-    virtual pf_t get_energy_WMBP(cand_pos_t i, cand_pos_t j) = 0;
-    virtual pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WMBP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WI(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_V(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) = 0;
     virtual pf_t expPB_penalty() const = 0;
@@ -234,7 +229,7 @@ class PartFuncBEContext {
 
     virtual cand_pos_t index_of(cand_pos_t i, cand_pos_t j) const = 0;
     virtual cand_pos_t n() const = 0;
-    virtual pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) = 0;
+    virtual pf_t get_WIP(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_V(cand_pos_t i, cand_pos_t j) = 0;
     virtual pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) = 0;
     virtual pf_t get_e_stP(cand_pos_t i, cand_pos_t j) = 0;
