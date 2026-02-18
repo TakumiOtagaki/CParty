@@ -1,5 +1,6 @@
 #include "scfg/rules_core.hh"
 
+#include "scfg/rules_part_helpers.hh"
 #include "scfg/rules_part_func.hh"
 #include "scfg/structure_view.hh"
 #include "sparse_tree.hh"
