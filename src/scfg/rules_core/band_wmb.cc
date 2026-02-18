@@ -93,6 +93,7 @@ std::vector<RuleChild> expand_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, cons
 }
 
 pf_t transition_weight_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWMBWContext &ctx) {
+    // child 側に補正は掛けず、必要な係数はルール重み側に集約する方針。
     (void)i;
     (void)j;
     (void)split;
@@ -263,6 +264,7 @@ pf_t transition_weight_wmbp(RuleId rule,
                      const RuleSplit &split,
                      PartFuncWMBPContext &ctx,
                      sparse_tree &tree) {
+    // legacy の補正（expPB_penalty / double_pb_penalty など）をルール重みに集約。
     switch (rule) {
     case RuleId::WMBP_SPLIT_BE_WMBP_VP:
     case RuleId::WMBP_SPLIT_BE_WMBW_VP: {
@@ -410,6 +412,7 @@ pf_t transition_weight_wmb(RuleId rule,
                     const RuleSplit &split,
                     PartFuncWMBContext &ctx,
                     sparse_tree &tree) {
+    // legacy の補正（expPB_penalty など）をルール重みに集約。
     (void)i;
     (void)j;
     switch (rule) {

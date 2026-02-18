@@ -151,6 +151,7 @@ pf_t transition_weight_wip(RuleId rule,
                     cand_pos_t j,
                     const RuleSplit &split,
                     PartFuncWIPContext &ctx) {
+    // legacy の子補正（expbp_penalty / expPSM_penalty / expcp_pen）をルール重みに集約。
     (void)j;
     switch (rule) {
     case RuleId::WIP_BASE_V:
@@ -254,6 +255,7 @@ pf_t transition_weight_vpl(RuleId rule,
                     cand_pos_t j,
                     const RuleSplit &split,
                     PartFuncVPLContext &ctx) {
+    // legacy の子補正（expcp_pen）をルール重みに集約。
     (void)j;
     switch (rule) {
     case RuleId::VPL_SPLIT_VP:
@@ -366,6 +368,7 @@ pf_t transition_weight_vpr(RuleId rule,
                     cand_pos_t j,
                     const RuleSplit &split,
                     PartFuncVPRContext &ctx) {
+    // legacy の子補正（expcp_pen）をルール重みに集約。
     (void)j;
     switch (rule) {
     case RuleId::VPR_SPLIT_VP_WIP:
@@ -630,6 +633,7 @@ pf_t transition_weight_vp(RuleId rule,
                    const RuleSplit &split,
                    PartFuncVPContext &ctx,
                    sparse_tree &tree) {
+    // legacy の子補正（expap/expbp_penalty_sq/scale など）をルール重みに集約。
     (void)tree;
     switch (rule) {
     case RuleId::VP_WI_CASE1:

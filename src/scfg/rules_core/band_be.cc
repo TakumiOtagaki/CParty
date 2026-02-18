@@ -216,6 +216,7 @@ pf_t transition_weight_be(RuleId rule,
                    const RuleSplit &split,
                    PartFuncBEContext &ctx,
                    sparse_tree &tree) {
+    // legacy の子補正（expap/expbp_penalty_sq/scale など）をルール重みに集約。
     (void)ip;
     (void)jp;
     (void)tree;

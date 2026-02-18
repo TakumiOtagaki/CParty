@@ -97,7 +97,9 @@ CPARTY_FIXED_ENERGY_REAL_SCORE=1 \
 SCFG_RULES_MODE=1 SCFG_RULES_APPLICABLE=1 SCFG_INSIDE_CORE=1 \
 test/tools/compare_cli_stdout.sh worktree_legacy_debug/build/CParty build/CParty 42 200 30,50,80
 ```
-- 次の課題: **子補正のルール吸収**（例: `WM` の `exp_MLstem` / `expPSM_penalty` / `expb_penalty` を遷移重みや非終端分割で吸収）
+- 子補正のルール吸収:
+  - `WM` / `VM` の子補正は遷移重みに集約済み
+  - band 側（`WIP/VPL/VPR/VP/WMB*/BE`）も遷移重みに集約済み（子側補正は無し）
 
 ## 5.2 k-type 設計メモ (2026-02-17)
 ### 5.2.1 前提
