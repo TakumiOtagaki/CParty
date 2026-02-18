@@ -3,7 +3,7 @@
 #include "part_func.hh"
 #include "scfg/rules_engine.hh"
 #include "scfg/rules_part_func.hh"
-#include "scfg/rules_runtime.hh"
+#include "scfg/inside_fill.hh"
 #include "scfg/structure_view.hh"
 
 extern double expPPS_penalty;

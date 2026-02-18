@@ -54,7 +54,8 @@ SET(SOURCE
   src/scfg/rules_core/band_wmb.cc
   src/scfg/rules_core/band_be.cc
   src/scfg/rules_engine.cc
-  src/scfg/rules_runtime.cc
+  src/scfg/inside_fill/basic.cc
+  src/scfg/inside_fill/band.cc
   src/scfg/rules_pseudo_loop.cc
   src/scfg/rules_part_func.cc
   src/fixed_energy_api.cc
