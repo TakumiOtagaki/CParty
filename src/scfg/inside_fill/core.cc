@@ -35,6 +35,21 @@ static inline pf_t product_children_be(PartFuncAllContext &all,
     return term;
 }
 
+static inline pf_t wm_children_term(PartFuncAllContext &all,
+                                    PartFuncWMContext &ctx,
+                                    const std::vector<RuleChild> &children) {
+    pf_t term = 1;
+    for (const auto &child : children) {
+        term *= all.get_inside(child.nonterminal, child.i, child.j);
+        if (child.nonterminal == NonTerminal::V) {
+            term *= ctx.exp_MLstem(child.i, child.j);
+        } else if (child.nonterminal == NonTerminal::WMB) {
+            term *= ctx.expPSM_penalty() * ctx.expb_penalty();
+        }
+    }
+    return term;
+}
+
 void compute_W_restricted_core(PartFuncWContext &ctx,
                                PartFuncAllContext &all,
                                sparse_tree &tree,
@@ -267,15 +282,7 @@ void compute_WM_restricted_core(PartFuncWMContext &ctx,
             record_rule_hit(entry.rule);
             pf_t coeff = transition_weight_wm(entry.rule, i, j, entry.split, ctx);
             const auto children = expand_wm(entry.rule, i, j, entry.split);
-            pf_t term = 1;
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-                if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.exp_MLstem(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.expPSM_penalty() * ctx.expb_penalty();
-                }
-            }
+            pf_t term = wm_children_term(all, ctx, children);
             contributions += term * coeff;
             if (trace) {
                 std::cerr << "[PF_TRACE_WM_RULES] rule=" << rule_id_name(entry.rule)
@@ -304,15 +311,7 @@ void compute_WM_restricted_core(PartFuncWMContext &ctx,
             record_rule_hit(rule);
             pf_t coeff = transition_weight_wm(rule, i, j, split, ctx);
             const auto children = expand_wm(rule, i, j, split);
-            pf_t term = 1;
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-                if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.exp_MLstem(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.expPSM_penalty() * ctx.expb_penalty();
-                }
-            }
+            pf_t term = wm_children_term(all, ctx, children);
             contributions += term * coeff;
             if (trace) {
                 std::cerr << "[PF_TRACE_WM_RULES] rule=" << rule_id_name(rule)
