@@ -101,6 +101,20 @@ test/tools/compare_cli_stdout.sh worktree_legacy_debug/build/CParty build/CParty
   - `WM` / `VM` の子補正は遷移重みに集約済み
   - band 側（`WIP/VPL/VPR/VP/WMB*/BE`）も遷移重みに集約済み（子側補正は無し）
 
+### 5.1.2 進捗メモ (2026-02-18)
+- legacy 実装を明示化:
+  - `rules_part_func.cc` を `legacy_rules_part_func.cc` に改名
+  - 旧実装は `legacy_compute_*_restricted` にリネーム
+  - adapter の legacy fallback 経由でのみ利用
+- **Density2View 実体注入の準備**
+  - `SCFG_DENSITY2_VIEW=1` で `round/square` を分離構築して注入
+  - 既定は従来どおり `Density2View(tree, tree)` を維持
+- **Rule catalog の外部化**
+  - `rules_core/base.cc` → `rules_catalog.cc`
+  - `rule_catalog()` を追加（RuleSpec テーブル参照用）
+- **transition_weight の抽象化**
+  - `TransitionWeights` を導入し、重み計算を ctx 直接参照から分離
+
 ## 5.2 k-type 設計メモ (2026-02-17)
 ### 5.2.1 前提
 - k-type = `()` と `[]` が混在し、相互に交差しうる
