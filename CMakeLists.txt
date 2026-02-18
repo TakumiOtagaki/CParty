@@ -59,7 +59,7 @@ SET(SOURCE
   src/scfg/inside_fill/band.cc
   src/scfg/inside_fill/core.cc
   src/scfg/rules_pseudo_loop.cc
-  src/scfg/rules_part_func.cc
+  src/scfg/legacy_rules_part_func.cc
   src/scfg/rules_part_helpers.cc
   src/fixed_energy_api.cc
   src/CParty.cc
@@ -168,7 +168,7 @@ if(BUILD_TESTING)
     src/scfg/rules_core/band_vp.cc
     src/scfg/rules_core/band_wmb.cc
     src/scfg/rules_core/band_be.cc
-    src/scfg/rules_part_func.cc
+    src/scfg/legacy_rules_part_func.cc
   src/scfg/rules_part_helpers.cc
   )
   add_executable(multi_secstruct_schema_test test/multi_secstruct_schema_test.cc)

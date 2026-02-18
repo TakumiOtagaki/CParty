@@ -426,7 +426,7 @@ void compute_W_restricted(W_final_pf &owner, sparse_tree &tree) {
             compute_W_restricted_rules(ctx, tree, config);
         }
     } else {
-        compute_W_restricted(ctx, tree);
+        legacy_compute_W_restricted(ctx, tree);
     }
 }
 
@@ -440,7 +440,7 @@ pf_t compute_VM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, std::v
         }
         return compute_VM_restricted_rules(ctx, i, j, up, config);
     }
-    return compute_VM_restricted(ctx, i, j, up);
+    return legacy_compute_VM_restricted(ctx, i, j, up);
 }
 
 void compute_V_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
@@ -454,7 +454,7 @@ void compute_V_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_
             compute_V_restricted_rules(ctx, i, j, tree, config);
         }
     } else {
-        compute_V_restricted(ctx, i, j, tree);
+        legacy_compute_V_restricted(ctx, i, j, tree);
     }
 }
 
@@ -469,7 +469,7 @@ void compute_WI_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse
             compute_WI_restricted_rules(ctx, i, j, tree, config);
         }
     } else {
-        compute_WI_restricted(ctx, i, j, tree);
+        legacy_compute_WI_restricted(ctx, i, j, tree);
     }
 }
 
@@ -484,7 +484,7 @@ void compute_WMv_WMp_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, s
             compute_WMv_WMp_restricted_rules(ctx, i, j, tree, config);
         }
     } else {
-        compute_WMv_WMp_restricted(ctx, i, j, tree);
+        legacy_compute_WMv_WMp_restricted(ctx, i, j, tree);
     }
 }
 
@@ -499,7 +499,7 @@ void compute_WM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse
             compute_WM_restricted_rules(ctx, i, j, tree, config);
         }
     } else {
-        compute_WM_restricted(ctx, i, j, tree);
+        legacy_compute_WM_restricted(ctx, i, j, tree);
     }
 }
 
@@ -515,7 +515,7 @@ void compute_WIP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
             compute_WIP_restricted_rules(ctx, i, j, view, config);
         }
     } else {
-        compute_WIP_restricted(ctx, i, j, tree);
+        legacy_compute_WIP_restricted(ctx, i, j, tree);
     }
 }
 
@@ -531,7 +531,7 @@ void compute_VPL_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
             compute_VPL_restricted_rules(ctx, i, j, view, config);
         }
     } else {
-        compute_VPL_restricted(ctx, i, j, tree);
+        legacy_compute_VPL_restricted(ctx, i, j, tree);
     }
 }
 
@@ -547,7 +547,7 @@ void compute_VPR_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
             compute_VPR_restricted_rules(ctx, i, j, view, config);
         }
     } else {
-        compute_VPR_restricted(ctx, i, j, tree);
+        legacy_compute_VPR_restricted(ctx, i, j, tree);
     }
 }
 
@@ -563,7 +563,7 @@ void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse
             compute_VP_restricted_rules(ctx, i, j, view, tree, config);
         }
     } else {
-        compute_VP_restricted(ctx, i, j, tree);
+        legacy_compute_VP_restricted(ctx, i, j, tree);
     }
 }
 
@@ -579,7 +579,7 @@ void compute_WMBW_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spar
             compute_WMBW_restricted_rules(ctx, i, j, view, config);
         }
     } else {
-        compute_WMBW_restricted(ctx, i, j, tree);
+        legacy_compute_WMBW_restricted(ctx, i, j, tree);
     }
 }
 
@@ -595,7 +595,7 @@ void compute_WMBP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spar
             compute_WMBP_restricted_rules(ctx, i, j, view, tree, config);
         }
     } else {
-        compute_WMBP_restricted(ctx, i, j, tree);
+        legacy_compute_WMBP_restricted(ctx, i, j, tree);
     }
 }
 
@@ -611,7 +611,7 @@ void compute_WMB_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
             compute_WMB_restricted_rules(ctx, i, j, view, tree, config);
         }
     } else {
-        compute_WMB_restricted(ctx, i, j, tree);
+        legacy_compute_WMB_restricted(ctx, i, j, tree);
     }
 }
 
@@ -632,7 +632,7 @@ void compute_BE_restricted(W_final_pf &owner,
             compute_BE_restricted_rules(ctx, i, j, ip, jp, view, tree, config);
         }
     } else {
-        compute_BE_restricted(ctx, i, j, ip, jp, tree);
+        legacy_compute_BE_restricted(ctx, i, j, ip, jp, tree);
     }
 }
 

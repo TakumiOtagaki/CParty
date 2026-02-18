@@ -12,7 +12,7 @@
 
 namespace scfg {
 
-void compute_V_restricted(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+void legacy_compute_V_restricted(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     const cand_pos_t ij = ctx.index_of(i, j);
 
     const bool unpaired = (tree.tree[i].pair < -1 && tree.tree[j].pair < -1);
@@ -65,7 +65,7 @@ void compute_V_restricted(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, spa
     }
 }
 
-void compute_WI_restricted(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+void legacy_compute_WI_restricted(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
     if (i == j) {
@@ -84,7 +84,7 @@ void compute_WI_restricted(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, s
     ctx.set_WI(ij, contributions);
 }
 
-void compute_W_restricted(PartFuncWContext &ctx, sparse_tree &tree) {
+void legacy_compute_W_restricted(PartFuncWContext &ctx, sparse_tree &tree) {
     const cand_pos_t n = ctx.n();
     const cand_pos_t turn = ctx.turn();
     const char *trace_env = std::getenv("CPARTY_PF_TRACE_W");
@@ -141,7 +141,7 @@ void compute_W_restricted(PartFuncWContext &ctx, sparse_tree &tree) {
     }
 }
 
-pf_t compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<int> &up) {
+pf_t legacy_compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<int> &up) {
     pf_t contributions = 0;
     const char *trace_env = std::getenv("CPARTY_PF_TRACE_VM");
     bool trace = false;
@@ -204,7 +204,7 @@ pf_t compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, s
     return contributions;
 }
 
-void compute_WMv_WMp_restricted(PartFuncWMvWMpContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<Node> &tree) {
+void legacy_compute_WMv_WMp_restricted(PartFuncWMvWMpContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<Node> &tree) {
     if (j - i - 1 < ctx.turn()) return;
     const cand_pos_t ij = ctx.index_of(i, j);
 
@@ -221,7 +221,7 @@ void compute_WMv_WMp_restricted(PartFuncWMvWMpContext &ctx, cand_pos_t i, cand_p
     ctx.set_WMv_WMp(ij, WMv_contributions, WMp_contributions);
 }
 
-void compute_WM_restricted(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+void legacy_compute_WM_restricted(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     if (j - i + 1 < 4) return;
     pf_t contributions = 0;
     const cand_pos_t ij = ctx.index_of(i, j);
@@ -279,7 +279,7 @@ void compute_WM_restricted(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, s
     }
 }
 
-void compute_WIP_restricted(PartFuncWIPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+void legacy_compute_WIP_restricted(PartFuncWIPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
     contributions += ctx.get_V(i, j) * ctx.expbp_penalty();
@@ -297,7 +297,7 @@ void compute_WIP_restricted(PartFuncWIPContext &ctx, cand_pos_t i, cand_pos_t j,
     ctx.set_WIP(ij, contributions);
 }
 
-void compute_VPL_restricted(PartFuncVPLContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+void legacy_compute_VPL_restricted(PartFuncVPLContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
 
@@ -309,7 +309,7 @@ void compute_VPL_restricted(PartFuncVPLContext &ctx, cand_pos_t i, cand_pos_t j,
     ctx.set_VPL(ij, contributions);
 }
 
-void compute_VPR_restricted(PartFuncVPRContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+void legacy_compute_VPR_restricted(PartFuncVPRContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
     cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
@@ -321,7 +321,7 @@ void compute_VPR_restricted(PartFuncVPRContext &ctx, cand_pos_t i, cand_pos_t j,
     ctx.set_VPR(ij, contributions);
 }
 
-void compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+void legacy_compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     const cand_pos_t ij = ctx.index_of(i, j);
 
     pf_t contributions = 0;
@@ -450,7 +450,7 @@ void compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, s
     ctx.set_VP(ij, contributions);
 }
 
-void compute_WMBW_restricted(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+void legacy_compute_WMBW_restricted(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
 
@@ -465,7 +465,7 @@ void compute_WMBW_restricted(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t 
     ctx.set_WMBW(ij, contributions);
 }
 
-void compute_WMBP_restricted(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+void legacy_compute_WMBP_restricted(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
     pf_t m1_sum = 0;
@@ -573,7 +573,7 @@ void compute_WMBP_restricted(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t 
     }
 }
 
-void compute_WMB_restricted(PartFuncWMBContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
+void legacy_compute_WMB_restricted(PartFuncWMBContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
     pf_t loop_contrib = 0;
@@ -617,7 +617,7 @@ void compute_WMB_restricted(PartFuncWMBContext &ctx, cand_pos_t i, cand_pos_t j,
     ctx.set_WMB(ij, contributions);
 }
 
-void compute_BE_restricted(PartFuncBEContext &ctx,
+void legacy_compute_BE_restricted(PartFuncBEContext &ctx,
                            cand_pos_t i,
                            cand_pos_t j,
                            cand_pos_t ip,

@@ -16,7 +16,7 @@ class PartFuncVContext {
     virtual pf_t vm_energy(cand_pos_t i, cand_pos_t j, std::vector<int> &up) = 0;
 };
 
-void compute_V_restricted(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void legacy_compute_V_restricted(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
 class PartFuncAllContext {
   public:
@@ -42,7 +42,7 @@ class PartFuncWIContext {
     virtual cand_pos_t turn() const = 0;
 };
 
-void compute_WI_restricted(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void legacy_compute_WI_restricted(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
 class PartFuncWContext {
   public:
@@ -59,7 +59,7 @@ class PartFuncWContext {
     virtual cand_pos_t turn() const = 0;
 };
 
-void compute_W_restricted(PartFuncWContext &ctx, sparse_tree &tree);
+void legacy_compute_W_restricted(PartFuncWContext &ctx, sparse_tree &tree);
 
 class PartFuncVMContext {
   public:
@@ -77,7 +77,7 @@ class PartFuncVMContext {
     virtual cand_pos_t turn() const = 0;
 };
 
-pf_t compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<int> &up);
+pf_t legacy_compute_VM_restricted(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<int> &up);
 
 class PartFuncWMvWMpContext {
   public:
@@ -96,7 +96,7 @@ class PartFuncWMvWMpContext {
     virtual void set_WMv_WMp(cand_pos_t ij, pf_t wmv, pf_t wmp) = 0;
 };
 
-void compute_WMv_WMp_restricted(PartFuncWMvWMpContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<Node> &tree);
+void legacy_compute_WMv_WMp_restricted(PartFuncWMvWMpContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<Node> &tree);
 
 class PartFuncWMContext {
   public:
@@ -118,7 +118,7 @@ class PartFuncWMContext {
     virtual void set_WM(cand_pos_t ij, pf_t value) = 0;
 };
 
-void compute_WM_restricted(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void legacy_compute_WM_restricted(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
 class PartFuncWIPContext {
   public:
@@ -135,7 +135,7 @@ class PartFuncWIPContext {
     virtual cand_pos_t turn() const = 0;
 };
 
-void compute_WIP_restricted(PartFuncWIPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void legacy_compute_WIP_restricted(PartFuncWIPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
 class PartFuncVPLContext {
   public:
@@ -147,7 +147,7 @@ class PartFuncVPLContext {
     virtual void set_VPL(cand_pos_t ij, pf_t value) = 0;
 };
 
-void compute_VPL_restricted(PartFuncVPLContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void legacy_compute_VPL_restricted(PartFuncVPLContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
 class PartFuncVPRContext {
   public:
@@ -160,7 +160,7 @@ class PartFuncVPRContext {
     virtual void set_VPR(cand_pos_t ij, pf_t value) = 0;
 };
 
-void compute_VPR_restricted(PartFuncVPRContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void legacy_compute_VPR_restricted(PartFuncVPRContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
 class PartFuncVPContext {
   public:
@@ -184,7 +184,7 @@ class PartFuncVPContext {
     virtual void set_VP(cand_pos_t ij, pf_t value) = 0;
 };
 
-void compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void legacy_compute_VP_restricted(PartFuncVPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
 class PartFuncWMBWContext {
   public:
@@ -196,7 +196,7 @@ class PartFuncWMBWContext {
     virtual void set_WMBW(cand_pos_t ij, pf_t value) = 0;
 };
 
-void compute_WMBW_restricted(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void legacy_compute_WMBW_restricted(PartFuncWMBWContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
 class PartFuncWMBPContext {
   public:
@@ -215,7 +215,7 @@ class PartFuncWMBPContext {
     virtual void set_WMBP(cand_pos_t ij, pf_t value) = 0;
 };
 
-void compute_WMBP_restricted(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void legacy_compute_WMBP_restricted(PartFuncWMBPContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
 class PartFuncWMBContext {
   public:
@@ -231,7 +231,7 @@ class PartFuncWMBContext {
     virtual void set_WMB(cand_pos_t ij, pf_t value) = 0;
 };
 
-void compute_WMB_restricted(PartFuncWMBContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+void legacy_compute_WMB_restricted(PartFuncWMBContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
 
 class PartFuncBEContext {
   public:
@@ -251,7 +251,7 @@ class PartFuncBEContext {
     virtual void set_BE(cand_pos_t ij, pf_t value) = 0;
 };
 
-void compute_BE_restricted(PartFuncBEContext &ctx,
+void legacy_compute_BE_restricted(PartFuncBEContext &ctx,
                            cand_pos_t i,
                            cand_pos_t j,
                            cand_pos_t ip,
