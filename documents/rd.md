@@ -124,6 +124,40 @@ Rule Object + Constraint Oracle を使って単一パス評価を実装する。
 - rules_core の `enumerate_splits_*` に view を注入できるよう抽象化
 - k-type 専用 path を追加し、slice D から段階導入
 
+### 5.2.6 StructureView / Oracle API（草案 v0）
+**目的**: pk-free/h-type と k-type を同一インターフェースで扱う。
+
+#### A) 基本 API
+- `n()`: 長さ
+- `pair_any(i)`: round/square どちらかの相手。未ペアなら <0
+- `pair_round(i)` / `pair_square(i)`
+- `is_pair_round(i,j)` / `is_pair_square(i,j)`
+- `is_unpaired(i)`: round/square 両方で未ペア
+
+#### B) band view（k-type の square を使用）
+- `parent_index(i)`: band 側 parent（square）
+- `weakly_closed(i,j)`: band view（square）
+- `b(i,j)`, `bp(i,j)`, `B(i,j)`, `Bp(i,j)`: band view 境界
+
+#### C) round view（通常の塩基対）
+- `unpaired_prefix(i)`: VM/ML などで使用（round）
+- `can_pair_left_span(i,k)` / `can_pair_right_span(k,j)`: round view
+
+#### D) empty 判定
+- `is_empty_region(i,j)`: any-pair（round or square）で空判定
+
+#### E) 実装モデル
+- `PkFreeView`: 既存 `sparse_tree` をそのまま利用
+  - `pair_square(i)` は常に <0
+  - `weakly_closed`/B 系は round と同義
+- `KTypeView`: `round_tree` + `square_tree` の dual-tree
+  - band view は `square_tree`
+  - round view は `round_tree`
+
+#### F) rules_core との接続方針
+- `enumerate_splits_*` は view を受け取る設計に改修
+- k-type では view が提供する関数で分岐し、tree 直接参照を避ける
+
 ## 6. 実行制約
 - 当面は `-d2` のみを対象に実装・検証する
 - オプション差分 (`-p`, `-k`, `-r`, `-d0`) は別フェーズで扱う
