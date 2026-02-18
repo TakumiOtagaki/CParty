@@ -79,6 +79,26 @@ Rule Object + Constraint Oracle を使って単一パス評価を実装する。
   - `G ∪ G'` を fixed-structure path に合成して評価
 - `fixed_energy_union_test` を追加し、`union` と `merged` の一致を確認
 
+### 5.1.1 進捗メモ (2026-02-18)
+- `rule_score_*` を **`transition_weight_*`** に統一（呼び出し側も同名へ置換）
+- inside コア側の子参照 API を **`get_<NonTerminal>`** で統一（`get_energy*` を廃止）
+- `rules_runtime` を `inside_fill` に改名・分割（`basic.cc`, `band.cc`, `core.cc`）
+- `rules_core` を `src/scfg/rules_core/` 配下に分割
+- `rules_engine` を `rules_config` + `rules_debug` に分割
+- `rules_part_func` の補助系を `rules_part_helpers` に分割（legacy 本体は保持）
+- **統合コンテキスト** `PartFuncAllContext` を追加（`get_inside(NonTerminal,i,j)` / `get_BE(i,ip,j,jp)` を提供）
+- `SCFG_INSIDE_CORE=1` で core 実装を有効化する分岐を追加
+- core 実装は **ルール列挙 + transition_weight** で書き直し済み
+  - `V/W/WI/VM/WMv/WMp/WM`
+  - band 側: `WIP/VPL/VPR/VP/WMBW/WMBP/WMB/BE`
+- strict compare で **600/600 match** を継続確認（例）
+```
+CPARTY_FIXED_ENERGY_REAL_SCORE=1 \
+SCFG_RULES_MODE=1 SCFG_RULES_APPLICABLE=1 SCFG_INSIDE_CORE=1 \
+test/tools/compare_cli_stdout.sh worktree_legacy_debug/build/CParty build/CParty 42 200 30,50,80
+```
+- 次の課題: **子補正のルール吸収**（例: `WM` の `exp_MLstem` / `expPSM_penalty` / `expb_penalty` を遷移重みや非終端分割で吸収）
+
 ## 5.2 k-type 設計メモ (2026-02-17)
 ### 5.2.1 前提
 - k-type = `()` と `[]` が混在し、相互に交差しうる
