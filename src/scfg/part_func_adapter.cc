@@ -417,10 +417,11 @@ class LocalAllContext final : public PartFuncAllContext {
 
 void compute_W_restricted(W_final_pf &owner, sparse_tree &tree) {
     LocalWContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         if (config.use_inside_core) {
-            compute_W_restricted_core(ctx, tree, config);
+            compute_W_restricted_core(ctx, all, tree, config);
         } else {
             compute_W_restricted_rules(ctx, tree, config);
         }
@@ -431,10 +432,11 @@ void compute_W_restricted(W_final_pf &owner, sparse_tree &tree) {
 
 pf_t compute_VM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, std::vector<int> &up) {
     LocalVMContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         if (config.use_inside_core) {
-            return compute_VM_restricted_core(ctx, i, j, up, config);
+            return compute_VM_restricted_core(ctx, all, i, j, up, config);
         }
         return compute_VM_restricted_rules(ctx, i, j, up, config);
     }
@@ -443,10 +445,11 @@ pf_t compute_VM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, std::v
 
 void compute_V_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalVContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         if (config.use_inside_core) {
-            compute_V_restricted_core(ctx, i, j, tree, config);
+            compute_V_restricted_core(ctx, all, i, j, tree, config);
         } else {
             compute_V_restricted_rules(ctx, i, j, tree, config);
         }
@@ -457,10 +460,11 @@ void compute_V_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_
 
 void compute_WI_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWIContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         if (config.use_inside_core) {
-            compute_WI_restricted_core(ctx, i, j, tree, config);
+            compute_WI_restricted_core(ctx, all, i, j, tree, config);
         } else {
             compute_WI_restricted_rules(ctx, i, j, tree, config);
         }
@@ -471,10 +475,11 @@ void compute_WI_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse
 
 void compute_WMv_WMp_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, std::vector<Node> &tree) {
     LocalWMvWMpContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         if (config.use_inside_core) {
-            compute_WMv_WMp_restricted_core(ctx, i, j, tree, config);
+            compute_WMv_WMp_restricted_core(ctx, all, i, j, tree, config);
         } else {
             compute_WMv_WMp_restricted_rules(ctx, i, j, tree, config);
         }
@@ -485,10 +490,11 @@ void compute_WMv_WMp_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, s
 
 void compute_WM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWMContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         if (config.use_inside_core) {
-            compute_WM_restricted_core(ctx, i, j, tree, config);
+            compute_WM_restricted_core(ctx, all, i, j, tree, config);
         } else {
             compute_WM_restricted_rules(ctx, i, j, tree, config);
         }
@@ -499,11 +505,12 @@ void compute_WM_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse
 
 void compute_WIP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWIPContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         Density2View view(tree, tree);
         if (config.use_inside_core) {
-            compute_WIP_restricted_core(ctx, i, j, view, config);
+            compute_WIP_restricted_core(ctx, all, i, j, view, config);
         } else {
             compute_WIP_restricted_rules(ctx, i, j, view, config);
         }
@@ -514,11 +521,12 @@ void compute_WIP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
 
 void compute_VPL_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalVPLContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         Density2View view(tree, tree);
         if (config.use_inside_core) {
-            compute_VPL_restricted_core(ctx, i, j, view, config);
+            compute_VPL_restricted_core(ctx, all, i, j, view, config);
         } else {
             compute_VPL_restricted_rules(ctx, i, j, view, config);
         }
@@ -529,11 +537,12 @@ void compute_VPL_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
 
 void compute_VPR_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalVPRContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         Density2View view(tree, tree);
         if (config.use_inside_core) {
-            compute_VPR_restricted_core(ctx, i, j, view, config);
+            compute_VPR_restricted_core(ctx, all, i, j, view, config);
         } else {
             compute_VPR_restricted_rules(ctx, i, j, view, config);
         }
@@ -544,11 +553,12 @@ void compute_VPR_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
 
 void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalVPContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         Density2View view(tree, tree);
         if (config.use_inside_core) {
-            compute_VP_restricted_core(ctx, i, j, view, tree, config);
+            compute_VP_restricted_core(ctx, all, i, j, view, tree, config);
         } else {
             compute_VP_restricted_rules(ctx, i, j, view, tree, config);
         }
@@ -559,11 +569,12 @@ void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse
 
 void compute_WMBW_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWMBWContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         Density2View view(tree, tree);
         if (config.use_inside_core) {
-            compute_WMBW_restricted_core(ctx, i, j, view, config);
+            compute_WMBW_restricted_core(ctx, all, i, j, view, config);
         } else {
             compute_WMBW_restricted_rules(ctx, i, j, view, config);
         }
@@ -574,11 +585,12 @@ void compute_WMBW_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spar
 
 void compute_WMBP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWMBPContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         Density2View view(tree, tree);
         if (config.use_inside_core) {
-            compute_WMBP_restricted_core(ctx, i, j, view, tree, config);
+            compute_WMBP_restricted_core(ctx, all, i, j, view, tree, config);
         } else {
             compute_WMBP_restricted_rules(ctx, i, j, view, tree, config);
         }
@@ -589,11 +601,12 @@ void compute_WMBP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spar
 
 void compute_WMB_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse_tree &tree) {
     LocalWMBContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         Density2View view(tree, tree);
         if (config.use_inside_core) {
-            compute_WMB_restricted_core(ctx, i, j, view, tree, config);
+            compute_WMB_restricted_core(ctx, all, i, j, view, tree, config);
         } else {
             compute_WMB_restricted_rules(ctx, i, j, view, tree, config);
         }
@@ -609,11 +622,12 @@ void compute_BE_restricted(W_final_pf &owner,
                            cand_pos_t jp,
                            sparse_tree &tree) {
     LocalBEContext ctx(owner);
+    LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
         Density2View view(tree, tree);
         if (config.use_inside_core) {
-            compute_BE_restricted_core(ctx, i, j, ip, jp, view, tree, config);
+            compute_BE_restricted_core(ctx, all, i, j, ip, jp, view, tree, config);
         } else {
             compute_BE_restricted_rules(ctx, i, j, ip, jp, view, tree, config);
         }

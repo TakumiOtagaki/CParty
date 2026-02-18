@@ -11,7 +11,10 @@ namespace scfg {
 
 // 現状は inside_fill の実装に委譲する。今後このファイルで機械的DPコアを実装する。
 
-void compute_W_restricted_core(PartFuncWContext &ctx, sparse_tree &tree, const RulesConfig &config) {
+void compute_W_restricted_core(PartFuncWContext &ctx,
+                               PartFuncAllContext &all,
+                               sparse_tree &tree,
+                               const RulesConfig &config) {
     const cand_pos_t n = ctx.n();
     const cand_pos_t turn = ctx.turn();
 
@@ -26,13 +29,7 @@ void compute_W_restricted_core(PartFuncWContext &ctx, sparse_tree &tree, const R
                 pf_t term = 1;
                 const auto children = expand_w(entry.rule, 1, j, entry.split);
                 for (const auto &child : children) {
-                    if (child.nonterminal == NonTerminal::W) {
-                        term *= ctx.get_W(child.j);
-                    } else if (child.nonterminal == NonTerminal::V) {
-                        term *= ctx.get_V(child.i, child.j);
-                    } else if (child.nonterminal == NonTerminal::WMB) {
-                        term *= ctx.get_WMB(child.i, child.j);
-                    }
+                    term *= all.get_inside(child.nonterminal, child.i, child.j);
                 }
                 contributions += term * coeff;
             }
@@ -48,13 +45,7 @@ void compute_W_restricted_core(PartFuncWContext &ctx, sparse_tree &tree, const R
                 pf_t term = 1;
                 const auto children = expand_w(rule, 1, j, split);
                 for (const auto &child : children) {
-                    if (child.nonterminal == NonTerminal::W) {
-                        term *= ctx.get_W(child.j);
-                    } else if (child.nonterminal == NonTerminal::V) {
-                        term *= ctx.get_V(child.i, child.j);
-                    } else if (child.nonterminal == NonTerminal::WMB) {
-                        term *= ctx.get_WMB(child.i, child.j);
-                    }
+                    term *= all.get_inside(child.nonterminal, child.i, child.j);
                 }
                 contributions += term * coeff;
             }
@@ -63,7 +54,13 @@ void compute_W_restricted_core(PartFuncWContext &ctx, sparse_tree &tree, const R
     }
 }
 
-void compute_V_restricted_core(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
+void compute_V_restricted_core(PartFuncVContext &ctx,
+                               PartFuncAllContext &all,
+                               cand_pos_t i,
+                               cand_pos_t j,
+                               sparse_tree &tree,
+                               const RulesConfig &config) {
+    (void)all;
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
     if (config.use_applicable) {
@@ -87,7 +84,12 @@ void compute_V_restricted_core(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j
     ctx.set_V(ij, contributions);
 }
 
-pf_t compute_VM_restricted_core(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<int> &up, const RulesConfig &config) {
+pf_t compute_VM_restricted_core(PartFuncVMContext &ctx,
+                                PartFuncAllContext &all,
+                                cand_pos_t i,
+                                cand_pos_t j,
+                                std::vector<int> &up,
+                                const RulesConfig &config) {
     pf_t contributions = 0;
     const cand_pos_t ij = ctx.index_of(i, j);
     const bool apply_scale2 = is_rule_enabled(config, RuleId::VM_SCALE2);
@@ -101,13 +103,7 @@ pf_t compute_VM_restricted_core(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t
             pf_t term = 1;
             const auto children = expand_vm(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::WM) {
-                    term *= ctx.get_WM(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMv) {
-                    term *= ctx.get_WMv(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMp) {
-                    term *= ctx.get_WMp(child.i, child.j);
-                }
+                term *= all.get_inside(child.nonterminal, child.i, child.j);
             }
             if (entry.rule == RuleId::VM_SPLIT_WMp_BASE) {
                 term *= ctx.expMLbase(entry.split.k - i - 1);
@@ -131,13 +127,7 @@ pf_t compute_VM_restricted_core(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t
             pf_t term = 1;
             const auto children = expand_vm(rule, i, j, split);
             for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::WM) {
-                    term *= ctx.get_WM(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMv) {
-                    term *= ctx.get_WMv(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMp) {
-                    term *= ctx.get_WMp(child.i, child.j);
-                }
+                term *= all.get_inside(child.nonterminal, child.i, child.j);
             }
             if (rule == RuleId::VM_SPLIT_WMp_BASE) {
                 term *= ctx.expMLbase(split.k - i - 1);
@@ -153,7 +143,12 @@ pf_t compute_VM_restricted_core(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t
     return contributions;
 }
 
-void compute_WI_restricted_core(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
+void compute_WI_restricted_core(PartFuncWIContext &ctx,
+                                PartFuncAllContext &all,
+                                cand_pos_t i,
+                                cand_pos_t j,
+                                sparse_tree &tree,
+                                const RulesConfig &config) {
     const cand_pos_t ij = ctx.index_of(i, j);
     pf_t contributions = 0;
     if (config.use_applicable) {
@@ -165,13 +160,7 @@ void compute_WI_restricted_core(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t
             pf_t term = 1;
             const auto children = expand_wi(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_WI(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_V(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_WMB(child.i, child.j);
-                }
+                term *= all.get_inside(child.nonterminal, child.i, child.j);
             }
             contributions += term * coeff;
         }
@@ -187,13 +176,7 @@ void compute_WI_restricted_core(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t
             pf_t term = 1;
             const auto children = expand_wi(rule, i, j, split);
             for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::WI) {
-                    term *= ctx.get_WI(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_V(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_WMB(child.i, child.j);
-                }
+                term *= all.get_inside(child.nonterminal, child.i, child.j);
             }
             contributions += term * coeff;
         }
@@ -203,6 +186,7 @@ void compute_WI_restricted_core(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_t
 }
 
 void compute_WMv_WMp_restricted_core(PartFuncWMvWMpContext &ctx,
+                                     PartFuncAllContext &all,
                                      cand_pos_t i,
                                      cand_pos_t j,
                                      std::vector<Node> &tree,
@@ -220,15 +204,7 @@ void compute_WMv_WMp_restricted_core(PartFuncWMvWMpContext &ctx,
             pf_t term = 1;
             const auto children = expand_wmv_wmp(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_V(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMv) {
-                    term *= ctx.get_WMv(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_WMB(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMp) {
-                    term *= ctx.get_WMp(child.i, child.j);
-                }
+                term *= all.get_inside(child.nonterminal, child.i, child.j);
             }
             if (entry.rule == RuleId::WMv_STEM_V || entry.rule == RuleId::WMv_EXTEND_UNPAIRED) {
                 WMv_contributions += term * coeff;
@@ -248,11 +224,7 @@ void compute_WMv_WMp_restricted_core(PartFuncWMvWMpContext &ctx,
             pf_t term = 1;
             const auto children = expand_wmv_wmp(rule, i, j, split);
             for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_V(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMv) {
-                    term *= ctx.get_WMv(child.i, child.j);
-                }
+                term *= all.get_inside(child.nonterminal, child.i, child.j);
             }
             WMv_contributions += term * coeff;
         }
@@ -267,11 +239,7 @@ void compute_WMv_WMp_restricted_core(PartFuncWMvWMpContext &ctx,
             pf_t term = 1;
             const auto children = expand_wmv_wmp(rule, i, j, split);
             for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_WMB(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMp) {
-                    term *= ctx.get_WMp(child.i, child.j);
-                }
+                term *= all.get_inside(child.nonterminal, child.i, child.j);
             }
             WMp_contributions += term * coeff;
         }
@@ -280,7 +248,12 @@ void compute_WMv_WMp_restricted_core(PartFuncWMvWMpContext &ctx,
     ctx.set_WMv_WMp(ij, WMv_contributions, WMp_contributions);
 }
 
-void compute_WM_restricted_core(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
+void compute_WM_restricted_core(PartFuncWMContext &ctx,
+                                PartFuncAllContext &all,
+                                cand_pos_t i,
+                                cand_pos_t j,
+                                sparse_tree &tree,
+                                const RulesConfig &config) {
     pf_t contributions = 0;
     const cand_pos_t ij = ctx.index_of(i, j);
     const char *trace_env = std::getenv("CPARTY_PF_TRACE_WM");
@@ -305,13 +278,10 @@ void compute_WM_restricted_core(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t
             const auto children = expand_wm(entry.rule, i, j, entry.split);
             pf_t term = 1;
             for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::WM) {
-                    term *= ctx.get_WM(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_V(child.i, child.j);
+                term *= all.get_inside(child.nonterminal, child.i, child.j);
+                if (child.nonterminal == NonTerminal::V) {
                     term *= ctx.exp_MLstem(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_WMB(child.i, child.j);
                     term *= ctx.expPSM_penalty() * ctx.expb_penalty();
                 }
             }
@@ -345,13 +315,10 @@ void compute_WM_restricted_core(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t
             const auto children = expand_wm(rule, i, j, split);
             pf_t term = 1;
             for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::WM) {
-                    term *= ctx.get_WM(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::V) {
-                    term *= ctx.get_V(child.i, child.j);
+                term *= all.get_inside(child.nonterminal, child.i, child.j);
+                if (child.nonterminal == NonTerminal::V) {
                     term *= ctx.exp_MLstem(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
-                    term *= ctx.get_WMB(child.i, child.j);
                     term *= ctx.expPSM_penalty() * ctx.expb_penalty();
                 }
             }
@@ -377,65 +344,80 @@ void compute_WM_restricted_core(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t
 }
 
 void compute_WIP_restricted_core(PartFuncWIPContext &ctx,
+                                 PartFuncAllContext &all,
                                  cand_pos_t i,
                                  cand_pos_t j,
                                  const StructureView &view,
                                  const RulesConfig &config) {
+    (void)all;
     compute_WIP_restricted_rules(ctx, i, j, view, config);
 }
 
 void compute_VPL_restricted_core(PartFuncVPLContext &ctx,
+                                 PartFuncAllContext &all,
                                  cand_pos_t i,
                                  cand_pos_t j,
                                  const StructureView &view,
                                  const RulesConfig &config) {
+    (void)all;
     compute_VPL_restricted_rules(ctx, i, j, view, config);
 }
 
 void compute_VPR_restricted_core(PartFuncVPRContext &ctx,
+                                 PartFuncAllContext &all,
                                  cand_pos_t i,
                                  cand_pos_t j,
                                  const StructureView &view,
                                  const RulesConfig &config) {
+    (void)all;
     compute_VPR_restricted_rules(ctx, i, j, view, config);
 }
 
 void compute_VP_restricted_core(PartFuncVPContext &ctx,
+                                PartFuncAllContext &all,
                                 cand_pos_t i,
                                 cand_pos_t j,
                                 const StructureView &view,
                                 sparse_tree &tree,
                                 const RulesConfig &config) {
+    (void)all;
     compute_VP_restricted_rules(ctx, i, j, view, tree, config);
 }
 
 void compute_WMBW_restricted_core(PartFuncWMBWContext &ctx,
+                                  PartFuncAllContext &all,
                                   cand_pos_t i,
                                   cand_pos_t j,
                                   const StructureView &view,
                                   const RulesConfig &config) {
+    (void)all;
     compute_WMBW_restricted_rules(ctx, i, j, view, config);
 }
 
 void compute_WMBP_restricted_core(PartFuncWMBPContext &ctx,
+                                  PartFuncAllContext &all,
                                   cand_pos_t i,
                                   cand_pos_t j,
                                   const StructureView &view,
                                   sparse_tree &tree,
                                   const RulesConfig &config) {
+    (void)all;
     compute_WMBP_restricted_rules(ctx, i, j, view, tree, config);
 }
 
 void compute_WMB_restricted_core(PartFuncWMBContext &ctx,
+                                 PartFuncAllContext &all,
                                  cand_pos_t i,
                                  cand_pos_t j,
                                  const StructureView &view,
                                  sparse_tree &tree,
                                  const RulesConfig &config) {
+    (void)all;
     compute_WMB_restricted_rules(ctx, i, j, view, tree, config);
 }
 
 void compute_BE_restricted_core(PartFuncBEContext &ctx,
+                                PartFuncAllContext &all,
                                 cand_pos_t i,
                                 cand_pos_t j,
                                 cand_pos_t ip,
@@ -443,6 +425,7 @@ void compute_BE_restricted_core(PartFuncBEContext &ctx,
                                 const StructureView &view,
                                 sparse_tree &tree,
                                 const RulesConfig &config) {
+    (void)all;
     compute_BE_restricted_rules(ctx, i, j, ip, jp, view, tree, config);
 }
 
