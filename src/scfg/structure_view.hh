@@ -99,9 +99,9 @@ class PkFreeView final : public StructureView {
     sparse_tree &tree_;
 };
 
-class KTypeView final : public StructureView {
+class Density2View final : public StructureView {
   public:
-    KTypeView(sparse_tree &round_tree, sparse_tree &square_tree)
+    Density2View(sparse_tree &round_tree, sparse_tree &square_tree)
         : round_tree_(round_tree), square_tree_(square_tree) {}
 
     cand_pos_t n() const override { return static_cast<cand_pos_t>(round_tree_.n); }

@@ -425,7 +425,7 @@ void compute_WIP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
     LocalWIPContext ctx(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        KTypeView view(tree, tree);
+        Density2View view(tree, tree);
         compute_WIP_restricted_rules(ctx, i, j, view, config);
     } else {
         compute_WIP_restricted(ctx, i, j, tree);
@@ -436,7 +436,7 @@ void compute_VPL_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
     LocalVPLContext ctx(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        KTypeView view(tree, tree);
+        Density2View view(tree, tree);
         compute_VPL_restricted_rules(ctx, i, j, view, config);
     } else {
         compute_VPL_restricted(ctx, i, j, tree);
@@ -447,7 +447,7 @@ void compute_VPR_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
     LocalVPRContext ctx(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        KTypeView view(tree, tree);
+        Density2View view(tree, tree);
         compute_VPR_restricted_rules(ctx, i, j, view, config);
     } else {
         compute_VPR_restricted(ctx, i, j, tree);
@@ -458,7 +458,7 @@ void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse
     LocalVPContext ctx(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        KTypeView view(tree, tree);
+        Density2View view(tree, tree);
         compute_VP_restricted_rules(ctx, i, j, view, tree, config);
     } else {
         compute_VP_restricted(ctx, i, j, tree);
@@ -469,7 +469,7 @@ void compute_WMBW_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spar
     LocalWMBWContext ctx(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        KTypeView view(tree, tree);
+        Density2View view(tree, tree);
         compute_WMBW_restricted_rules(ctx, i, j, view, config);
     } else {
         compute_WMBW_restricted(ctx, i, j, tree);
@@ -480,7 +480,7 @@ void compute_WMBP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spar
     LocalWMBPContext ctx(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        KTypeView view(tree, tree);
+        Density2View view(tree, tree);
         compute_WMBP_restricted_rules(ctx, i, j, view, tree, config);
     } else {
         compute_WMBP_restricted(ctx, i, j, tree);
@@ -491,7 +491,7 @@ void compute_WMB_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
     LocalWMBContext ctx(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        KTypeView view(tree, tree);
+        Density2View view(tree, tree);
         compute_WMB_restricted_rules(ctx, i, j, view, tree, config);
     } else {
         compute_WMB_restricted(ctx, i, j, tree);
@@ -507,7 +507,7 @@ void compute_BE_restricted(W_final_pf &owner,
     LocalBEContext ctx(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        KTypeView view(tree, tree);
+        Density2View view(tree, tree);
         compute_BE_restricted_rules(ctx, i, j, ip, jp, view, tree, config);
     } else {
         compute_BE_restricted(ctx, i, j, ip, jp, tree);
