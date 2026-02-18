@@ -47,27 +47,24 @@ pf_t compute_VM_restricted_rules(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_
     const bool apply_scale2 = is_rule_enabled(config, RuleId::VM_SCALE2);
     if (config.use_applicable) {
         const auto applicable = applicable_rules_vm(i, j, ctx, up);
-        for (const auto &entry : applicable) {
-            if (entry.rule == RuleId::VM_SCALE2) continue;
-            if (!is_rule_enabled(config, entry.rule)) continue;
-            record_rule_hit(entry.rule);
-            pf_t coeff = transition_weight_vm(entry.rule, i, j, entry.split, ctx, up);
-            pf_t term = 1;
-            const auto children = expand_vm(entry.rule, i, j, entry.split);
-            for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::WM) {
-                    term *= ctx.get_WM(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMv) {
-                    term *= ctx.get_WMv(child.i, child.j);
-                } else if (child.nonterminal == NonTerminal::WMp) {
-                    term *= ctx.get_WMp(child.i, child.j);
+            for (const auto &entry : applicable) {
+                if (entry.rule == RuleId::VM_SCALE2) continue;
+                if (!is_rule_enabled(config, entry.rule)) continue;
+                record_rule_hit(entry.rule);
+                pf_t coeff = transition_weight_vm(entry.rule, i, j, entry.split, ctx, up);
+                pf_t term = 1;
+                const auto children = expand_vm(entry.rule, i, j, entry.split);
+                for (const auto &child : children) {
+                    if (child.nonterminal == NonTerminal::WM) {
+                        term *= ctx.get_WM(child.i, child.j);
+                    } else if (child.nonterminal == NonTerminal::WMv) {
+                        term *= ctx.get_WMv(child.i, child.j);
+                    } else if (child.nonterminal == NonTerminal::WMp) {
+                        term *= ctx.get_WMp(child.i, child.j);
+                    }
                 }
+                contributions += term * coeff;
             }
-            if (entry.rule == RuleId::VM_SPLIT_WMp_BASE) {
-                term *= ctx.expMLbase(entry.split.k - i - 1);
-            }
-            contributions += term * coeff;
-        }
         if (apply_scale2) {
             record_rule_hit(RuleId::VM_SCALE2);
             contributions *= ctx.scale2();
@@ -92,9 +89,6 @@ pf_t compute_VM_restricted_rules(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_
                 } else if (child.nonterminal == NonTerminal::WMp) {
                     term *= ctx.get_WMp(child.i, child.j);
                 }
-            }
-            if (rule == RuleId::VM_SPLIT_WMp_BASE) {
-                term *= ctx.expMLbase(split.k - i - 1);
             }
             contributions += term * coeff;
         }

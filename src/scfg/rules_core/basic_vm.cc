@@ -75,13 +75,13 @@ pf_t transition_weight_vm(RuleId rule,
                    const RuleSplit &split,
                    PartFuncVMContext &ctx,
                    std::vector<int> &up) {
-    (void)split;
     (void)up;
     switch (rule) {
     case RuleId::VM_SPLIT_WM_WMv:
     case RuleId::VM_SPLIT_WM_WMp:
-    case RuleId::VM_SPLIT_WMp_BASE:
         return ctx.exp_Mbloop(i, j) * ctx.expMLclosing();
+    case RuleId::VM_SPLIT_WMp_BASE:
+        return ctx.exp_Mbloop(i, j) * ctx.expMLclosing() * ctx.expMLbase(split.k - i - 1);
     default:
         return 0;
     }

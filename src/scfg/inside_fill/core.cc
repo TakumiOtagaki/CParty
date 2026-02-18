@@ -118,9 +118,6 @@ pf_t compute_VM_restricted_core(PartFuncVMContext &ctx,
             pf_t coeff = transition_weight_vm(entry.rule, i, j, entry.split, ctx, up);
             const auto children = expand_vm(entry.rule, i, j, entry.split);
             pf_t term = product_children(all, children);
-            if (entry.rule == RuleId::VM_SPLIT_WMp_BASE) {
-                term *= ctx.expMLbase(entry.split.k - i - 1);
-            }
             contributions += term * coeff;
         }
         if (apply_scale2) {
@@ -139,9 +136,6 @@ pf_t compute_VM_restricted_core(PartFuncVMContext &ctx,
             pf_t coeff = transition_weight_vm(rule, i, j, split, ctx, up);
             const auto children = expand_vm(rule, i, j, split);
             pf_t term = product_children(all, children);
-            if (rule == RuleId::VM_SPLIT_WMp_BASE) {
-                term *= ctx.expMLbase(split.k - i - 1);
-            }
             contributions += term * coeff;
         }
     }
