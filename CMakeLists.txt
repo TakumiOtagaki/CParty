@@ -48,7 +48,9 @@ SET(SOURCE
   src/scfg/rules_api.cc
   src/scfg/rules_core_base.cc
   src/scfg/rules_core_basic.cc
-  src/scfg/rules_core_band.cc
+  src/scfg/rules_core/band_vp.cc
+  src/scfg/rules_core/band_wmb.cc
+  src/scfg/rules_core/band_be.cc
   src/scfg/rules_engine.cc
   src/scfg/rules_runtime.cc
   src/scfg/rules_pseudo_loop.cc
@@ -155,7 +157,9 @@ if(BUILD_TESTING)
     src/scfg/rules_api.cc
     src/scfg/rules_core_base.cc
     src/scfg/rules_core_basic.cc
-    src/scfg/rules_core_band.cc
+    src/scfg/rules_core/band_vp.cc
+    src/scfg/rules_core/band_wmb.cc
+    src/scfg/rules_core/band_be.cc
     src/scfg/rules_part_func.cc
   )
   add_executable(multi_secstruct_schema_test test/multi_secstruct_schema_test.cc)
