@@ -365,6 +365,54 @@ class LocalBEContext final : public PartFuncBEContext {
     W_final_pf &owner_;
 };
 
+class LocalAllContext final : public PartFuncAllContext {
+  public:
+    explicit LocalAllContext(W_final_pf &owner) : owner_(owner) {}
+
+    pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) override {
+        return owner_.get_BE(i, j, ip, jp, tree);
+    }
+
+    pf_t get_inside(NonTerminal nt, cand_pos_t i, cand_pos_t j) override {
+        switch (nt) {
+        case NonTerminal::V:
+            return owner_.get_energy(i, j);
+        case NonTerminal::WI:
+            return owner_.get_energy_WI(i, j);
+        case NonTerminal::W:
+            return PartFuncAdapterAccess::W(owner_)[j];
+        case NonTerminal::VM:
+            return owner_.get_energy_VM(i, j);
+        case NonTerminal::WMv:
+            return owner_.get_energy_WMv(i, j);
+        case NonTerminal::WMp:
+            return owner_.get_energy_WMp(i, j);
+        case NonTerminal::WM:
+            return owner_.get_energy_WM(i, j);
+        case NonTerminal::WIP:
+            return owner_.get_energy_WIP(i, j);
+        case NonTerminal::VPL:
+            return owner_.get_energy_VPL(i, j);
+        case NonTerminal::VPR:
+            return owner_.get_energy_VPR(i, j);
+        case NonTerminal::VP:
+            return owner_.get_energy_VP(i, j);
+        case NonTerminal::WMBW:
+            return owner_.get_energy_WMBW(i, j);
+        case NonTerminal::WMBP:
+            return owner_.get_energy_WMBP(i, j);
+        case NonTerminal::WMB:
+            return owner_.get_energy_WMB(i, j);
+        case NonTerminal::BE:
+            return 0;
+        }
+        return 0;
+    }
+
+  private:
+    W_final_pf &owner_;
+};
+
 } // namespace
 
 void compute_W_restricted(W_final_pf &owner, sparse_tree &tree) {

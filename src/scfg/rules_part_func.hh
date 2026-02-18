@@ -3,6 +3,7 @@
 
 #include "base_types.hh"
 #include "sparse_tree.hh"
+#include "scfg/rules_api.hh"
 namespace scfg {
 class PartFuncVContext {
   public:
@@ -16,6 +17,15 @@ class PartFuncVContext {
 };
 
 void compute_V_restricted(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree);
+
+class PartFuncAllContext {
+  public:
+    virtual ~PartFuncAllContext() = default;
+
+    // BE は (i, j) だけで一意に決まらないため別経路で取得する。
+    virtual pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) = 0;
+    virtual pf_t get_inside(NonTerminal nt, cand_pos_t i, cand_pos_t j) = 0;
+};
 
 class PartFuncWIContext {
   public:
