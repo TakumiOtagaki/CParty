@@ -11,6 +11,30 @@ namespace scfg {
 
 // 現状は inside_fill の実装に委譲する。今後このファイルで機械的DPコアを実装する。
 
+static inline pf_t product_children(PartFuncAllContext &all, const std::vector<RuleChild> &children) {
+    pf_t term = 1;
+    for (const auto &child : children) {
+        term *= all.get_inside(child.nonterminal, child.i, child.j);
+    }
+    return term;
+}
+
+static inline pf_t product_children_be(PartFuncAllContext &all,
+                                       const std::vector<RuleChild> &children,
+                                       cand_pos_t ip,
+                                       cand_pos_t jp,
+                                       sparse_tree &tree) {
+    pf_t term = 1;
+    for (const auto &child : children) {
+        if (child.nonterminal == NonTerminal::BE) {
+            term *= all.get_BE(child.i, child.j, ip, jp, tree);
+        } else {
+            term *= all.get_inside(child.nonterminal, child.i, child.j);
+        }
+    }
+    return term;
+}
+
 void compute_W_restricted_core(PartFuncWContext &ctx,
                                PartFuncAllContext &all,
                                sparse_tree &tree,
@@ -26,12 +50,8 @@ void compute_W_restricted_core(PartFuncWContext &ctx,
                 if (!is_rule_enabled(config, entry.rule)) continue;
                 record_rule_hit(entry.rule);
                 pf_t coeff = transition_weight_w(entry.rule, 1, j, entry.split, ctx);
-                pf_t term = 1;
                 const auto children = expand_w(entry.rule, 1, j, entry.split);
-                for (const auto &child : children) {
-                    term *= all.get_inside(child.nonterminal, child.i, child.j);
-                }
-                contributions += term * coeff;
+                contributions += product_children(all, children) * coeff;
             }
             ctx.set_W(j, contributions);
             continue;
@@ -42,12 +62,8 @@ void compute_W_restricted_core(PartFuncWContext &ctx,
             for (const auto &split : splits) {
                 record_rule_hit(rule);
                 pf_t coeff = transition_weight_w(rule, 1, j, split, ctx);
-                pf_t term = 1;
                 const auto children = expand_w(rule, 1, j, split);
-                for (const auto &child : children) {
-                    term *= all.get_inside(child.nonterminal, child.i, child.j);
-                }
-                contributions += term * coeff;
+                contributions += product_children(all, children) * coeff;
             }
         }
         ctx.set_W(j, contributions);
@@ -100,11 +116,8 @@ pf_t compute_VM_restricted_core(PartFuncVMContext &ctx,
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
             pf_t coeff = transition_weight_vm(entry.rule, i, j, entry.split, ctx, up);
-            pf_t term = 1;
             const auto children = expand_vm(entry.rule, i, j, entry.split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
+            pf_t term = product_children(all, children);
             if (entry.rule == RuleId::VM_SPLIT_WMp_BASE) {
                 term *= ctx.expMLbase(entry.split.k - i - 1);
             }
@@ -124,11 +137,8 @@ pf_t compute_VM_restricted_core(PartFuncVMContext &ctx,
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = transition_weight_vm(rule, i, j, split, ctx, up);
-            pf_t term = 1;
             const auto children = expand_vm(rule, i, j, split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
+            pf_t term = product_children(all, children);
             if (rule == RuleId::VM_SPLIT_WMp_BASE) {
                 term *= ctx.expMLbase(split.k - i - 1);
             }
@@ -157,12 +167,8 @@ void compute_WI_restricted_core(PartFuncWIContext &ctx,
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
             pf_t coeff = transition_weight_wi(entry.rule, i, j, entry.split, ctx);
-            pf_t term = 1;
             const auto children = expand_wi(entry.rule, i, j, entry.split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            contributions += term * coeff;
+            contributions += product_children(all, children) * coeff;
         }
         ctx.set_WI(ij, contributions);
         return;
@@ -173,12 +179,8 @@ void compute_WI_restricted_core(PartFuncWIContext &ctx,
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = transition_weight_wi(rule, i, j, split, ctx);
-            pf_t term = 1;
             const auto children = expand_wi(rule, i, j, split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            contributions += term * coeff;
+            contributions += product_children(all, children) * coeff;
         }
     }
 
@@ -201,11 +203,8 @@ void compute_WMv_WMp_restricted_core(PartFuncWMvWMpContext &ctx,
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
             pf_t coeff = transition_weight_wmv_wmp(entry.rule, i, j, entry.split, ctx, tree);
-            pf_t term = 1;
             const auto children = expand_wmv_wmp(entry.rule, i, j, entry.split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
+            const pf_t term = product_children(all, children);
             if (entry.rule == RuleId::WMv_STEM_V || entry.rule == RuleId::WMv_EXTEND_UNPAIRED) {
                 WMv_contributions += term * coeff;
             } else {
@@ -221,12 +220,8 @@ void compute_WMv_WMp_restricted_core(PartFuncWMvWMpContext &ctx,
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = transition_weight_wmv_wmp(rule, i, j, split, ctx, tree);
-            pf_t term = 1;
             const auto children = expand_wmv_wmp(rule, i, j, split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            WMv_contributions += term * coeff;
+            WMv_contributions += product_children(all, children) * coeff;
         }
     }
 
@@ -236,12 +231,8 @@ void compute_WMv_WMp_restricted_core(PartFuncWMvWMpContext &ctx,
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = transition_weight_wmv_wmp(rule, i, j, split, ctx, tree);
-            pf_t term = 1;
             const auto children = expand_wmv_wmp(rule, i, j, split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            WMp_contributions += term * coeff;
+            WMp_contributions += product_children(all, children) * coeff;
         }
     }
 
@@ -357,12 +348,8 @@ void compute_WIP_restricted_core(PartFuncWIPContext &ctx,
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
             pf_t coeff = transition_weight_wip(entry.rule, i, j, entry.split, ctx);
-            pf_t term = 1;
             const auto children = expand_wip(entry.rule, i, j, entry.split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            contributions += term * coeff;
+            contributions += product_children(all, children) * coeff;
         }
         ctx.set_WIP(ij, contributions);
         return;
@@ -373,12 +360,8 @@ void compute_WIP_restricted_core(PartFuncWIPContext &ctx,
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = transition_weight_wip(rule, i, j, split, ctx);
-            pf_t term = 1;
             const auto children = expand_wip(rule, i, j, split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            contributions += term * coeff;
+            contributions += product_children(all, children) * coeff;
         }
     }
     ctx.set_WIP(ij, contributions);
@@ -398,12 +381,8 @@ void compute_VPL_restricted_core(PartFuncVPLContext &ctx,
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
             pf_t coeff = transition_weight_vpl(entry.rule, i, j, entry.split, ctx);
-            pf_t term = 1;
             const auto children = expand_vpl(entry.rule, i, j, entry.split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            contributions += term * coeff;
+            contributions += product_children(all, children) * coeff;
         }
         ctx.set_VPL(ij, contributions);
         return;
@@ -414,12 +393,8 @@ void compute_VPL_restricted_core(PartFuncVPLContext &ctx,
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = transition_weight_vpl(rule, i, j, split, ctx);
-            pf_t term = 1;
             const auto children = expand_vpl(rule, i, j, split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            contributions += term * coeff;
+            contributions += product_children(all, children) * coeff;
         }
     }
     ctx.set_VPL(ij, contributions);
@@ -439,12 +414,8 @@ void compute_VPR_restricted_core(PartFuncVPRContext &ctx,
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
             pf_t coeff = transition_weight_vpr(entry.rule, i, j, entry.split, ctx);
-            pf_t term = 1;
             const auto children = expand_vpr(entry.rule, i, j, entry.split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            contributions += term * coeff;
+            contributions += product_children(all, children) * coeff;
         }
         ctx.set_VPR(ij, contributions);
         return;
@@ -455,12 +426,8 @@ void compute_VPR_restricted_core(PartFuncVPRContext &ctx,
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = transition_weight_vpr(rule, i, j, split, ctx);
-            pf_t term = 1;
             const auto children = expand_vpr(rule, i, j, split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            contributions += term * coeff;
+            contributions += product_children(all, children) * coeff;
         }
     }
     ctx.set_VPR(ij, contributions);
@@ -481,12 +448,8 @@ void compute_VP_restricted_core(PartFuncVPContext &ctx,
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
             pf_t coeff = transition_weight_vp(entry.rule, i, j, entry.split, ctx, tree);
-            pf_t term = 1;
             const auto children = expand_vp(entry.rule, i, j, entry.split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            contributions += term * coeff;
+            contributions += product_children(all, children) * coeff;
         }
         ctx.set_VP(ij, contributions);
         return;
@@ -497,12 +460,8 @@ void compute_VP_restricted_core(PartFuncVPContext &ctx,
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = transition_weight_vp(rule, i, j, split, ctx, tree);
-            pf_t term = 1;
             const auto children = expand_vp(rule, i, j, split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            contributions += term * coeff;
+            contributions += product_children(all, children) * coeff;
         }
     }
     ctx.set_VP(ij, contributions);
@@ -522,12 +481,8 @@ void compute_WMBW_restricted_core(PartFuncWMBWContext &ctx,
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
             pf_t coeff = transition_weight_wmbw(entry.rule, i, j, entry.split, ctx);
-            pf_t term = 1;
             const auto children = expand_wmbw(entry.rule, i, j, entry.split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            contributions += term * coeff;
+            contributions += product_children(all, children) * coeff;
         }
         ctx.set_WMBW(ij, contributions);
         return;
@@ -538,12 +493,8 @@ void compute_WMBW_restricted_core(PartFuncWMBWContext &ctx,
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = transition_weight_wmbw(rule, i, j, split, ctx);
-            pf_t term = 1;
             const auto children = expand_wmbw(rule, i, j, split);
-            for (const auto &child : children) {
-                term *= all.get_inside(child.nonterminal, child.i, child.j);
-            }
-            contributions += term * coeff;
+            contributions += product_children(all, children) * coeff;
         }
     }
     ctx.set_WMBW(ij, contributions);
@@ -564,16 +515,8 @@ void compute_WMBP_restricted_core(PartFuncWMBPContext &ctx,
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
             pf_t coeff = transition_weight_wmbp(entry.rule, i, j, entry.split, ctx, tree);
-            pf_t term = 1;
             const auto children = expand_wmbp(entry.rule, i, j, entry.split);
-            for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::BE) {
-                    term *= all.get_BE(child.i, child.j, entry.split.p, entry.split.q, tree);
-                } else {
-                    term *= all.get_inside(child.nonterminal, child.i, child.j);
-                }
-            }
-            contributions += term * coeff;
+            contributions += product_children_be(all, children, entry.split.p, entry.split.q, tree) * coeff;
         }
         ctx.set_WMBP(ij, contributions);
         return;
@@ -584,16 +527,8 @@ void compute_WMBP_restricted_core(PartFuncWMBPContext &ctx,
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = transition_weight_wmbp(rule, i, j, split, ctx, tree);
-            pf_t term = 1;
             const auto children = expand_wmbp(rule, i, j, split);
-            for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::BE) {
-                    term *= all.get_BE(child.i, child.j, split.p, split.q, tree);
-                } else {
-                    term *= all.get_inside(child.nonterminal, child.i, child.j);
-                }
-            }
-            contributions += term * coeff;
+            contributions += product_children_be(all, children, split.p, split.q, tree) * coeff;
         }
     }
     ctx.set_WMBP(ij, contributions);
@@ -614,16 +549,8 @@ void compute_WMB_restricted_core(PartFuncWMBContext &ctx,
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
             pf_t coeff = transition_weight_wmb(entry.rule, i, j, entry.split, ctx, tree);
-            pf_t term = 1;
             const auto children = expand_wmb(entry.rule, i, j, entry.split);
-            for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::BE) {
-                    term *= all.get_BE(child.i, child.j, entry.split.p, entry.split.q, tree);
-                } else {
-                    term *= all.get_inside(child.nonterminal, child.i, child.j);
-                }
-            }
-            contributions += term * coeff;
+            contributions += product_children_be(all, children, entry.split.p, entry.split.q, tree) * coeff;
         }
         ctx.set_WMB(ij, contributions);
         return;
@@ -634,16 +561,8 @@ void compute_WMB_restricted_core(PartFuncWMBContext &ctx,
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = transition_weight_wmb(rule, i, j, split, ctx, tree);
-            pf_t term = 1;
             const auto children = expand_wmb(rule, i, j, split);
-            for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::BE) {
-                    term *= all.get_BE(child.i, child.j, split.p, split.q, tree);
-                } else {
-                    term *= all.get_inside(child.nonterminal, child.i, child.j);
-                }
-            }
-            contributions += term * coeff;
+            contributions += product_children_be(all, children, split.p, split.q, tree) * coeff;
         }
     }
     ctx.set_WMB(ij, contributions);
@@ -666,16 +585,8 @@ void compute_BE_restricted_core(PartFuncBEContext &ctx,
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
             pf_t coeff = transition_weight_be(entry.rule, i, j, ip, jp, entry.split, ctx, tree);
-            pf_t term = 1;
             const auto children = expand_be(entry.rule, i, j, ip, jp, entry.split);
-            for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::BE) {
-                    term *= all.get_BE(child.i, child.j, ip, jp, tree);
-                } else {
-                    term *= all.get_inside(child.nonterminal, child.i, child.j);
-                }
-            }
-            contributions += term * coeff;
+            contributions += product_children_be(all, children, ip, jp, tree) * coeff;
         }
         ctx.set_BE(iip, contributions);
         return;
@@ -686,16 +597,8 @@ void compute_BE_restricted_core(PartFuncBEContext &ctx,
         for (const auto &split : splits) {
             record_rule_hit(rule);
             pf_t coeff = transition_weight_be(rule, i, j, ip, jp, split, ctx, tree);
-            pf_t term = 1;
             const auto children = expand_be(rule, i, j, ip, jp, split);
-            for (const auto &child : children) {
-                if (child.nonterminal == NonTerminal::BE) {
-                    term *= all.get_BE(child.i, child.j, ip, jp, tree);
-                } else {
-                    term *= all.get_inside(child.nonterminal, child.i, child.j);
-                }
-            }
-            contributions += term * coeff;
+            contributions += product_children_be(all, children, ip, jp, tree) * coeff;
         }
     }
     ctx.set_BE(iip, contributions);
