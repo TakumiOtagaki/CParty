@@ -203,7 +203,77 @@ void compute_WMv_WMp_restricted_core(PartFuncWMvWMpContext &ctx,
                                      cand_pos_t j,
                                      std::vector<Node> &tree,
                                      const RulesConfig &config) {
-    compute_WMv_WMp_restricted_rules(ctx, i, j, tree, config);
+    const cand_pos_t ij = ctx.index_of(i, j);
+    pf_t WMv_contributions = 0;
+    pf_t WMp_contributions = 0;
+
+    if (config.use_applicable) {
+        const auto applicable = applicable_rules_wmv_wmp(i, j, ctx, tree);
+        for (const auto &entry : applicable) {
+            if (!is_rule_enabled(config, entry.rule)) continue;
+            record_rule_hit(entry.rule);
+            pf_t coeff = transition_weight_wmv_wmp(entry.rule, i, j, entry.split, ctx, tree);
+            pf_t term = 1;
+            const auto children = expand_wmv_wmp(entry.rule, i, j, entry.split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::V) {
+                    term *= ctx.get_V(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMv) {
+                    term *= ctx.get_WMv(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMB) {
+                    term *= ctx.get_WMB(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMp) {
+                    term *= ctx.get_WMp(child.i, child.j);
+                }
+            }
+            if (entry.rule == RuleId::WMv_STEM_V || entry.rule == RuleId::WMv_EXTEND_UNPAIRED) {
+                WMv_contributions += term * coeff;
+            } else {
+                WMp_contributions += term * coeff;
+            }
+        }
+        ctx.set_WMv_WMp(ij, WMv_contributions, WMp_contributions);
+        return;
+    }
+    for (RuleId rule : rules_for(NonTerminal::WMv)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_wmv_wmp(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = transition_weight_wmv_wmp(rule, i, j, split, ctx, tree);
+            pf_t term = 1;
+            const auto children = expand_wmv_wmp(rule, i, j, split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::V) {
+                    term *= ctx.get_V(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMv) {
+                    term *= ctx.get_WMv(child.i, child.j);
+                }
+            }
+            WMv_contributions += term * coeff;
+        }
+    }
+
+    for (RuleId rule : rules_for(NonTerminal::WMp)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_wmv_wmp(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            pf_t coeff = transition_weight_wmv_wmp(rule, i, j, split, ctx, tree);
+            pf_t term = 1;
+            const auto children = expand_wmv_wmp(rule, i, j, split);
+            for (const auto &child : children) {
+                if (child.nonterminal == NonTerminal::WMB) {
+                    term *= ctx.get_WMB(child.i, child.j);
+                } else if (child.nonterminal == NonTerminal::WMp) {
+                    term *= ctx.get_WMp(child.i, child.j);
+                }
+            }
+            WMp_contributions += term * coeff;
+        }
+    }
+
+    ctx.set_WMv_WMp(ij, WMv_contributions, WMp_contributions);
 }
 
 void compute_WM_restricted_core(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
