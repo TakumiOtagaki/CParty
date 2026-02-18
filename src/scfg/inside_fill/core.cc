@@ -1,8 +1,7 @@
 #include "scfg/inside_fill/core.hh"
 
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
+#include "scfg/rules_core.hh"
+#include "scfg/rules_debug.hh"
 
 namespace scfg {
 
@@ -13,57 +12,27 @@ void compute_W_restricted_core(PartFuncWContext &ctx, sparse_tree &tree, const R
 }
 
 void compute_V_restricted_core(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
-    (void)config;
     const cand_pos_t ij = ctx.index_of(i, j);
-
-    const bool unpaired = (tree.tree[i].pair < -1 && tree.tree[j].pair < -1);
-    const bool paired = (tree.tree[i].pair == j && tree.tree[j].pair == i);
-
     pf_t contributions = 0;
-    pf_t hairpin = 0;
-    pf_t internal = 0;
-    pf_t vm = 0;
-
-    if (paired || unpaired) {
-        const bool canH = !(tree.up[j - 1] < (j - i - 1));
-        if (canH) hairpin = ctx.hairpin_energy(i, j);
-        internal = ctx.internal_energy(i, j, tree.up);
-        vm = ctx.vm_energy(i, j, tree.up);
-        contributions = hairpin + internal + vm;
-        const char *pf_debug_env = std::getenv("CPARTY_PF_DEBUG");
-        if (pf_debug_env && *pf_debug_env != '\0' && std::strcmp(pf_debug_env, "0") != 0 && i == 1 && j == tree.n) {
-            std::cerr << "[PF_DEBUG] V_parts"
-                      << " paired=" << paired
-                      << " unpaired=" << unpaired
-                      << " canH=" << canH
-                      << " hairpin=" << hairpin
-                      << " internal=" << internal
-                      << " vm=" << vm
-                      << " total=" << contributions
-                      << std::endl;
+    if (config.use_applicable) {
+        const auto applicable = applicable_rules_v(i, j, ctx, tree);
+        for (const auto &entry : applicable) {
+            if (!is_rule_enabled(config, entry.rule)) continue;
+            record_rule_hit(entry.rule);
+            contributions += transition_weight_v(entry.rule, i, j, entry.split, ctx, tree);
+        }
+        ctx.set_V(ij, contributions);
+        return;
+    }
+    for (RuleId rule : rules_for(NonTerminal::V)) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_splits_v(rule, i, j, ctx, tree);
+        for (const auto &split : splits) {
+            record_rule_hit(rule);
+            contributions += transition_weight_v(rule, i, j, split, ctx, tree);
         }
     }
-
     ctx.set_V(ij, contributions);
-    const char *trace_env = std::getenv("CPARTY_PF_TRACE_V");
-    if (trace_env && *trace_env != '\0' && std::strcmp(trace_env, "0") != 0) {
-        const char *comma = std::strchr(trace_env, ',');
-        if (comma) {
-            const int ti = std::atoi(trace_env);
-            const int tj = std::atoi(comma + 1);
-            if (ti == i && tj == j) {
-                std::cerr << "[PF_TRACE_V] i=" << i
-                          << " j=" << j
-                          << " paired=" << paired
-                          << " unpaired=" << unpaired
-                          << " hairpin=" << hairpin
-                          << " internal=" << internal
-                          << " vm=" << vm
-                          << " total=" << contributions
-                          << std::endl;
-            }
-        }
-    }
 }
 
 pf_t compute_VM_restricted_core(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_t j, std::vector<int> &up, const RulesConfig &config) {
