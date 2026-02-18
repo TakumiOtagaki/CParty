@@ -2,7 +2,7 @@
 
 #include "scfg/rules_part_helpers.hh"
 #include "scfg/rules_part_func.hh"
-#include "scfg/transition_oracle.hh"
+#include "scfg/transition_weights.hh"
 #include "scfg/structure_view.hh"
 #include "sparse_tree.hh"
 
@@ -94,7 +94,7 @@ std::vector<RuleChild> expand_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, cons
 }
 
 pf_t transition_weight_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWMBWContext &ctx) {
-    TransitionOracle<PartFuncWMBWContext> oracle(ctx);
+    TransitionWeights<PartFuncWMBWContext> oracle(ctx);
     // child 側に補正は掛けず、必要な係数はルール重み側に集約する方針。
     (void)i;
     (void)j;
@@ -266,7 +266,7 @@ pf_t transition_weight_wmbp(RuleId rule,
                      const RuleSplit &split,
                      PartFuncWMBPContext &ctx,
                      sparse_tree &tree) {
-    TransitionOracle<PartFuncWMBPContext> oracle(ctx);
+    TransitionWeights<PartFuncWMBPContext> oracle(ctx);
     // legacy の補正（expPB_penalty / double_pb_penalty など）をルール重みに集約。
     switch (rule) {
     case RuleId::WMBP_SPLIT_BE_WMBP_VP:
@@ -415,7 +415,7 @@ pf_t transition_weight_wmb(RuleId rule,
                     const RuleSplit &split,
                     PartFuncWMBContext &ctx,
                     sparse_tree &tree) {
-    TransitionOracle<PartFuncWMBContext> oracle(ctx);
+    TransitionWeights<PartFuncWMBContext> oracle(ctx);
     // legacy の補正（expPB_penalty など）をルール重みに集約。
     (void)i;
     (void)j;

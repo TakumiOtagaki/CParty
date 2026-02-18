@@ -1,5 +1,5 @@
-#ifndef SCFG_TRANSITION_ORACLE_HH_
-#define SCFG_TRANSITION_ORACLE_HH_
+#ifndef SCFG_TRANSITION_WEIGHTS_HH_
+#define SCFG_TRANSITION_WEIGHTS_HH_
 
 #include "base_types.hh"
 
@@ -8,9 +8,9 @@ namespace scfg {
 // transition_weight_* から参照する重み計算の集約ラッパ。
 // Context の実装詳細からルール重み計算を切り離すための窓口。
 template <class Ctx>
-class TransitionOracle {
+class TransitionWeights {
   public:
-    explicit TransitionOracle(Ctx &ctx) : ctx_(ctx) {}
+    explicit TransitionWeights(Ctx &ctx) : ctx_(ctx) {}
 
     pf_t scale1() const { return ctx_.scale1(); }
     pf_t scale(cand_pos_t length) const { return ctx_.scale(length); }

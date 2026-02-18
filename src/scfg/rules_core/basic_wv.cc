@@ -3,7 +3,7 @@
 #include "scfg/constraint_oracle.hh"
 #include "scfg/legacy_adapter.hh"
 #include "scfg/rules_part_func.hh"
-#include "scfg/transition_oracle.hh"
+#include "scfg/transition_weights.hh"
 #include "sparse_tree.hh"
 
 namespace scfg {
@@ -78,7 +78,7 @@ std::vector<RuleChild> expand_w(RuleId rule, cand_pos_t i, cand_pos_t j, const R
 }
 
 pf_t transition_weight_w(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWContext &ctx) {
-    TransitionOracle<PartFuncWContext> oracle(ctx);
+    TransitionWeights<PartFuncWContext> oracle(ctx);
     (void)i;
     switch (rule) {
     case RuleId::W_EXTEND_UNPAIRED:
@@ -150,7 +150,7 @@ pf_t transition_weight_v(RuleId rule,
                   const RuleSplit &split,
                   PartFuncVContext &ctx,
                   sparse_tree &tree) {
-    TransitionOracle<PartFuncVContext> oracle(ctx);
+    TransitionWeights<PartFuncVContext> oracle(ctx);
     (void)split;
     switch (rule) {
     case RuleId::V_HAIRPIN:
@@ -240,7 +240,7 @@ pf_t transition_weight_wi(RuleId rule,
                    cand_pos_t j,
                    const RuleSplit &split,
                    PartFuncWIContext &ctx) {
-    TransitionOracle<PartFuncWIContext> oracle(ctx);
+    TransitionWeights<PartFuncWIContext> oracle(ctx);
     (void)i;
     (void)j;
     (void)split;

@@ -2,7 +2,7 @@
 
 #include "scfg/constraint_oracle.hh"
 #include "scfg/rules_part_func.hh"
-#include "scfg/transition_oracle.hh"
+#include "scfg/transition_weights.hh"
 #include "scfg/structure_view.hh"
 #include "sparse_tree.hh"
 
@@ -217,7 +217,7 @@ pf_t transition_weight_be(RuleId rule,
                    const RuleSplit &split,
                    PartFuncBEContext &ctx,
                    sparse_tree &tree) {
-    TransitionOracle<PartFuncBEContext> oracle(ctx);
+    TransitionWeights<PartFuncBEContext> oracle(ctx);
     // legacy の子補正（expap/expbp_penalty_sq/scale など）をルール重みに集約。
     (void)ip;
     (void)jp;

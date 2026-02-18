@@ -3,7 +3,7 @@
 #include "scfg/constraint_oracle.hh"
 #include "scfg/legacy_adapter.hh"
 #include "scfg/rules_part_func.hh"
-#include "scfg/transition_oracle.hh"
+#include "scfg/transition_weights.hh"
 #include "sparse_tree.hh"
 
 namespace scfg {
@@ -76,7 +76,7 @@ pf_t transition_weight_vm(RuleId rule,
                    const RuleSplit &split,
                    PartFuncVMContext &ctx,
                    std::vector<int> &up) {
-    TransitionOracle<PartFuncVMContext> oracle(ctx);
+    TransitionWeights<PartFuncVMContext> oracle(ctx);
     (void)up;
     switch (rule) {
     case RuleId::VM_SPLIT_WM_WMv:

@@ -3,7 +3,7 @@
 #include "scfg/constraint_oracle.hh"
 #include "scfg/legacy_adapter.hh"
 #include "scfg/rules_part_func.hh"
-#include "scfg/transition_oracle.hh"
+#include "scfg/transition_weights.hh"
 #include "scfg/structure_view.hh"
 #include "sparse_tree.hh"
 
@@ -152,7 +152,7 @@ pf_t transition_weight_wip(RuleId rule,
                     cand_pos_t j,
                     const RuleSplit &split,
                     PartFuncWIPContext &ctx) {
-    TransitionOracle<PartFuncWIPContext> oracle(ctx);
+    TransitionWeights<PartFuncWIPContext> oracle(ctx);
     // legacy の子補正（expbp_penalty / expPSM_penalty / expcp_pen）をルール重みに集約。
     (void)j;
     switch (rule) {
@@ -257,7 +257,7 @@ pf_t transition_weight_vpl(RuleId rule,
                     cand_pos_t j,
                     const RuleSplit &split,
                     PartFuncVPLContext &ctx) {
-    TransitionOracle<PartFuncVPLContext> oracle(ctx);
+    TransitionWeights<PartFuncVPLContext> oracle(ctx);
     // legacy の子補正（expcp_pen）をルール重みに集約。
     (void)j;
     switch (rule) {
@@ -371,7 +371,7 @@ pf_t transition_weight_vpr(RuleId rule,
                     cand_pos_t j,
                     const RuleSplit &split,
                     PartFuncVPRContext &ctx) {
-    TransitionOracle<PartFuncVPRContext> oracle(ctx);
+    TransitionWeights<PartFuncVPRContext> oracle(ctx);
     // legacy の子補正（expcp_pen）をルール重みに集約。
     (void)j;
     switch (rule) {
@@ -637,7 +637,7 @@ pf_t transition_weight_vp(RuleId rule,
                    const RuleSplit &split,
                    PartFuncVPContext &ctx,
                    sparse_tree &tree) {
-    TransitionOracle<PartFuncVPContext> oracle(ctx);
+    TransitionWeights<PartFuncVPContext> oracle(ctx);
     // legacy の子補正（expap/expbp_penalty_sq/scale など）をルール重みに集約。
     (void)tree;
     switch (rule) {
