@@ -9,7 +9,7 @@ namespace {
 // - RuleId と NonTerminal / SplitSpec の対応表
 // - NonTerminal ごとのルール一覧生成
 // - rule_spec() によるメタ情報参照
-// 実際の分解ロジックは rules_core_basic.cc / rules_core_band.cc に分割している。
+// 実際の分解ロジックは rules_core/basic_*.cc と rules_core/band_*.cc に分割している。
 
 constexpr size_t kNonTerminalCount = 15;
 

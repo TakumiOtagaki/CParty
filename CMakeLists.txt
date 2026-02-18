@@ -46,8 +46,10 @@ SET(SOURCE
   src/scfg/legacy_adapter.cc
   src/scfg/part_func_adapter.cc
   src/scfg/rules_api.cc
-  src/scfg/rules_core_base.cc
-  src/scfg/rules_core_basic.cc
+  src/scfg/rules_core/base.cc
+  src/scfg/rules_core/basic_wv.cc
+  src/scfg/rules_core/basic_vm.cc
+  src/scfg/rules_core/basic_wm.cc
   src/scfg/rules_core/band_vp.cc
   src/scfg/rules_core/band_wmb.cc
   src/scfg/rules_core/band_be.cc
@@ -155,8 +157,10 @@ if(BUILD_TESTING)
     src/scfg/constraint_oracle.cc
     src/scfg/legacy_adapter.cc
     src/scfg/rules_api.cc
-    src/scfg/rules_core_base.cc
-    src/scfg/rules_core_basic.cc
+    src/scfg/rules_core/base.cc
+    src/scfg/rules_core/basic_wv.cc
+    src/scfg/rules_core/basic_vm.cc
+    src/scfg/rules_core/basic_wm.cc
     src/scfg/rules_core/band_vp.cc
     src/scfg/rules_core/band_wmb.cc
     src/scfg/rules_core/band_be.cc
