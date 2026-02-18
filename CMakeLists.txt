@@ -53,6 +53,7 @@ SET(SOURCE
   src/scfg/rules_core/band_vp.cc
   src/scfg/rules_core/band_wmb.cc
   src/scfg/rules_core/band_be.cc
+  src/scfg/rules_core/transition.cc
   src/scfg/rules_config.cc
   src/scfg/rules_debug.cc
   src/scfg/inside_fill/basic.cc
@@ -167,6 +168,7 @@ if(BUILD_TESTING)
     src/scfg/rules_core/band_vp.cc
     src/scfg/rules_core/band_wmb.cc
     src/scfg/rules_core/band_be.cc
+  src/scfg/rules_core/transition.cc
     src/scfg/rules_part_func.cc
   src/scfg/rules_part_helpers.cc
   )
