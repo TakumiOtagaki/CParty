@@ -34,6 +34,40 @@ static inline void for_each_entry(const RulesConfig &config,
     }
 }
 
+template <typename RuleListFn, typename ApplicableFn, typename EnumerateFn, typename Visitor>
+static inline void for_each_entry_list(const RulesConfig &config,
+                                       RuleListFn rules_fn,
+                                       ApplicableFn applicable_fn,
+                                       EnumerateFn enumerate_fn,
+                                       Visitor visit) {
+    if (config.use_applicable) {
+        const auto applicable = applicable_fn();
+        for (const auto &entry : applicable) {
+            if (!is_rule_enabled(config, entry.rule)) continue;
+            visit(entry.rule, entry.split);
+        }
+        return;
+    }
+    const auto &rules = rules_fn();
+    for (RuleId rule : rules) {
+        if (!is_rule_enabled(config, rule)) continue;
+        const auto splits = enumerate_fn(rule);
+        for (const auto &split : splits) {
+            visit(rule, split);
+        }
+    }
+}
+
+static const std::vector<RuleId> &wmv_wmp_rules() {
+    static const std::vector<RuleId> rules = [] {
+        std::vector<RuleId> out = rules_for(NonTerminal::WMv);
+        const auto &wmprules = rules_for(NonTerminal::WMp);
+        out.insert(out.end(), wmprules.begin(), wmprules.end());
+        return out;
+    }();
+    return rules;
+}
+
 static inline pf_t product_children(PartFuncAllContext &all, const std::vector<RuleChild> &children) {
     pf_t term = 1;
     for (const auto &child : children) {
@@ -177,26 +211,10 @@ void compute_WMv_WMp_restricted_core(PartFuncWMvWMpContext &ctx,
         }
     };
 
-    if (config.use_applicable) {
-        const auto applicable = applicable_rules_wmv_wmp(i, j, ctx, tree);
-        for (const auto &entry : applicable) {
-            if (!is_rule_enabled(config, entry.rule)) continue;
-            accumulate(entry.rule, entry.split);
-        }
-        ctx.set_WMv_WMp(ij, WMv_contributions, WMp_contributions);
-        return;
-    }
-
-    for_each_entry(
+    for_each_entry_list(
         config,
-        NonTerminal::WMv,
-        [&]() { return std::vector<ApplicableRule>{}; },
-        [&](RuleId rule) { return enumerate_splits_wmv_wmp(rule, i, j, ctx, tree); },
-        [&](RuleId rule, const RuleSplit &split) { accumulate(rule, split); });
-    for_each_entry(
-        config,
-        NonTerminal::WMp,
-        [&]() { return std::vector<ApplicableRule>{}; },
+        []() -> const std::vector<RuleId> & { return wmv_wmp_rules(); },
+        [&]() { return applicable_rules_wmv_wmp(i, j, ctx, tree); },
         [&](RuleId rule) { return enumerate_splits_wmv_wmp(rule, i, j, ctx, tree); },
         [&](RuleId rule, const RuleSplit &split) { accumulate(rule, split); });
 
