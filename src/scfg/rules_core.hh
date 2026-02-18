@@ -7,8 +7,9 @@
 
 class sparse_tree;
 class Node;
-
 namespace scfg {
+
+class StructureView;
 
 class PartFuncWContext;
 class PartFuncVContext;
@@ -155,10 +156,19 @@ std::vector<RuleSplit> enumerate_splits_wip(RuleId rule,
                                             cand_pos_t j,
                                             PartFuncWIPContext &ctx,
                                             sparse_tree &tree);
+std::vector<RuleSplit> enumerate_splits_wip(RuleId rule,
+                                            cand_pos_t i,
+                                            cand_pos_t j,
+                                            PartFuncWIPContext &ctx,
+                                            const StructureView &view);
 std::vector<ApplicableRule> applicable_rules_wip(cand_pos_t i,
                                                  cand_pos_t j,
                                                  PartFuncWIPContext &ctx,
                                                  sparse_tree &tree);
+std::vector<ApplicableRule> applicable_rules_wip(cand_pos_t i,
+                                                 cand_pos_t j,
+                                                 PartFuncWIPContext &ctx,
+                                                 const StructureView &view);
 std::vector<RuleChild> expand_wip(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
 pf_t rule_score_wip(RuleId rule,
                     cand_pos_t i,
@@ -171,10 +181,19 @@ std::vector<RuleSplit> enumerate_splits_vpl(RuleId rule,
                                             cand_pos_t j,
                                             PartFuncVPLContext &ctx,
                                             sparse_tree &tree);
+std::vector<RuleSplit> enumerate_splits_vpl(RuleId rule,
+                                            cand_pos_t i,
+                                            cand_pos_t j,
+                                            PartFuncVPLContext &ctx,
+                                            const StructureView &view);
 std::vector<ApplicableRule> applicable_rules_vpl(cand_pos_t i,
                                                  cand_pos_t j,
                                                  PartFuncVPLContext &ctx,
                                                  sparse_tree &tree);
+std::vector<ApplicableRule> applicable_rules_vpl(cand_pos_t i,
+                                                 cand_pos_t j,
+                                                 PartFuncVPLContext &ctx,
+                                                 const StructureView &view);
 std::vector<RuleChild> expand_vpl(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
 pf_t rule_score_vpl(RuleId rule,
                     cand_pos_t i,
@@ -187,10 +206,19 @@ std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
                                             cand_pos_t j,
                                             PartFuncVPRContext &ctx,
                                             sparse_tree &tree);
+std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
+                                            cand_pos_t i,
+                                            cand_pos_t j,
+                                            PartFuncVPRContext &ctx,
+                                            const StructureView &view);
 std::vector<ApplicableRule> applicable_rules_vpr(cand_pos_t i,
                                                  cand_pos_t j,
                                                  PartFuncVPRContext &ctx,
                                                  sparse_tree &tree);
+std::vector<ApplicableRule> applicable_rules_vpr(cand_pos_t i,
+                                                 cand_pos_t j,
+                                                 PartFuncVPRContext &ctx,
+                                                 const StructureView &view);
 std::vector<RuleChild> expand_vpr(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
 pf_t rule_score_vpr(RuleId rule,
                     cand_pos_t i,
@@ -203,10 +231,19 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
                                            cand_pos_t j,
                                            PartFuncVPContext &ctx,
                                            sparse_tree &tree);
+std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
+                                           cand_pos_t i,
+                                           cand_pos_t j,
+                                           PartFuncVPContext &ctx,
+                                           const StructureView &view);
 std::vector<ApplicableRule> applicable_rules_vp(cand_pos_t i,
                                                 cand_pos_t j,
                                                 PartFuncVPContext &ctx,
                                                 sparse_tree &tree);
+std::vector<ApplicableRule> applicable_rules_vp(cand_pos_t i,
+                                                cand_pos_t j,
+                                                PartFuncVPContext &ctx,
+                                                const StructureView &view);
 std::vector<RuleChild> expand_vp(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
 pf_t rule_score_vp(RuleId rule,
                    cand_pos_t i,
@@ -220,10 +257,19 @@ std::vector<RuleSplit> enumerate_splits_wmbw(RuleId rule,
                                              cand_pos_t j,
                                              PartFuncWMBWContext &ctx,
                                              sparse_tree &tree);
+std::vector<RuleSplit> enumerate_splits_wmbw(RuleId rule,
+                                             cand_pos_t i,
+                                             cand_pos_t j,
+                                             PartFuncWMBWContext &ctx,
+                                             const StructureView &view);
 std::vector<ApplicableRule> applicable_rules_wmbw(cand_pos_t i,
                                                   cand_pos_t j,
                                                   PartFuncWMBWContext &ctx,
                                                   sparse_tree &tree);
+std::vector<ApplicableRule> applicable_rules_wmbw(cand_pos_t i,
+                                                  cand_pos_t j,
+                                                  PartFuncWMBWContext &ctx,
+                                                  const StructureView &view);
 std::vector<RuleChild> expand_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
 pf_t rule_score_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWMBWContext &ctx);
 
@@ -232,9 +278,20 @@ std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
                                              cand_pos_t j,
                                              PartFuncWMBPContext &ctx,
                                              sparse_tree &tree);
+std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
+                                             cand_pos_t i,
+                                             cand_pos_t j,
+                                             PartFuncWMBPContext &ctx,
+                                             const StructureView &view,
+                                             sparse_tree &tree);
 std::vector<ApplicableRule> applicable_rules_wmbp(cand_pos_t i,
                                                   cand_pos_t j,
                                                   PartFuncWMBPContext &ctx,
+                                                  sparse_tree &tree);
+std::vector<ApplicableRule> applicable_rules_wmbp(cand_pos_t i,
+                                                  cand_pos_t j,
+                                                  PartFuncWMBPContext &ctx,
+                                                  const StructureView &view,
                                                   sparse_tree &tree);
 std::vector<RuleChild> expand_wmbp(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
 pf_t rule_score_wmbp(RuleId rule,
@@ -249,10 +306,19 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
                                             cand_pos_t j,
                                             PartFuncWMBContext &ctx,
                                             sparse_tree &tree);
+std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
+                                            cand_pos_t i,
+                                            cand_pos_t j,
+                                            PartFuncWMBContext &ctx,
+                                            const StructureView &view);
 std::vector<ApplicableRule> applicable_rules_wmb(cand_pos_t i,
                                                  cand_pos_t j,
                                                  PartFuncWMBContext &ctx,
                                                  sparse_tree &tree);
+std::vector<ApplicableRule> applicable_rules_wmb(cand_pos_t i,
+                                                 cand_pos_t j,
+                                                 PartFuncWMBContext &ctx,
+                                                 const StructureView &view);
 std::vector<RuleChild> expand_wmb(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
 pf_t rule_score_wmb(RuleId rule,
                     cand_pos_t i,
@@ -268,12 +334,25 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
                                            cand_pos_t jp,
                                            PartFuncBEContext &ctx,
                                            sparse_tree &tree);
+std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
+                                           cand_pos_t i,
+                                           cand_pos_t j,
+                                           cand_pos_t ip,
+                                           cand_pos_t jp,
+                                           PartFuncBEContext &ctx,
+                                           const StructureView &view);
 std::vector<ApplicableRule> applicable_rules_be(cand_pos_t i,
                                                 cand_pos_t j,
                                                 cand_pos_t ip,
                                                 cand_pos_t jp,
                                                 PartFuncBEContext &ctx,
                                                 sparse_tree &tree);
+std::vector<ApplicableRule> applicable_rules_be(cand_pos_t i,
+                                                cand_pos_t j,
+                                                cand_pos_t ip,
+                                                cand_pos_t jp,
+                                                PartFuncBEContext &ctx,
+                                                const StructureView &view);
 std::vector<RuleChild> expand_be(RuleId rule,
                                  cand_pos_t i,
                                  cand_pos_t j,

@@ -68,7 +68,7 @@ inline bool can_pair_right_span_from_tree(const sparse_tree &tree, cand_pos_t sp
 
 class PkFreeView final : public StructureView {
   public:
-    explicit PkFreeView(const sparse_tree &tree) : tree_(tree) {}
+    explicit PkFreeView(sparse_tree &tree) : tree_(tree) {}
 
     cand_pos_t n() const override { return static_cast<cand_pos_t>(tree_.n); }
     cand_pos_t pair_any(cand_pos_t i) const override { return pair_round(i); }
@@ -96,12 +96,12 @@ class PkFreeView final : public StructureView {
     bool is_empty_region(cand_pos_t i, cand_pos_t j) const override { return scfg::is_empty_region(tree_, i, j); }
 
   private:
-    const sparse_tree &tree_;
+    sparse_tree &tree_;
 };
 
 class KTypeView final : public StructureView {
   public:
-    KTypeView(const sparse_tree &round_tree, const sparse_tree &square_tree)
+    KTypeView(sparse_tree &round_tree, sparse_tree &square_tree)
         : round_tree_(round_tree), square_tree_(square_tree) {}
 
     cand_pos_t n() const override { return static_cast<cand_pos_t>(round_tree_.n); }
@@ -138,8 +138,8 @@ class KTypeView final : public StructureView {
     }
 
   private:
-    const sparse_tree &round_tree_;
-    const sparse_tree &square_tree_;
+    sparse_tree &round_tree_;
+    sparse_tree &square_tree_;
 };
 
 } // namespace scfg
