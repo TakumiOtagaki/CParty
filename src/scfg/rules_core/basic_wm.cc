@@ -188,11 +188,13 @@ pf_t transition_weight_wm(RuleId rule,
     (void)j;
     switch (rule) {
     case RuleId::WM_START_V:
+        return ctx.expMLbase(split.k - i) * ctx.exp_MLstem(split.k, j);
     case RuleId::WM_START_WMB:
-        return ctx.expMLbase(split.k - i);
+        return ctx.expMLbase(split.k - i) * ctx.expPSM_penalty() * ctx.expb_penalty();
     case RuleId::WM_SPLIT_V:
+        return ctx.exp_MLstem(split.k, j);
     case RuleId::WM_SPLIT_WMB:
-        return 1;
+        return ctx.expPSM_penalty() * ctx.expb_penalty();
     case RuleId::WM_EXTEND_UNPAIRED:
         return ctx.expMLbase(1);
     default:

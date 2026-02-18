@@ -311,10 +311,8 @@ void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_
                     term *= ctx.get_WM(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::V) {
                     term *= ctx.get_V(child.i, child.j);
-                    term *= ctx.exp_MLstem(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
                     term *= ctx.get_WMB(child.i, child.j);
-                    term *= ctx.expPSM_penalty() * ctx.expb_penalty();
                 }
             }
             contributions += term * coeff;
@@ -351,10 +349,8 @@ void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_
                     term *= ctx.get_WM(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::V) {
                     term *= ctx.get_V(child.i, child.j);
-                    term *= ctx.exp_MLstem(child.i, child.j);
                 } else if (child.nonterminal == NonTerminal::WMB) {
                     term *= ctx.get_WMB(child.i, child.j);
-                    term *= ctx.expPSM_penalty() * ctx.expb_penalty();
                 }
             }
             contributions += term * coeff;
