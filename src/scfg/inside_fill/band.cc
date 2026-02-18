@@ -1,6 +1,7 @@
 #include "scfg/inside_fill.hh"
 
 #include "scfg/constraint_oracle.hh"
+#include "scfg/rules_debug.hh"
 #include "scfg/legacy_adapter.hh"
 #include "scfg/rules_core.hh"
 #include "scfg/rules_part_func.hh"

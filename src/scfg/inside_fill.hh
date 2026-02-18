@@ -1,7 +1,7 @@
 #ifndef SCFG_INSIDE_FILL_HH_
 #define SCFG_INSIDE_FILL_HH_
 
-#include "scfg/rules_engine.hh"
+#include "scfg/rules_config.hh"
 #include "scfg/rules_part_func.hh"
 
 namespace scfg {

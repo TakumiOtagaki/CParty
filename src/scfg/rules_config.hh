@@ -1,5 +1,5 @@
-#ifndef SCFG_RULES_ENGINE_HH_
-#define SCFG_RULES_ENGINE_HH_
+#ifndef SCFG_RULES_CONFIG_HH_
+#define SCFG_RULES_CONFIG_HH_
 
 #include "scfg/rules_api.hh"
 
@@ -18,8 +18,6 @@ struct RulesConfig {
 RulesConfig load_rules_config_from_env();
 bool is_rule_enabled(const RulesConfig &config, RuleId rule);
 const RulesConfig &get_rules_config();
-bool rules_debug_enabled();
-void record_rule_hit(RuleId rule);
 
 } // namespace scfg
 

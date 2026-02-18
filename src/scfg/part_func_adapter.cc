@@ -1,7 +1,7 @@
 #include "scfg/part_func_adapter.hh"
 
 #include "part_func.hh"
-#include "scfg/rules_engine.hh"
+#include "scfg/rules_config.hh"
 #include "scfg/rules_part_func.hh"
 #include "scfg/inside_fill.hh"
 #include "scfg/structure_view.hh"
