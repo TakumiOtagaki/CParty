@@ -2,6 +2,7 @@
 
 #include "scfg/rules_part_helpers.hh"
 #include "scfg/rules_part_func.hh"
+#include "scfg/transition_oracle.hh"
 #include "scfg/structure_view.hh"
 #include "sparse_tree.hh"
 
@@ -93,11 +94,12 @@ std::vector<RuleChild> expand_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, cons
 }
 
 pf_t transition_weight_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWMBWContext &ctx) {
+    TransitionOracle<PartFuncWMBWContext> oracle(ctx);
     // child 側に補正は掛けず、必要な係数はルール重み側に集約する方針。
     (void)i;
     (void)j;
     (void)split;
-    (void)ctx;
+    (void)oracle;
     switch (rule) {
     case RuleId::WMBW_SPLIT_WMBP_WI:
         return 1;
@@ -264,11 +266,12 @@ pf_t transition_weight_wmbp(RuleId rule,
                      const RuleSplit &split,
                      PartFuncWMBPContext &ctx,
                      sparse_tree &tree) {
+    TransitionOracle<PartFuncWMBPContext> oracle(ctx);
     // legacy の補正（expPB_penalty / double_pb_penalty など）をルール重みに集約。
     switch (rule) {
     case RuleId::WMBP_SPLIT_BE_WMBP_VP:
     case RuleId::WMBP_SPLIT_BE_WMBW_VP: {
-        const scfg::PartFuncModeConfig mode_config{ctx.expPB_penalty(), TURN};
+        const scfg::PartFuncModeConfig mode_config{oracle.expPB_penalty(), TURN};
         scfg::PartFuncRuleHelpers rules(tree, mode_config);
         rules.on_traceback_hook(i, j);
         rules.on_fixed_parse_hook(i, j);
@@ -276,9 +279,9 @@ pf_t transition_weight_wmbp(RuleId rule,
         return rules.apply_double_pb_penalty(m);
     }
     case RuleId::WMBP_DIRECT_VP:
-        return ctx.expPB_penalty();
+        return oracle.expPB_penalty();
     case RuleId::WMBP_SPLIT_BE_WI_VP: {
-        const scfg::PartFuncModeConfig mode_config{ctx.expPB_penalty(), TURN};
+        const scfg::PartFuncModeConfig mode_config{oracle.expPB_penalty(), TURN};
         scfg::PartFuncRuleHelpers rules(tree, mode_config);
         rules.on_traceback_hook(i, j);
         rules.on_fixed_parse_hook(i, j);
@@ -412,6 +415,7 @@ pf_t transition_weight_wmb(RuleId rule,
                     const RuleSplit &split,
                     PartFuncWMBContext &ctx,
                     sparse_tree &tree) {
+    TransitionOracle<PartFuncWMBContext> oracle(ctx);
     // legacy の補正（expPB_penalty など）をルール重みに集約。
     (void)i;
     (void)j;
@@ -422,7 +426,7 @@ pf_t transition_weight_wmb(RuleId rule,
         return 1;
     case RuleId::WMB_SPLIT_BE_WMBP_WI: {
         pf_t m = ctx.get_BE(split.p, tree.tree[split.p].pair, tree.tree[split.q].pair, split.q, tree);
-        return m * ctx.expPB_penalty();
+        return m * oracle.expPB_penalty();
     }
     default:
         return 0;

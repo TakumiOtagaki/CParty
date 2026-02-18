@@ -3,6 +3,7 @@
 #include "scfg/constraint_oracle.hh"
 #include "scfg/legacy_adapter.hh"
 #include "scfg/rules_part_func.hh"
+#include "scfg/transition_oracle.hh"
 #include "scfg/structure_view.hh"
 #include "sparse_tree.hh"
 
@@ -151,21 +152,22 @@ pf_t transition_weight_wip(RuleId rule,
                     cand_pos_t j,
                     const RuleSplit &split,
                     PartFuncWIPContext &ctx) {
+    TransitionOracle<PartFuncWIPContext> oracle(ctx);
     // legacy の子補正（expbp_penalty / expPSM_penalty / expcp_pen）をルール重みに集約。
     (void)j;
     switch (rule) {
     case RuleId::WIP_BASE_V:
     case RuleId::WIP_SPLIT_V:
-        return ctx.expbp_penalty();
+        return oracle.expbp_penalty();
     case RuleId::WIP_BASE_WMB:
     case RuleId::WIP_SPLIT_WMB:
-        return ctx.expbp_penalty() * ctx.expPSM_penalty();
+        return oracle.expbp_penalty() * oracle.expPSM_penalty();
     case RuleId::WIP_BASEPAIR_V:
-        return ctx.expcp_pen(split.k - i) * ctx.expbp_penalty();
+        return oracle.expcp_pen(split.k - i) * oracle.expbp_penalty();
     case RuleId::WIP_BASEPAIR_WMB:
-        return ctx.expcp_pen(split.k - i) * ctx.expbp_penalty() * ctx.expPSM_penalty();
+        return oracle.expcp_pen(split.k - i) * oracle.expbp_penalty() * oracle.expPSM_penalty();
     case RuleId::WIP_EXTEND_UNPAIRED:
-        return ctx.expcp_pen(1);
+        return oracle.expcp_pen(1);
     default:
         return 0;
     }
@@ -255,11 +257,12 @@ pf_t transition_weight_vpl(RuleId rule,
                     cand_pos_t j,
                     const RuleSplit &split,
                     PartFuncVPLContext &ctx) {
+    TransitionOracle<PartFuncVPLContext> oracle(ctx);
     // legacy の子補正（expcp_pen）をルール重みに集約。
     (void)j;
     switch (rule) {
     case RuleId::VPL_SPLIT_VP:
-        return ctx.expcp_pen(split.k - i);
+        return oracle.expcp_pen(split.k - i);
     default:
         return 0;
     }
@@ -368,13 +371,14 @@ pf_t transition_weight_vpr(RuleId rule,
                     cand_pos_t j,
                     const RuleSplit &split,
                     PartFuncVPRContext &ctx) {
+    TransitionOracle<PartFuncVPRContext> oracle(ctx);
     // legacy の子補正（expcp_pen）をルール重みに集約。
     (void)j;
     switch (rule) {
     case RuleId::VPR_SPLIT_VP_WIP:
         return 1;
     case RuleId::VPR_SPLIT_VP_BASEPAIR:
-        return ctx.expcp_pen(split.k - i);
+        return oracle.expcp_pen(split.k - i);
     default:
         return 0;
     }
@@ -633,25 +637,26 @@ pf_t transition_weight_vp(RuleId rule,
                    const RuleSplit &split,
                    PartFuncVPContext &ctx,
                    sparse_tree &tree) {
+    TransitionOracle<PartFuncVPContext> oracle(ctx);
     // legacy の子補正（expap/expbp_penalty_sq/scale など）をルール重みに集約。
     (void)tree;
     switch (rule) {
     case RuleId::VP_WI_CASE1:
     case RuleId::VP_WI_CASE2:
     case RuleId::VP_WI_CASE3:
-        return ctx.scale(2);
+        return oracle.scale(2);
     case RuleId::VP_STACK:
-        return ctx.get_e_stP(i, j) * ctx.scale(2);
+        return oracle.get_e_stP(i, j) * oracle.scale(2);
     case RuleId::VP_INTERNAL_LOOP: {
         cand_pos_t u1 = split.k - i - 1;
         cand_pos_t u2 = j - split.l - 1;
-        return ctx.get_e_intP(i, split.k, split.l, j) * ctx.scale(u1 + u2 + 2);
+        return oracle.get_e_intP(i, split.k, split.l, j) * oracle.scale(u1 + u2 + 2);
     }
     case RuleId::VP_WIP_VP_LEFT:
     case RuleId::VP_VP_WIP_RIGHT:
     case RuleId::VP_WIP_VPR:
     case RuleId::VP_VPL_WIP:
-        return ctx.expap_penalty() * ctx.expbp_penalty_sq() * ctx.scale(2);
+        return oracle.expap_penalty() * oracle.expbp_penalty_sq() * oracle.scale(2);
     default:
         return 0;
     }

@@ -3,6 +3,7 @@
 #include "scfg/constraint_oracle.hh"
 #include "scfg/legacy_adapter.hh"
 #include "scfg/rules_part_func.hh"
+#include "scfg/transition_oracle.hh"
 #include "sparse_tree.hh"
 
 namespace scfg {
@@ -77,14 +78,15 @@ std::vector<RuleChild> expand_w(RuleId rule, cand_pos_t i, cand_pos_t j, const R
 }
 
 pf_t transition_weight_w(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWContext &ctx) {
+    TransitionOracle<PartFuncWContext> oracle(ctx);
     (void)i;
     switch (rule) {
     case RuleId::W_EXTEND_UNPAIRED:
-        return ctx.scale1();
+        return oracle.scale1();
     case RuleId::W_SPLIT_V:
-        return ctx.exp_Extloop(split.k, j);
+        return oracle.exp_Extloop(split.k, j);
     case RuleId::W_SPLIT_WMB:
-        return ctx.expPS_penalty();
+        return oracle.expPS_penalty();
     default:
         return 0;
     }
@@ -148,14 +150,15 @@ pf_t transition_weight_v(RuleId rule,
                   const RuleSplit &split,
                   PartFuncVContext &ctx,
                   sparse_tree &tree) {
+    TransitionOracle<PartFuncVContext> oracle(ctx);
     (void)split;
     switch (rule) {
     case RuleId::V_HAIRPIN:
-        return ctx.hairpin_energy(i, j);
+        return oracle.hairpin_energy(i, j);
     case RuleId::V_INTERNAL:
-        return ctx.internal_energy(i, j, tree.up);
+        return oracle.internal_energy(i, j, tree.up);
     case RuleId::V_VM:
-        return ctx.vm_energy(i, j, tree.up);
+        return oracle.vm_energy(i, j, tree.up);
     default:
         return 0;
     }
@@ -237,18 +240,19 @@ pf_t transition_weight_wi(RuleId rule,
                    cand_pos_t j,
                    const RuleSplit &split,
                    PartFuncWIContext &ctx) {
+    TransitionOracle<PartFuncWIContext> oracle(ctx);
     (void)i;
     (void)j;
     (void)split;
     switch (rule) {
     case RuleId::WI_BASE_SINGLE:
-        return ctx.expPUP_pen1();
+        return oracle.expPUP_pen1();
     case RuleId::WI_SPLIT_V:
-        return ctx.expPPS_penalty();
+        return oracle.expPPS_penalty();
     case RuleId::WI_SPLIT_WMB:
-        return ctx.expPSP_penalty() * ctx.expPPS_penalty();
+        return oracle.expPSP_penalty() * oracle.expPPS_penalty();
     case RuleId::WI_EXTEND_UNPAIRED:
-        return ctx.expPUP_pen1();
+        return oracle.expPUP_pen1();
     default:
         return 0;
     }

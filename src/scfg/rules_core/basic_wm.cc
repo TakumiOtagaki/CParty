@@ -3,6 +3,7 @@
 #include "scfg/constraint_oracle.hh"
 #include "scfg/legacy_adapter.hh"
 #include "scfg/rules_part_func.hh"
+#include "scfg/transition_oracle.hh"
 #include "sparse_tree.hh"
 
 namespace scfg {
@@ -82,17 +83,18 @@ pf_t transition_weight_wmv_wmp(RuleId rule,
                         const RuleSplit &split,
                         PartFuncWMvWMpContext &ctx,
                         std::vector<Node> &tree) {
+    TransitionOracle<PartFuncWMvWMpContext> oracle(ctx);
     (void)split;
     (void)tree;
     switch (rule) {
     case RuleId::WMv_STEM_V:
-        return ctx.exp_MLstem(i, j);
+        return oracle.exp_MLstem(i, j);
     case RuleId::WMp_STEM_WMB:
-        return ctx.expPSM_penalty() * ctx.expb_penalty();
+        return oracle.expPSM_penalty() * oracle.expb_penalty();
     case RuleId::WMv_EXTEND_UNPAIRED:
-        return ctx.expMLbase1();
+        return oracle.expMLbase1();
     case RuleId::WMp_EXTEND_UNPAIRED:
-        return ctx.expMLbase1();
+        return oracle.expMLbase1();
     default:
         return 0;
     }
@@ -184,19 +186,20 @@ pf_t transition_weight_wm(RuleId rule,
                    cand_pos_t j,
                    const RuleSplit &split,
                    PartFuncWMContext &ctx) {
+    TransitionOracle<PartFuncWMContext> oracle(ctx);
     (void)i;
     (void)j;
     switch (rule) {
     case RuleId::WM_START_V:
-        return ctx.expMLbase(split.k - i) * ctx.exp_MLstem(split.k, j);
+        return oracle.expMLbase(split.k - i) * oracle.exp_MLstem(split.k, j);
     case RuleId::WM_START_WMB:
-        return ctx.expMLbase(split.k - i) * ctx.expPSM_penalty() * ctx.expb_penalty();
+        return oracle.expMLbase(split.k - i) * oracle.expPSM_penalty() * oracle.expb_penalty();
     case RuleId::WM_SPLIT_V:
-        return ctx.exp_MLstem(split.k, j);
+        return oracle.exp_MLstem(split.k, j);
     case RuleId::WM_SPLIT_WMB:
-        return ctx.expPSM_penalty() * ctx.expb_penalty();
+        return oracle.expPSM_penalty() * oracle.expb_penalty();
     case RuleId::WM_EXTEND_UNPAIRED:
-        return ctx.expMLbase(1);
+        return oracle.expMLbase(1);
     default:
         return 0;
     }
