@@ -7,6 +7,9 @@
 #include "scfg/inside_fill.hh"
 #include "scfg/structure_view.hh"
 
+#include <memory>
+#include <unordered_map>
+
 extern double expPPS_penalty;
 extern double expPSP_penalty;
 extern double expPS_penalty;
@@ -413,6 +416,111 @@ class LocalAllContext final : public PartFuncAllContext {
     W_final_pf &owner_;
 };
 
+struct Density2CacheEntry {
+    std::string structure;
+    std::unique_ptr<sparse_tree> round;
+    std::unique_ptr<sparse_tree> square;
+};
+
+bool has_round_pairs(const std::string &structure) {
+    return structure.find('(') != std::string::npos || structure.find(')') != std::string::npos;
+}
+
+bool has_square_pairs(const std::string &structure) {
+    return structure.find('[') != std::string::npos || structure.find(']') != std::string::npos;
+}
+
+std::string round_only_structure(const std::string &structure) {
+    std::string out = structure;
+    for (char &c : out) {
+        switch (c) {
+        case '(':
+        case ')':
+        case 'x':
+        case '.':
+            break;
+        case '[':
+        case ']':
+            c = '.';
+            break;
+        default:
+            c = '.';
+            break;
+        }
+    }
+    return out;
+}
+
+std::string square_only_structure(const std::string &structure) {
+    std::string out = structure;
+    for (char &c : out) {
+        switch (c) {
+        case '[':
+            c = '(';
+            break;
+        case ']':
+            c = ')';
+            break;
+        case 'x':
+        case '.':
+            break;
+        case '(':
+        case ')':
+            c = '.';
+            break;
+        default:
+            c = '.';
+            break;
+        }
+    }
+    return out;
+}
+
+std::string normalize_square_to_round(const std::string &structure) {
+    std::string out = structure;
+    for (char &c : out) {
+        if (c == '[') {
+            c = '(';
+        } else if (c == ']') {
+            c = ')';
+        } else if (c != '(' && c != ')' && c != 'x' && c != '.') {
+            c = '.';
+        }
+    }
+    return out;
+}
+
+Density2View make_density2_view(sparse_tree &tree, const RulesConfig &config) {
+    if (!config.use_density2_view) {
+        return Density2View(tree, tree);
+    }
+
+    static thread_local std::unordered_map<const sparse_tree *, Density2CacheEntry> cache;
+    Density2CacheEntry &entry = cache[&tree];
+    if (entry.structure != tree.structure || !entry.round || !entry.square) {
+        const std::string &structure = tree.structure;
+        const bool has_round = has_round_pairs(structure);
+        const bool has_square = has_square_pairs(structure);
+        std::string round_structure;
+        std::string square_structure;
+        if (has_round && has_square) {
+            round_structure = round_only_structure(structure);
+            square_structure = square_only_structure(structure);
+        } else if (has_square) {
+            round_structure = normalize_square_to_round(structure);
+            square_structure = round_structure;
+        } else {
+            round_structure = structure;
+            square_structure = round_structure;
+        }
+        entry.structure = structure;
+        const int n = static_cast<int>(tree.n);
+        entry.round = std::make_unique<sparse_tree>(round_structure, n);
+        entry.square = std::make_unique<sparse_tree>(square_structure, n);
+    }
+    return Density2View(*entry.round, *entry.square);
+}
+
 } // namespace
 
 void compute_W_restricted(W_final_pf &owner, sparse_tree &tree) {
@@ -508,7 +616,7 @@ void compute_WIP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
     LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        Density2View view(tree, tree);
+        Density2View view = make_density2_view(tree, config);
         if (config.use_inside_core) {
             compute_WIP_restricted_core(ctx, all, i, j, view, config);
         } else {
@@ -524,7 +632,7 @@ void compute_VPL_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
     LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        Density2View view(tree, tree);
+        Density2View view = make_density2_view(tree, config);
         if (config.use_inside_core) {
             compute_VPL_restricted_core(ctx, all, i, j, view, config);
         } else {
@@ -540,7 +648,7 @@ void compute_VPR_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
     LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        Density2View view(tree, tree);
+        Density2View view = make_density2_view(tree, config);
         if (config.use_inside_core) {
             compute_VPR_restricted_core(ctx, all, i, j, view, config);
         } else {
@@ -556,7 +664,7 @@ void compute_VP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, sparse
     LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        Density2View view(tree, tree);
+        Density2View view = make_density2_view(tree, config);
         if (config.use_inside_core) {
             compute_VP_restricted_core(ctx, all, i, j, view, tree, config);
         } else {
@@ -572,7 +680,7 @@ void compute_WMBW_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spar
     LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        Density2View view(tree, tree);
+        Density2View view = make_density2_view(tree, config);
         if (config.use_inside_core) {
             compute_WMBW_restricted_core(ctx, all, i, j, view, config);
         } else {
@@ -588,7 +696,7 @@ void compute_WMBP_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spar
     LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        Density2View view(tree, tree);
+        Density2View view = make_density2_view(tree, config);
         if (config.use_inside_core) {
             compute_WMBP_restricted_core(ctx, all, i, j, view, tree, config);
         } else {
@@ -604,7 +712,7 @@ void compute_WMB_restricted(W_final_pf &owner, cand_pos_t i, cand_pos_t j, spars
     LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        Density2View view(tree, tree);
+        Density2View view = make_density2_view(tree, config);
         if (config.use_inside_core) {
             compute_WMB_restricted_core(ctx, all, i, j, view, tree, config);
         } else {
@@ -625,7 +733,7 @@ void compute_BE_restricted(W_final_pf &owner,
     LocalAllContext all(owner);
     const auto &config = get_rules_config();
     if (config.use_rules) {
-        Density2View view(tree, tree);
+        Density2View view = make_density2_view(tree, config);
         if (config.use_inside_core) {
             compute_BE_restricted_core(ctx, all, i, j, ip, jp, view, tree, config);
         } else {

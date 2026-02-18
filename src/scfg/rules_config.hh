@@ -11,6 +11,7 @@ struct RulesConfig {
     bool use_rules = false;
     bool use_applicable = false;
     bool use_inside_core = false;
+    bool use_density2_view = false;
     bool use_only_list = false;
     std::unordered_set<RuleId> disabled_rules;
     std::unordered_set<RuleId> allowed_rules;
