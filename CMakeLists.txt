@@ -46,7 +46,7 @@ SET(SOURCE
   src/scfg/legacy_adapter.cc
   src/scfg/part_func_adapter.cc
   src/scfg/rules_api.cc
-  src/scfg/rules_core/base.cc
+  src/scfg/rules_catalog.cc
   src/scfg/rules_core/basic_wv.cc
   src/scfg/rules_core/basic_vm.cc
   src/scfg/rules_core/basic_wm.cc
@@ -161,7 +161,7 @@ if(BUILD_TESTING)
     src/scfg/constraint_oracle.cc
     src/scfg/legacy_adapter.cc
     src/scfg/rules_api.cc
-    src/scfg/rules_core/base.cc
+    src/scfg/rules_catalog.cc
     src/scfg/rules_core/basic_wv.cc
     src/scfg/rules_core/basic_vm.cc
     src/scfg/rules_core/basic_wm.cc

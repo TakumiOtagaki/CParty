@@ -51,6 +51,7 @@ struct ApplicableRule {
 };
 
 const RuleSpec &rule_spec(RuleId rule);
+const std::vector<RuleSpec> &rule_catalog();
 
 // Returns the full candidate rule list for a non-terminal, before applicability filtering.
 const std::vector<RuleId> &rules_for(NonTerminal nonterminal);

@@ -133,4 +133,16 @@ const RuleSpec &rule_spec(RuleId rule) {
     return specs[static_cast<size_t>(rule)];
 }
 
+const std::vector<RuleSpec> &rule_catalog() {
+    static const std::vector<RuleSpec> catalog = []() {
+        std::vector<RuleSpec> out;
+        out.reserve(kRuleIdCount);
+        for (const auto &spec : kRuleSpecs) {
+            out.push_back(spec);
+        }
+        return out;
+    }();
+    return catalog;
+}
+
 } // namespace scfg
