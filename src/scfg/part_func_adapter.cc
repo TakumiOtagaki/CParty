@@ -72,6 +72,7 @@ class LocalWContext final : public PartFuncWContext {
     pf_t scale1() const override { return PartFuncAdapterAccess::scale(owner_)[1]; }
     pf_t get_W(cand_pos_t j) const override { return PartFuncAdapterAccess::W(owner_)[j]; }
     pf_t get_energy(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
+    pf_t get_V(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
     pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMB(i, j); }
     pf_t exp_Extloop(cand_pos_t i, cand_pos_t j) override { return PartFuncAdapterAccess::exp_Extloop(owner_, i, j); }
     pf_t expPS_penalty() const override { return ::expPS_penalty; }
@@ -133,6 +134,7 @@ class LocalWIContext final : public PartFuncWIContext {
     void set_WI(cand_pos_t ij, pf_t value) override { PartFuncAdapterAccess::WI(owner_)[ij] = value; }
     pf_t get_WI(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WI(i, j); }
     pf_t get_energy(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
+    pf_t get_V(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
     pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMB(i, j); }
     pf_t expPPS_penalty() const override { return ::expPPS_penalty; }
     pf_t expPSP_penalty() const override { return ::expPSP_penalty; }
@@ -151,6 +153,7 @@ class LocalWMvWMpContext final : public PartFuncWMvWMpContext {
         return PartFuncAdapterAccess::index(owner_)[i] + j - i;
     }
     pf_t get_energy(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
+    pf_t get_V(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
     pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMB(i, j); }
     pf_t get_energy_WMv(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMv(i, j); }
     pf_t get_energy_WMp(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMp(i, j); }
@@ -179,6 +182,7 @@ class LocalWMContext final : public PartFuncWMContext {
     pf_t get_energy_WMv(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMv(i, j); }
     pf_t get_energy_WMp(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMp(i, j); }
     pf_t get_energy(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
+    pf_t get_V(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
     pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMB(i, j); }
     pf_t exp_MLstem(cand_pos_t i, cand_pos_t j) override { return PartFuncAdapterAccess::exp_MLstem(owner_, i, j); }
     pf_t expPSM_penalty() const override { return ::expPSM_penalty; }
@@ -201,6 +205,7 @@ class LocalWIPContext final : public PartFuncWIPContext {
         return PartFuncAdapterAccess::index(owner_)[i] + j - i;
     }
     pf_t get_energy(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
+    pf_t get_V(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
     pf_t get_energy_WMB(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMB(i, j); }
     pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WIP(i, j); }
     pf_t expbp_penalty() const override { return ::expbp_penalty; }
@@ -256,6 +261,7 @@ class LocalVPContext final : public PartFuncVPContext {
     pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WIP(i, j); }
     pf_t get_energy_VPL(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_VPL(i, j); }
     pf_t get_energy_VPR(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_VPR(i, j); }
+    pf_t get_V(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
     pair_type pair_type_of(cand_pos_t i, cand_pos_t j) const override {
         ensure_pair_matrix_initialized();
         return pair[PartFuncAdapterAccess::S(owner_)[i]][PartFuncAdapterAccess::S(owner_)[j]];
@@ -301,6 +307,7 @@ class LocalWMBPContext final : public PartFuncWMBPContext {
     pf_t get_energy_WMBW(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMBW(i, j); }
     pf_t get_energy_VP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_VP(i, j); }
     pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WI(i, j); }
+    pf_t get_V(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
     pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) override {
         return owner_.get_BE(i, j, ip, jp, tree);
     }
@@ -324,6 +331,7 @@ class LocalWMBContext final : public PartFuncWMBContext {
     }
     pf_t get_energy_WMBP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WMBP(i, j); }
     pf_t get_energy_WI(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WI(i, j); }
+    pf_t get_V(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
     pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) override {
         return owner_.get_BE(i, j, ip, jp, tree);
     }
@@ -344,6 +352,7 @@ class LocalBEContext final : public PartFuncBEContext {
     }
     cand_pos_t n() const override { return PartFuncAdapterAccess::n(owner_); }
     pf_t get_energy_WIP(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy_WIP(i, j); }
+    pf_t get_V(cand_pos_t i, cand_pos_t j) override { return owner_.get_energy(i, j); }
     pf_t get_BE(cand_pos_t i, cand_pos_t j, cand_pos_t ip, cand_pos_t jp, sparse_tree &tree) override {
         return owner_.get_BE(i, j, ip, jp, tree);
     }
