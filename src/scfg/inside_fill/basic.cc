@@ -24,7 +24,7 @@ void compute_V_restricted_rules(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t 
         for (const auto &entry : applicable) {
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
-            contributions += rule_score_v(entry.rule, i, j, entry.split, ctx, tree);
+            contributions += transition_weight_v(entry.rule, i, j, entry.split, ctx, tree);
         }
         ctx.set_V(ij, contributions);
         return;
@@ -34,7 +34,7 @@ void compute_V_restricted_rules(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t 
         const auto splits = enumerate_splits_v(rule, i, j, ctx, tree);
         for (const auto &split : splits) {
             record_rule_hit(rule);
-            contributions += rule_score_v(rule, i, j, split, ctx, tree);
+            contributions += transition_weight_v(rule, i, j, split, ctx, tree);
         }
     }
 
@@ -51,7 +51,7 @@ pf_t compute_VM_restricted_rules(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_
             if (entry.rule == RuleId::VM_SCALE2) continue;
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
-            pf_t coeff = rule_score_vm(entry.rule, i, j, entry.split, ctx, up);
+            pf_t coeff = transition_weight_vm(entry.rule, i, j, entry.split, ctx, up);
             pf_t term = 1;
             const auto children = expand_vm(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
@@ -81,7 +81,7 @@ pf_t compute_VM_restricted_rules(PartFuncVMContext &ctx, cand_pos_t i, cand_pos_
         const auto splits = enumerate_splits_vm(rule, i, j, ctx, up);
         for (const auto &split : splits) {
             record_rule_hit(rule);
-            pf_t coeff = rule_score_vm(rule, i, j, split, ctx, up);
+            pf_t coeff = transition_weight_vm(rule, i, j, split, ctx, up);
             pf_t term = 1;
             const auto children = expand_vm(rule, i, j, split);
             for (const auto &child : children) {
@@ -118,7 +118,7 @@ void compute_W_restricted_rules(PartFuncWContext &ctx, sparse_tree &tree, const 
             for (const auto &entry : applicable) {
                 if (!is_rule_enabled(config, entry.rule)) continue;
                 record_rule_hit(entry.rule);
-                pf_t coeff = rule_score_w(entry.rule, 1, j, entry.split, ctx);
+                pf_t coeff = transition_weight_w(entry.rule, 1, j, entry.split, ctx);
                 pf_t term = 1;
                 const auto children = expand_w(entry.rule, 1, j, entry.split);
                 for (const auto &child : children) {
@@ -140,7 +140,7 @@ void compute_W_restricted_rules(PartFuncWContext &ctx, sparse_tree &tree, const 
             const auto splits = enumerate_splits_w(rule, 1, j, ctx, tree);
             for (const auto &split : splits) {
                 record_rule_hit(rule);
-                pf_t coeff = rule_score_w(rule, 1, j, split, ctx);
+                pf_t coeff = transition_weight_w(rule, 1, j, split, ctx);
                 pf_t term = 1;
                 const auto children = expand_w(rule, 1, j, split);
                 for (const auto &child : children) {
@@ -167,7 +167,7 @@ void compute_WI_restricted_rules(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_
         for (const auto &entry : applicable) {
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
-            pf_t coeff = rule_score_wi(entry.rule, i, j, entry.split, ctx);
+            pf_t coeff = transition_weight_wi(entry.rule, i, j, entry.split, ctx);
             pf_t term = 1;
             const auto children = expand_wi(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
@@ -189,7 +189,7 @@ void compute_WI_restricted_rules(PartFuncWIContext &ctx, cand_pos_t i, cand_pos_
         const auto splits = enumerate_splits_wi(rule, i, j, ctx, tree);
         for (const auto &split : splits) {
             record_rule_hit(rule);
-            pf_t coeff = rule_score_wi(rule, i, j, split, ctx);
+            pf_t coeff = transition_weight_wi(rule, i, j, split, ctx);
             pf_t term = 1;
             const auto children = expand_wi(rule, i, j, split);
             for (const auto &child : children) {
@@ -218,7 +218,7 @@ void compute_WMv_WMp_restricted_rules(PartFuncWMvWMpContext &ctx, cand_pos_t i, 
         for (const auto &entry : applicable) {
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
-            pf_t coeff = rule_score_wmv_wmp(entry.rule, i, j, entry.split, ctx, tree);
+            pf_t coeff = transition_weight_wmv_wmp(entry.rule, i, j, entry.split, ctx, tree);
             pf_t term = 1;
             const auto children = expand_wmv_wmp(entry.rule, i, j, entry.split);
             for (const auto &child : children) {
@@ -246,7 +246,7 @@ void compute_WMv_WMp_restricted_rules(PartFuncWMvWMpContext &ctx, cand_pos_t i, 
         const auto splits = enumerate_splits_wmv_wmp(rule, i, j, ctx, tree);
         for (const auto &split : splits) {
             record_rule_hit(rule);
-            pf_t coeff = rule_score_wmv_wmp(rule, i, j, split, ctx, tree);
+            pf_t coeff = transition_weight_wmv_wmp(rule, i, j, split, ctx, tree);
             pf_t term = 1;
             const auto children = expand_wmv_wmp(rule, i, j, split);
             for (const auto &child : children) {
@@ -265,7 +265,7 @@ void compute_WMv_WMp_restricted_rules(PartFuncWMvWMpContext &ctx, cand_pos_t i, 
         const auto splits = enumerate_splits_wmv_wmp(rule, i, j, ctx, tree);
         for (const auto &split : splits) {
             record_rule_hit(rule);
-            pf_t coeff = rule_score_wmv_wmp(rule, i, j, split, ctx, tree);
+            pf_t coeff = transition_weight_wmv_wmp(rule, i, j, split, ctx, tree);
             pf_t term = 1;
             const auto children = expand_wmv_wmp(rule, i, j, split);
             for (const auto &child : children) {
@@ -303,7 +303,7 @@ void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_
         for (const auto &entry : applicable) {
             if (!is_rule_enabled(config, entry.rule)) continue;
             record_rule_hit(entry.rule);
-            pf_t coeff = rule_score_wm(entry.rule, i, j, entry.split, ctx);
+            pf_t coeff = transition_weight_wm(entry.rule, i, j, entry.split, ctx);
             const auto children = expand_wm(entry.rule, i, j, entry.split);
             pf_t term = 1;
             for (const auto &child : children) {
@@ -343,7 +343,7 @@ void compute_WM_restricted_rules(PartFuncWMContext &ctx, cand_pos_t i, cand_pos_
         const auto splits = enumerate_splits_wm(rule, i, j, ctx, tree);
         for (const auto &split : splits) {
             record_rule_hit(rule);
-            pf_t coeff = rule_score_wm(rule, i, j, split, ctx);
+            pf_t coeff = transition_weight_wm(rule, i, j, split, ctx);
             const auto children = expand_wm(rule, i, j, split);
             pf_t term = 1;
             for (const auto &child : children) {

@@ -208,7 +208,7 @@ std::vector<RuleChild> expand_be(RuleId rule,
     return children;
 }
 
-pf_t rule_score_be(RuleId rule,
+pf_t transition_weight_be(RuleId rule,
                    cand_pos_t i,
                    cand_pos_t j,
                    cand_pos_t ip,

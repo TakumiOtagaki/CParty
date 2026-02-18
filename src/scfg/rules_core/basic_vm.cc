@@ -69,7 +69,7 @@ std::vector<RuleChild> expand_vm(RuleId rule, cand_pos_t i, cand_pos_t j, const 
     return children;
 }
 
-pf_t rule_score_vm(RuleId rule,
+pf_t transition_weight_vm(RuleId rule,
                    cand_pos_t i,
                    cand_pos_t j,
                    const RuleSplit &split,

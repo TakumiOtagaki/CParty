@@ -92,7 +92,7 @@ std::vector<RuleChild> expand_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, cons
     return children;
 }
 
-pf_t rule_score_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWMBWContext &ctx) {
+pf_t transition_weight_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWMBWContext &ctx) {
     (void)i;
     (void)j;
     (void)split;
@@ -257,7 +257,7 @@ std::vector<RuleChild> expand_wmbp(RuleId rule, cand_pos_t i, cand_pos_t j, cons
     return children;
 }
 
-pf_t rule_score_wmbp(RuleId rule,
+pf_t transition_weight_wmbp(RuleId rule,
                      cand_pos_t i,
                      cand_pos_t j,
                      const RuleSplit &split,
@@ -404,7 +404,7 @@ std::vector<RuleChild> expand_wmb(RuleId rule, cand_pos_t i, cand_pos_t j, const
     return children;
 }
 
-pf_t rule_score_wmb(RuleId rule,
+pf_t transition_weight_wmb(RuleId rule,
                     cand_pos_t i,
                     cand_pos_t j,
                     const RuleSplit &split,

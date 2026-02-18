@@ -76,7 +76,7 @@ std::vector<RuleChild> expand_w(RuleId rule, cand_pos_t i, cand_pos_t j, const R
     return children;
 }
 
-pf_t rule_score_w(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWContext &ctx) {
+pf_t transition_weight_w(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWContext &ctx) {
     (void)i;
     switch (rule) {
     case RuleId::W_EXTEND_UNPAIRED:
@@ -142,7 +142,7 @@ std::vector<RuleChild> expand_v(RuleId rule, cand_pos_t i, cand_pos_t j, const R
     return {};
 }
 
-pf_t rule_score_v(RuleId rule,
+pf_t transition_weight_v(RuleId rule,
                   cand_pos_t i,
                   cand_pos_t j,
                   const RuleSplit &split,
@@ -232,7 +232,7 @@ std::vector<RuleChild> expand_wi(RuleId rule, cand_pos_t i, cand_pos_t j, const 
     return children;
 }
 
-pf_t rule_score_wi(RuleId rule,
+pf_t transition_weight_wi(RuleId rule,
                    cand_pos_t i,
                    cand_pos_t j,
                    const RuleSplit &split,

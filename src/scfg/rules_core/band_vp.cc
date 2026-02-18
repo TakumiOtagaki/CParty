@@ -146,7 +146,7 @@ std::vector<RuleChild> expand_wip(RuleId rule, cand_pos_t i, cand_pos_t j, const
     return children;
 }
 
-pf_t rule_score_wip(RuleId rule,
+pf_t transition_weight_wip(RuleId rule,
                     cand_pos_t i,
                     cand_pos_t j,
                     const RuleSplit &split,
@@ -249,7 +249,7 @@ std::vector<RuleChild> expand_vpl(RuleId rule, cand_pos_t i, cand_pos_t j, const
     return children;
 }
 
-pf_t rule_score_vpl(RuleId rule,
+pf_t transition_weight_vpl(RuleId rule,
                     cand_pos_t i,
                     cand_pos_t j,
                     const RuleSplit &split,
@@ -361,7 +361,7 @@ std::vector<RuleChild> expand_vpr(RuleId rule, cand_pos_t i, cand_pos_t j, const
     return children;
 }
 
-pf_t rule_score_vpr(RuleId rule,
+pf_t transition_weight_vpr(RuleId rule,
                     cand_pos_t i,
                     cand_pos_t j,
                     const RuleSplit &split,
@@ -624,7 +624,7 @@ std::vector<RuleChild> expand_vp(RuleId rule, cand_pos_t i, cand_pos_t j, const 
     return children;
 }
 
-pf_t rule_score_vp(RuleId rule,
+pf_t transition_weight_vp(RuleId rule,
                    cand_pos_t i,
                    cand_pos_t j,
                    const RuleSplit &split,

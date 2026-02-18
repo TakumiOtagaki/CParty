@@ -76,7 +76,7 @@ std::vector<RuleChild> expand_wmv_wmp(RuleId rule, cand_pos_t i, cand_pos_t j, c
     return children;
 }
 
-pf_t rule_score_wmv_wmp(RuleId rule,
+pf_t transition_weight_wmv_wmp(RuleId rule,
                         cand_pos_t i,
                         cand_pos_t j,
                         const RuleSplit &split,
@@ -179,7 +179,7 @@ std::vector<RuleChild> expand_wm(RuleId rule, cand_pos_t i, cand_pos_t j, const 
     return children;
 }
 
-pf_t rule_score_wm(RuleId rule,
+pf_t transition_weight_wm(RuleId rule,
                    cand_pos_t i,
                    cand_pos_t j,
                    const RuleSplit &split,

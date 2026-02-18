@@ -66,7 +66,6 @@ std::vector<ApplicableRule> applicable_rules_w(cand_pos_t i,
                                                PartFuncWContext &ctx,
                                                sparse_tree &tree);
 std::vector<RuleChild> expand_w(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_w(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWContext &ctx);
 pf_t transition_weight_w(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWContext &ctx);
 
 std::vector<RuleSplit> enumerate_splits_v(RuleId rule,
@@ -79,12 +78,6 @@ std::vector<ApplicableRule> applicable_rules_v(cand_pos_t i,
                                                PartFuncVContext &ctx,
                                                sparse_tree &tree);
 std::vector<RuleChild> expand_v(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_v(RuleId rule,
-                  cand_pos_t i,
-                  cand_pos_t j,
-                  const RuleSplit &split,
-                  PartFuncVContext &ctx,
-                  sparse_tree &tree);
 pf_t transition_weight_v(RuleId rule,
                          cand_pos_t i,
                          cand_pos_t j,
@@ -102,11 +95,6 @@ std::vector<ApplicableRule> applicable_rules_wi(cand_pos_t i,
                                                 PartFuncWIContext &ctx,
                                                 sparse_tree &tree);
 std::vector<RuleChild> expand_wi(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_wi(RuleId rule,
-                   cand_pos_t i,
-                   cand_pos_t j,
-                   const RuleSplit &split,
-                   PartFuncWIContext &ctx);
 pf_t transition_weight_wi(RuleId rule,
                           cand_pos_t i,
                           cand_pos_t j,
@@ -123,12 +111,6 @@ std::vector<ApplicableRule> applicable_rules_vm(cand_pos_t i,
                                                 PartFuncVMContext &ctx,
                                                 std::vector<int> &up);
 std::vector<RuleChild> expand_vm(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_vm(RuleId rule,
-                   cand_pos_t i,
-                   cand_pos_t j,
-                   const RuleSplit &split,
-                   PartFuncVMContext &ctx,
-                   std::vector<int> &up);
 pf_t transition_weight_vm(RuleId rule,
                           cand_pos_t i,
                           cand_pos_t j,
@@ -146,12 +128,6 @@ std::vector<ApplicableRule> applicable_rules_wmv_wmp(cand_pos_t i,
                                                      PartFuncWMvWMpContext &ctx,
                                                      std::vector<Node> &tree);
 std::vector<RuleChild> expand_wmv_wmp(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_wmv_wmp(RuleId rule,
-                        cand_pos_t i,
-                        cand_pos_t j,
-                        const RuleSplit &split,
-                        PartFuncWMvWMpContext &ctx,
-                        std::vector<Node> &tree);
 pf_t transition_weight_wmv_wmp(RuleId rule,
                                cand_pos_t i,
                                cand_pos_t j,
@@ -169,11 +145,6 @@ std::vector<ApplicableRule> applicable_rules_wm(cand_pos_t i,
                                                 PartFuncWMContext &ctx,
                                                 sparse_tree &tree);
 std::vector<RuleChild> expand_wm(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_wm(RuleId rule,
-                   cand_pos_t i,
-                   cand_pos_t j,
-                   const RuleSplit &split,
-                   PartFuncWMContext &ctx);
 pf_t transition_weight_wm(RuleId rule,
                           cand_pos_t i,
                           cand_pos_t j,
@@ -199,11 +170,6 @@ std::vector<ApplicableRule> applicable_rules_wip(cand_pos_t i,
                                                  PartFuncWIPContext &ctx,
                                                  const StructureView &view);
 std::vector<RuleChild> expand_wip(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_wip(RuleId rule,
-                    cand_pos_t i,
-                    cand_pos_t j,
-                    const RuleSplit &split,
-                    PartFuncWIPContext &ctx);
 pf_t transition_weight_wip(RuleId rule,
                            cand_pos_t i,
                            cand_pos_t j,
@@ -229,11 +195,6 @@ std::vector<ApplicableRule> applicable_rules_vpl(cand_pos_t i,
                                                  PartFuncVPLContext &ctx,
                                                  const StructureView &view);
 std::vector<RuleChild> expand_vpl(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_vpl(RuleId rule,
-                    cand_pos_t i,
-                    cand_pos_t j,
-                    const RuleSplit &split,
-                    PartFuncVPLContext &ctx);
 pf_t transition_weight_vpl(RuleId rule,
                            cand_pos_t i,
                            cand_pos_t j,
@@ -259,11 +220,6 @@ std::vector<ApplicableRule> applicable_rules_vpr(cand_pos_t i,
                                                  PartFuncVPRContext &ctx,
                                                  const StructureView &view);
 std::vector<RuleChild> expand_vpr(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_vpr(RuleId rule,
-                    cand_pos_t i,
-                    cand_pos_t j,
-                    const RuleSplit &split,
-                    PartFuncVPRContext &ctx);
 pf_t transition_weight_vpr(RuleId rule,
                            cand_pos_t i,
                            cand_pos_t j,
@@ -289,12 +245,6 @@ std::vector<ApplicableRule> applicable_rules_vp(cand_pos_t i,
                                                 PartFuncVPContext &ctx,
                                                 const StructureView &view);
 std::vector<RuleChild> expand_vp(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_vp(RuleId rule,
-                   cand_pos_t i,
-                   cand_pos_t j,
-                   const RuleSplit &split,
-                   PartFuncVPContext &ctx,
-                   sparse_tree &tree);
 pf_t transition_weight_vp(RuleId rule,
                           cand_pos_t i,
                           cand_pos_t j,
@@ -321,7 +271,6 @@ std::vector<ApplicableRule> applicable_rules_wmbw(cand_pos_t i,
                                                   PartFuncWMBWContext &ctx,
                                                   const StructureView &view);
 std::vector<RuleChild> expand_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWMBWContext &ctx);
 pf_t transition_weight_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split, PartFuncWMBWContext &ctx);
 
 std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
@@ -345,12 +294,6 @@ std::vector<ApplicableRule> applicable_rules_wmbp(cand_pos_t i,
                                                   const StructureView &view,
                                                   sparse_tree &tree);
 std::vector<RuleChild> expand_wmbp(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_wmbp(RuleId rule,
-                     cand_pos_t i,
-                     cand_pos_t j,
-                     const RuleSplit &split,
-                     PartFuncWMBPContext &ctx,
-                     sparse_tree &tree);
 pf_t transition_weight_wmbp(RuleId rule,
                             cand_pos_t i,
                             cand_pos_t j,
@@ -377,12 +320,6 @@ std::vector<ApplicableRule> applicable_rules_wmb(cand_pos_t i,
                                                  PartFuncWMBContext &ctx,
                                                  const StructureView &view);
 std::vector<RuleChild> expand_wmb(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split);
-pf_t rule_score_wmb(RuleId rule,
-                    cand_pos_t i,
-                    cand_pos_t j,
-                    const RuleSplit &split,
-                    PartFuncWMBContext &ctx,
-                    sparse_tree &tree);
 pf_t transition_weight_wmb(RuleId rule,
                            cand_pos_t i,
                            cand_pos_t j,
@@ -422,14 +359,6 @@ std::vector<RuleChild> expand_be(RuleId rule,
                                  cand_pos_t ip,
                                  cand_pos_t jp,
                                  const RuleSplit &split);
-pf_t rule_score_be(RuleId rule,
-                   cand_pos_t i,
-                   cand_pos_t j,
-                   cand_pos_t ip,
-                   cand_pos_t jp,
-                   const RuleSplit &split,
-                   PartFuncBEContext &ctx,
-                   sparse_tree &tree);
 pf_t transition_weight_be(RuleId rule,
                           cand_pos_t i,
                           cand_pos_t j,
