@@ -8,7 +8,55 @@ namespace scfg {
 // 現状は inside_fill の実装に委譲する。今後このファイルで機械的DPコアを実装する。
 
 void compute_W_restricted_core(PartFuncWContext &ctx, sparse_tree &tree, const RulesConfig &config) {
-    compute_W_restricted_rules(ctx, tree, config);
+    const cand_pos_t n = ctx.n();
+    const cand_pos_t turn = ctx.turn();
+
+    for (cand_pos_t j = turn + 1; j <= n; j++) {
+        pf_t contributions = 0;
+        if (config.use_applicable) {
+            const auto applicable = applicable_rules_w(1, j, ctx, tree);
+            for (const auto &entry : applicable) {
+                if (!is_rule_enabled(config, entry.rule)) continue;
+                record_rule_hit(entry.rule);
+                pf_t coeff = transition_weight_w(entry.rule, 1, j, entry.split, ctx);
+                pf_t term = 1;
+                const auto children = expand_w(entry.rule, 1, j, entry.split);
+                for (const auto &child : children) {
+                    if (child.nonterminal == NonTerminal::W) {
+                        term *= ctx.get_W(child.j);
+                    } else if (child.nonterminal == NonTerminal::V) {
+                        term *= ctx.get_energy(child.i, child.j);
+                    } else if (child.nonterminal == NonTerminal::WMB) {
+                        term *= ctx.get_energy_WMB(child.i, child.j);
+                    }
+                }
+                contributions += term * coeff;
+            }
+            ctx.set_W(j, contributions);
+            continue;
+        }
+        for (RuleId rule : rules_for(NonTerminal::W)) {
+            if (!is_rule_enabled(config, rule)) continue;
+            const auto splits = enumerate_splits_w(rule, 1, j, ctx, tree);
+            for (const auto &split : splits) {
+                record_rule_hit(rule);
+                pf_t coeff = transition_weight_w(rule, 1, j, split, ctx);
+                pf_t term = 1;
+                const auto children = expand_w(rule, 1, j, split);
+                for (const auto &child : children) {
+                    if (child.nonterminal == NonTerminal::W) {
+                        term *= ctx.get_W(child.j);
+                    } else if (child.nonterminal == NonTerminal::V) {
+                        term *= ctx.get_energy(child.i, child.j);
+                    } else if (child.nonterminal == NonTerminal::WMB) {
+                        term *= ctx.get_energy_WMB(child.i, child.j);
+                    }
+                }
+                contributions += term * coeff;
+            }
+        }
+        ctx.set_W(j, contributions);
+    }
 }
 
 void compute_V_restricted_core(PartFuncVContext &ctx, cand_pos_t i, cand_pos_t j, sparse_tree &tree, const RulesConfig &config) {
