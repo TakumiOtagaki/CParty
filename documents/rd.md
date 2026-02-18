@@ -150,9 +150,17 @@ Rule Object + Constraint Oracle を使って単一パス評価を実装する。
 - `PkFreeView`: 既存 `sparse_tree` をそのまま利用
   - `pair_square(i)` は常に <0
   - `weakly_closed`/B 系は round と同義
-- `KTypeView`: `round_tree` + `square_tree` の dual-tree
+- `Density2View`: `round_tree` + `square_tree` の dual-tree
   - band view は `square_tree`
   - round view は `round_tree`
+
+#### メモ: Density2View に round_tree / square_tree の実体を渡す必要性
+- 現状は `Density2View(tree, tree)` で pk-free と同じ情報を渡しているだけなので、k-type/h-type の band 情報（`[]`）が構造判定に反映されない。
+- legacy の pseudo-loop 系（`WMB/BE/VP` など）は band 側境界（`B/Bp/b/bp` や `weakly_closed`）に依存するため、`[]` を `square_tree` に分離して渡さないと専用エネルギー項が欠落する。
+- 対応方針:
+  - `round_tree`: `()` のみ抽出して構築
+  - `square_tree`: `[]` のみ抽出して構築
+  - `Density2View(round_tree, square_tree)` を rules/runtime 経由で使用
 
 #### F) rules_core との接続方針
 - `enumerate_splits_*` は view を受け取る設計に改修
