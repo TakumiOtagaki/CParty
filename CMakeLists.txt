@@ -57,6 +57,7 @@ SET(SOURCE
   src/scfg/rules_debug.cc
   src/scfg/inside_fill/basic.cc
   src/scfg/inside_fill/band.cc
+  src/scfg/inside_fill/core.cc
   src/scfg/rules_pseudo_loop.cc
   src/scfg/rules_part_func.cc
   src/scfg/rules_part_helpers.cc
