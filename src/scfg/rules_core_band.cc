@@ -10,6 +10,11 @@
 
 namespace scfg {
 
+// band/pseudoknot 側の rules_core 実装。
+// - WIP/VPL/VPR/VP/WMBW/WMBP/WMB/BE を担当
+// - pk-free 版と StructureView 版の両方を持ち、k-type/density2 への拡張に備える
+// - band 境界（B/Bp/b/bp）や weakly_closed を多用するため、実装を分離
+
 std::vector<ApplicableRule> applicable_rules_wip(cand_pos_t i,
                                                  cand_pos_t j,
                                                  PartFuncWIPContext &ctx,

@@ -6,6 +6,11 @@
 #include "sparse_tree.hh"
 
 namespace scfg {
+
+// pk-free 側の rules_core 実装。
+// - W/V/WI/VM/WMv/WMp/WM の分解・スコア・適用判定
+// - sparse_tree の通常構造（'()' のみ）を前提に処理する
+// band/pseudoknot 系は rules_core_band.cc に分離。
 std::vector<ApplicableRule> applicable_rules_w(cand_pos_t i,
                                                cand_pos_t j,
                                                PartFuncWContext &ctx,

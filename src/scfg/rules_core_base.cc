@@ -5,6 +5,12 @@
 namespace scfg {
 namespace {
 
+// ルール定義の「唯一の正本」。
+// - RuleId と NonTerminal / SplitSpec の対応表
+// - NonTerminal ごとのルール一覧生成
+// - rule_spec() によるメタ情報参照
+// 実際の分解ロジックは rules_core_basic.cc / rules_core_band.cc に分割している。
+
 constexpr size_t kNonTerminalCount = 15;
 
 constexpr SplitSpec split_spec(SplitKind kind, bool uses_p = false, bool uses_q = false) {
