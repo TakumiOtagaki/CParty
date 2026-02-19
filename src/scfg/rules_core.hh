@@ -83,7 +83,10 @@ struct RuleSpec {
         CanPairRight,
         WmbpExteriorSplit,
         WmbpInnerArcSplit,
-        BeSplitPairWithin
+        BeSplitPairWithin,
+        WeaklyClosedRoot,
+        WeaklyClosedPrefix,
+        WeaklyClosedSplitOrKIsI
     } split_filter =
         SplitFilterKind::None;
     enum class SpanPredicateKind : unsigned char {
@@ -93,8 +96,10 @@ struct RuleSpec {
     enum class PredicateKind : unsigned char {
         None,
         VPairingState,
+        VPairingStateAndHairpinMinLoop,
         UnpairedAtJ,
         UnpairedAtJMinus1,
+        WSpanWeaklyClosed,
         VpStackPairing,
         VpInternalLoopPairing,
         VprBasepair,

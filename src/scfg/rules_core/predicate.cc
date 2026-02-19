@@ -47,6 +47,14 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, sparse_t
         const bool paired = (tree.tree[ctx.i].pair == ctx.j && tree.tree[ctx.j].pair == ctx.i);
         return paired || unpaired;
     }
+    case RuleSpec::PredicateKind::VPairingStateAndHairpinMinLoop: {
+        const bool unpaired = (tree.tree[ctx.i].pair < -1 && tree.tree[ctx.j].pair < -1);
+        const bool paired = (tree.tree[ctx.i].pair == ctx.j && tree.tree[ctx.j].pair == ctx.i);
+        const bool canH = !(tree.up[ctx.j - 1] < (ctx.j - ctx.i - 1));
+        return (paired || unpaired) && canH;
+    }
+    case RuleSpec::PredicateKind::WSpanWeaklyClosed:
+        return tree.weakly_closed(1, ctx.j);
     case RuleSpec::PredicateKind::WmbSplitBeWmbpWi:
         return tree.tree[ctx.j].pair >= 0 && ctx.j > tree.tree[ctx.j].pair && tree.tree[ctx.j].pair > ctx.i;
     case RuleSpec::PredicateKind::WmbwSplitWmbpWi: {
@@ -104,6 +112,8 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const St
         return ctx.j > 0 && view.is_unpaired(ctx.j - 1);
     case RuleSpec::PredicateKind::VPairingState:
         return true;
+    case RuleSpec::PredicateKind::VPairingStateAndHairpinMinLoop:
+        return view.unpaired_prefix(ctx.j - 1) >= (ctx.j - ctx.i - 1);
     case RuleSpec::PredicateKind::WmbSplitBeWmbpWi:
         return view.pair_square(ctx.j) >= 0 && ctx.j > view.pair_square(ctx.j) && view.pair_square(ctx.j) > ctx.i;
     case RuleSpec::PredicateKind::WmbwSplitWmbpWi:
@@ -177,6 +187,8 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const st
         return tree[ctx.j].pair < 0;
     case RuleSpec::PredicateKind::UnpairedAtJMinus1:
         return ctx.j > 0 && tree[ctx.j - 1].pair < 0;
+    case RuleSpec::PredicateKind::WSpanWeaklyClosed:
+        return true;
     default:
         return true;
     }
