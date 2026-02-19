@@ -399,9 +399,11 @@ std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
         break;
     case RuleId::VPR_SPLIT_VP_BASEPAIR:
         for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
-            if (scfg::can_pair_right_span(tree, k, j)) {
-                splits.push_back({k, -1});
+            if (spec.split_filter == RuleSpec::SplitFilterKind::CanPairRight &&
+                !scfg::can_pair_right_span(tree, k, j)) {
+                continue;
             }
+            splits.push_back({k, -1});
         }
         break;
     default:
@@ -434,9 +436,11 @@ std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
         break;
     case RuleId::VPR_SPLIT_VP_BASEPAIR:
         for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
-            if (view.can_pair_right_span(k, j)) {
-                splits.push_back({k, -1});
+            if (spec.split_filter == RuleSpec::SplitFilterKind::CanPairRight &&
+                !view.can_pair_right_span(k, j)) {
+                continue;
             }
+            splits.push_back({k, -1});
         }
         break;
     default:
