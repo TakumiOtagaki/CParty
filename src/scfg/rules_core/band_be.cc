@@ -60,7 +60,8 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
         return splits;
     }
     if (i == ip && j == jp && i < j) {
-        if (spec.predicate == RuleSpec::PredicateKind::BeBaseSamePair) {
+        RuleSpanContext span_ctx{i, j, {}, ip, jp};
+        if (predicate_allows(spec, span_ctx, tree)) {
             splits.push_back({});
         }
         return splits;
@@ -68,7 +69,7 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
 
     switch (rule) {
     case RuleId::BE_STACK:
-        if (spec.predicate == RuleSpec::PredicateKind::BeStackPairing && tree.tree[i + 1].pair == j - 1) {
+        if (predicate_allows(spec, RuleSpanContext{i, j, {}, ip, jp}, tree)) {
             splits.push_back({});
         }
         break;
@@ -79,27 +80,9 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
         for (cand_pos_t l = i + 1; l <= ip; l++) {
             if (tree.tree[l].pair >= -1 && jp <= tree.tree[l].pair && tree.tree[l].pair < j) {
                 cand_pos_t lp = tree.tree[l].pair;
-                bool empty_region_il = scfg::is_empty_region(tree, i, l);
-                bool empty_region_lpj = scfg::is_empty_region(tree, lp, j);
-                bool weakly_closed_il = tree.weakly_closed(i + 1, l - 1);
-                bool weakly_closed_lpj = tree.weakly_closed(lp + 1, j - 1);
-
-                if (spec.predicate == RuleSpec::PredicateKind::BeInternalLoop) {
-                    if (empty_region_il && empty_region_lpj) {
-                        splits.push_back({l, lp});
-                    }
-                } else if (spec.predicate == RuleSpec::PredicateKind::BeWipWip) {
-                    if (weakly_closed_il && weakly_closed_lpj) {
-                        splits.push_back({l, lp});
-                    }
-                } else if (spec.predicate == RuleSpec::PredicateKind::BeWipBasepair) {
-                    if (weakly_closed_il && empty_region_lpj) {
-                        splits.push_back({l, lp});
-                    }
-                } else if (spec.predicate == RuleSpec::PredicateKind::BeBasepairWip) {
-                    if (empty_region_il && weakly_closed_lpj) {
-                        splits.push_back({l, lp});
-                    }
+                RuleSpanContext span_ctx{i, j, {l, lp}, ip, jp};
+                if (predicate_allows(spec, span_ctx, tree)) {
+                    splits.push_back({l, lp});
                 }
             }
         }
@@ -124,7 +107,8 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
         return splits;
     }
     if (i == ip && j == jp && i < j) {
-        if (spec.predicate == RuleSpec::PredicateKind::BeBaseSamePair) {
+        RuleSpanContext span_ctx{i, j, {}, ip, jp};
+        if (predicate_allows(spec, span_ctx, view)) {
             splits.push_back({});
         }
         return splits;
@@ -132,7 +116,7 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
 
     switch (rule) {
     case RuleId::BE_STACK:
-        if (spec.predicate == RuleSpec::PredicateKind::BeStackPairing && view.is_pair_square(i + 1, j - 1)) {
+        if (predicate_allows(spec, RuleSpanContext{i, j, {}, ip, jp}, view)) {
             splits.push_back({});
         }
         break;
@@ -143,27 +127,9 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
         for (cand_pos_t l = i + 1; l <= ip; l++) {
             const cand_pos_t lp = view.pair_square(l);
             if (lp >= -1 && jp <= lp && lp < j) {
-                bool empty_region_il = view.is_empty_region(i, l);
-                bool empty_region_lpj = view.is_empty_region(lp, j);
-                bool weakly_closed_il = view.weakly_closed(i + 1, l - 1);
-                bool weakly_closed_lpj = view.weakly_closed(lp + 1, j - 1);
-
-                if (spec.predicate == RuleSpec::PredicateKind::BeInternalLoop) {
-                    if (empty_region_il && empty_region_lpj) {
-                        splits.push_back({l, lp});
-                    }
-                } else if (spec.predicate == RuleSpec::PredicateKind::BeWipWip) {
-                    if (weakly_closed_il && weakly_closed_lpj) {
-                        splits.push_back({l, lp});
-                    }
-                } else if (spec.predicate == RuleSpec::PredicateKind::BeWipBasepair) {
-                    if (weakly_closed_il && empty_region_lpj) {
-                        splits.push_back({l, lp});
-                    }
-                } else if (spec.predicate == RuleSpec::PredicateKind::BeBasepairWip) {
-                    if (empty_region_il && weakly_closed_lpj) {
-                        splits.push_back({l, lp});
-                    }
+                RuleSpanContext span_ctx{i, j, {l, lp}, ip, jp};
+                if (predicate_allows(spec, span_ctx, view)) {
+                    splits.push_back({l, lp});
                 }
             }
         }
