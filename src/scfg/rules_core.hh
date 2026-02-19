@@ -134,6 +134,7 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, sparse_t
 bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const StructureView &view);
 bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const PartFuncRuleHelpers &rules);
 bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const PartFuncRuleHelpersView &rules);
+bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const std::vector<Node> &tree);
 
 // Returns the full candidate rule list for a non-terminal, before applicability filtering.
 const std::vector<RuleId> &rules_for(NonTerminal nonterminal);

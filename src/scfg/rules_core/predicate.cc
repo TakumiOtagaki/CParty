@@ -142,4 +142,17 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const Pa
     }
 }
 
+bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const std::vector<Node> &tree) {
+    switch (spec.predicate) {
+    case RuleSpec::PredicateKind::None:
+        return true;
+    case RuleSpec::PredicateKind::UnpairedAtJ:
+        return tree[ctx.j].pair < 0;
+    case RuleSpec::PredicateKind::UnpairedAtJMinus1:
+        return ctx.j > 0 && tree[ctx.j - 1].pair < 0;
+    default:
+        return true;
+    }
+}
+
 } // namespace scfg
