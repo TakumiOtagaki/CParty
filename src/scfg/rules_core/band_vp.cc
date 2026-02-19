@@ -513,6 +513,7 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
                                            cand_pos_t j,
                                            PartFuncVPContext &ctx,
                                            sparse_tree &tree) {
+    const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
     cand_pos_t Bp_ij = tree.Bp(i, j);
     cand_pos_t B_ij = tree.B(i, j);
@@ -539,6 +540,14 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
         }
         break;
     case RuleId::VP_STACK: {
+        if (spec.predicate == RuleSpec::PredicateKind::VpStackPairing) {
+            pair_type ptype_closingip1jm1 = ctx.pair_type_of(i + 1, j - 1);
+            if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 &&
+                scfg::is_pair_type_allowed(ptype_closingip1jm1)) {
+                splits.push_back({});
+            }
+            break;
+        }
         pair_type ptype_closingip1jm1 = ctx.pair_type_of(i + 1, j - 1);
         if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 &&
             scfg::is_pair_type_allowed(ptype_closingip1jm1)) {
@@ -600,6 +609,7 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
                                            cand_pos_t j,
                                            PartFuncVPContext &ctx,
                                            const StructureView &view) {
+    const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
     cand_pos_t Bp_ij = view.Bp(i, j);
     cand_pos_t B_ij = view.B(i, j);
@@ -626,6 +636,14 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
         }
         break;
     case RuleId::VP_STACK: {
+        if (spec.predicate == RuleSpec::PredicateKind::VpStackPairing) {
+            pair_type ptype_closingip1jm1 = ctx.pair_type_of(i + 1, j - 1);
+            if (view.is_unpaired(i + 1) && view.is_unpaired(j - 1) &&
+                scfg::is_pair_type_allowed(ptype_closingip1jm1)) {
+                splits.push_back({});
+            }
+            break;
+        }
         pair_type ptype_closingip1jm1 = ctx.pair_type_of(i + 1, j - 1);
         if (view.is_unpaired(i + 1) && view.is_unpaired(j - 1) && scfg::is_pair_type_allowed(ptype_closingip1jm1)) {
             splits.push_back({});

@@ -77,8 +77,13 @@ struct RuleSpec {
         SplitGenKind::Custom;
     enum class SplitFilterKind : unsigned char { None, CanPairLeft, CanPairRight } split_filter =
         SplitFilterKind::None;
-    enum class PredicateKind : unsigned char { None, VPairingState, UnpairedAtJ } predicate =
-        PredicateKind::None;
+    enum class PredicateKind : unsigned char {
+        None,
+        VPairingState,
+        UnpairedAtJ,
+        UnpairedAtJMinus1,
+        VpStackPairing
+    } predicate = PredicateKind::None;
     struct SplitRangeSpec {
         EndpointRef start{};
         EndpointRef end{};

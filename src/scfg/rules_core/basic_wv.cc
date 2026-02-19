@@ -28,10 +28,11 @@ std::vector<RuleSplit> enumerate_splits_w(RuleId rule,
                                           cand_pos_t j,
                                           PartFuncWContext &ctx,
                                           sparse_tree &tree) {
+    const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
     switch (rule) {
     case RuleId::W_EXTEND_UNPAIRED:
-        if (tree.tree[j].pair < 0) {
+        if (spec.predicate != RuleSpec::PredicateKind::UnpairedAtJ || tree.tree[j].pair < 0) {
             splits.push_back({});
         }
         break;
@@ -212,7 +213,7 @@ std::vector<RuleSplit> enumerate_splits_wi(RuleId rule,
         }
     } break;
     case RuleId::WI_EXTEND_UNPAIRED:
-        if (tree.tree[j].pair < 0) {
+        if (spec.predicate != RuleSpec::PredicateKind::UnpairedAtJ || tree.tree[j].pair < 0) {
             splits.push_back({});
         }
         break;
