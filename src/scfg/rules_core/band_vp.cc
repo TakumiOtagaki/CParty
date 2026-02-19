@@ -100,9 +100,11 @@ std::vector<RuleSplit> enumerate_splits_wip(RuleId rule,
     case RuleId::WIP_BASEPAIR_V:
     case RuleId::WIP_BASEPAIR_WMB: {
         for (cand_pos_t k = i + 1; k < j - turn - 1; ++k) {
-            if (scfg::can_pair_left_span(tree, i, k)) {
-                splits.push_back({k, -1});
+            if (spec.split_filter == RuleSpec::SplitFilterKind::CanPairLeft &&
+                !scfg::can_pair_left_span(tree, i, k)) {
+                continue;
             }
+            splits.push_back({k, -1});
         }
     } break;
     case RuleId::WIP_EXTEND_UNPAIRED:
@@ -145,9 +147,11 @@ std::vector<RuleSplit> enumerate_splits_wip(RuleId rule,
     case RuleId::WIP_BASEPAIR_V:
     case RuleId::WIP_BASEPAIR_WMB: {
         for (cand_pos_t k = i + 1; k < j - turn - 1; ++k) {
-            if (view.can_pair_left_span(i, k)) {
-                splits.push_back({k, -1});
+            if (spec.split_filter == RuleSpec::SplitFilterKind::CanPairLeft &&
+                !view.can_pair_left_span(i, k)) {
+                continue;
             }
+            splits.push_back({k, -1});
         }
     } break;
     case RuleId::WIP_EXTEND_UNPAIRED:
