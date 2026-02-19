@@ -168,6 +168,30 @@ test/tools/compare_cli_stdout.sh worktree_legacy_debug/build/CParty build/CParty
 - per-split predicate を `RuleSpec` に導入するか、`predicate_allows(spec, ctx)` を split 評価の内側で呼ぶ方針に揃える。
 - `weakly_closed`/`canH` のような span-only 条件は `PredicateKind` へ追加できる余地あり。
 
+### 5.1.6 BE split 条件の宣言化（設計案メモ, 2026-02-19）
+#### 現状の課題
+- `enumerate_splits_be` は **span 全体の妥当性チェック**（`i/ip/j/jp` の整合・ペア一致・範囲）と、
+  **split ごとの条件**（`l/lp` のペア位置・空区間・weakly_closed 等）を手続き内に混在させている。
+- `RuleSpec` は predicate を 1 個しか持てないため、**共通の span ガード**と**ルール個別の split 条件**を同時に宣言できない。
+
+#### 方向性（宣言化の構造）
+- **SpanPredicate / SplitPredicate を分離**する。
+  - `RuleSpec` に `span_predicate` を追加し、BE 系は全ルール共通で `BeSpanValid` を付与。
+  - `predicate` は split レベルの条件（`BeStackPairing` など）に限定する。
+- あるいは **複合 predicate** を導入し、`BeSpanValid + BeStackPairing` のような組み合わせを enum 化する。
+  - ただし enum が爆発しやすい。
+
+#### 追加で必要になるもの
+- `RuleSpanContext` に **`n` (上限)** を入れるか、`predicate_allows` に `ctx.n()` 相当を渡せる設計にする。
+  - これがないと `i <= ip < jp <= j <= n` のチェックを predicate 側で表現できない。
+- BE の split 判定は `l/lp` に依存するため、**split ループ内で predicate を呼ぶ方式**が必須。
+
+#### 最小移行手順案
+1. `RuleSpec` に `span_predicate` を追加（BE 以外は `None`）。
+2. BE ルールに `span_predicate=BeSpanValid` を設定。
+3. `enumerate_splits_be` の先頭で `span_predicate` 判定を実行し、手続き側のガードを削減。
+4. split ループ内では既存の `predicate` を呼び続ける（段階移行）。
+
 ## 5.2 k-type 設計メモ (2026-02-17)
 ### 5.2.1 前提
 - k-type = `()` と `[]` が混在し、相互に交差しうる
