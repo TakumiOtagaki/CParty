@@ -540,19 +540,22 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
 
     switch (rule) {
     case RuleId::VP_WI_CASE1:
-        if ((tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) < (tree.tree[i].parent->index) &&
+        if (spec.predicate == RuleSpec::PredicateKind::VpWiCase1 &&
+            (tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) < (tree.tree[i].parent->index) &&
             Bp_ij >= 0 && B_ij >= 0 && bp_ij < 0) {
             splits.push_back({-1, -1, Bp_ij, B_ij});
         }
         break;
     case RuleId::VP_WI_CASE2:
-        if ((tree.tree[i].parent->index) < (tree.tree[j].parent->index) && (tree.tree[j].parent->index) > 0 &&
+        if (spec.predicate == RuleSpec::PredicateKind::VpWiCase2 &&
+            (tree.tree[i].parent->index) < (tree.tree[j].parent->index) && (tree.tree[j].parent->index) > 0 &&
             b_ij >= 0 && bp_ij >= 0 && Bp_ij < 0) {
             splits.push_back({-1, -1, b_ij, bp_ij});
         }
         break;
     case RuleId::VP_WI_CASE3:
-        if ((tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) > 0 && Bp_ij >= 0 && B_ij >= 0 &&
+        if (spec.predicate == RuleSpec::PredicateKind::VpWiCase3 &&
+            (tree.tree[i].parent->index) > 0 && (tree.tree[j].parent->index) > 0 && Bp_ij >= 0 && B_ij >= 0 &&
             b_ij >= 0 && bp_ij >= 0) {
             splits.push_back({b_ij, bp_ij, Bp_ij, B_ij});
         }
@@ -638,19 +641,22 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
 
     switch (rule) {
     case RuleId::VP_WI_CASE1:
-        if (view.parent_index(i) > 0 && view.parent_index(j) < view.parent_index(i) && Bp_ij >= 0 && B_ij >= 0 &&
+        if (spec.predicate == RuleSpec::PredicateKind::VpWiCase1 &&
+            view.parent_index(i) > 0 && view.parent_index(j) < view.parent_index(i) && Bp_ij >= 0 && B_ij >= 0 &&
             bp_ij < 0) {
             splits.push_back({-1, -1, Bp_ij, B_ij});
         }
         break;
     case RuleId::VP_WI_CASE2:
-        if (view.parent_index(i) < view.parent_index(j) && view.parent_index(j) > 0 && b_ij >= 0 && bp_ij >= 0 &&
+        if (spec.predicate == RuleSpec::PredicateKind::VpWiCase2 &&
+            view.parent_index(i) < view.parent_index(j) && view.parent_index(j) > 0 && b_ij >= 0 && bp_ij >= 0 &&
             Bp_ij < 0) {
             splits.push_back({-1, -1, b_ij, bp_ij});
         }
         break;
     case RuleId::VP_WI_CASE3:
-        if (view.parent_index(i) > 0 && view.parent_index(j) > 0 && Bp_ij >= 0 && B_ij >= 0 && b_ij >= 0 &&
+        if (spec.predicate == RuleSpec::PredicateKind::VpWiCase3 &&
+            view.parent_index(i) > 0 && view.parent_index(j) > 0 && Bp_ij >= 0 && B_ij >= 0 && b_ij >= 0 &&
             bp_ij >= 0) {
             splits.push_back({b_ij, bp_ij, Bp_ij, B_ij});
         }
