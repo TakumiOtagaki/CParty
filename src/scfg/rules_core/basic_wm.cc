@@ -123,6 +123,13 @@ std::vector<RuleSplit> enumerate_splits_wm(RuleId rule,
     if (j - i + 1 < 4) {
         return splits;
     }
+    if (rule == RuleId::WM_EXTEND_UNPAIRED) {
+        const RuleSpec &spec = rule_spec(rule);
+        RuleSpanContext span_ctx{i, j, {}};
+        if (!predicate_allows(spec, span_ctx, tree)) {
+            return splits;
+        }
+    }
     const cand_pos_t turn = ctx.turn();
     switch (rule) {
     case RuleId::WM_START_V:
@@ -141,9 +148,7 @@ std::vector<RuleSplit> enumerate_splits_wm(RuleId rule,
         }
     } break;
     case RuleId::WM_EXTEND_UNPAIRED:
-        if (tree.tree[j].pair < 0) {
-            splits.push_back({});
-        }
+        splits.push_back({});
         break;
     default:
         break;
