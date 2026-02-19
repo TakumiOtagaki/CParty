@@ -1,7 +1,8 @@
 #include "fixed_energy_api.hh"
 
+#include "fixed_energy_input.hh"
 #include "scfg/rules_core.hh"
-#include "scfg/rules_part_func.hh"
+#include "scfg/rules_core_stub_contexts.hh"
 #include "sparse_tree.hh"
 
 #include <ViennaRNA/params/constants.h>
@@ -25,234 +26,6 @@ extern "C" {
 namespace cparty {
 namespace {
 
-
-class RuleCoreStubWContext final : public ::scfg::PartFuncWContext {
- public:
-  explicit RuleCoreStubWContext(int n) : n_(n) {}
-  cand_pos_t n() const override { return n_; }
-  pf_t scale1() const override { return 0; }
-  pf_t get_W(cand_pos_t) const override { return 0; }
-  pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WMB(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t exp_Extloop(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t expPS_penalty() const override { return 0; }
-  void set_W(cand_pos_t, pf_t) override {}
-  cand_pos_t turn() const override { return TURN; }
-
- private:
-  cand_pos_t n_;
-};
-
-class RuleCoreStubWIContext final : public ::scfg::PartFuncWIContext {
- public:
-  RuleCoreStubWIContext() = default;
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  void set_WI(cand_pos_t, pf_t) override {}
-  pf_t get_WI(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WMB(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t expPPS_penalty() const override { return 0; }
-  pf_t expPSP_penalty() const override { return 0; }
-  pf_t expPUP_pen1() const override { return 0; }
-  cand_pos_t turn() const override { return TURN; }
-
-};
-
-class RuleCoreStubVContext final : public ::scfg::PartFuncVContext {
- public:
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  void set_V(cand_pos_t, pf_t) override {}
-  pf_t hairpin_energy(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t internal_energy(cand_pos_t, cand_pos_t, std::vector<int> &) override { return 0; }
-  pf_t vm_energy(cand_pos_t, cand_pos_t, std::vector<int> &) override { return 0; }
-};
-
-class RuleCoreStubVMContext final : public ::scfg::PartFuncVMContext {
- public:
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  void set_VM(cand_pos_t, pf_t) override {}
-  pf_t get_WM(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WMv(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WMp(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t exp_Mbloop(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t expMLclosing() const override { return 0; }
-  pf_t expMLbase(cand_pos_t) const override { return 0; }
-  pf_t scale2() const override { return 0; }
-  cand_pos_t turn() const override { return TURN; }
-};
-
-class RuleCoreStubWMvWMpContext final : public ::scfg::PartFuncWMvWMpContext {
- public:
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WMB(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WMv(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WMp(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t exp_MLstem(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t expPSM_penalty() const override { return 0; }
-  pf_t expb_penalty() const override { return 0; }
-  pf_t expMLbase1() const override { return 0; }
-  cand_pos_t turn() const override { return TURN; }
-  void set_WMv_WMp(cand_pos_t, pf_t, pf_t) override {}
-};
-
-class RuleCoreStubWMContext final : public ::scfg::PartFuncWMContext {
- public:
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_WM(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WMv(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WMp(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WMB(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t exp_MLstem(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t expPSM_penalty() const override { return 0; }
-  pf_t expb_penalty() const override { return 0; }
-  pf_t exp_Mbloop(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t expMLclosing() const override { return 0; }
-  pf_t expMLbase(cand_pos_t) const override { return 0; }
-  cand_pos_t turn() const override { return TURN; }
-  void set_WM(cand_pos_t, pf_t) override {}
-};
-
-class RuleCoreStubWIPContext final : public ::scfg::PartFuncWIPContext {
- public:
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WMB(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WIP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t expbp_penalty() const override { return 0; }
-  pf_t expPSM_penalty() const override { return 0; }
-  pf_t expcp_pen(cand_pos_t) const override { return 0; }
-  void set_WIP(cand_pos_t, pf_t) override {}
-  cand_pos_t turn() const override { return TURN; }
-};
-
-class RuleCoreStubVPLContext final : public ::scfg::PartFuncVPLContext {
- public:
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_VP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t expcp_pen(cand_pos_t) const override { return 0; }
-  void set_VPL(cand_pos_t, pf_t) override {}
-};
-
-class RuleCoreStubVPRContext final : public ::scfg::PartFuncVPRContext {
- public:
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_VP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WIP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t expcp_pen(cand_pos_t) const override { return 0; }
-  void set_VPR(cand_pos_t, pf_t) override {}
-};
-
-bool is_allowed_pair(char left, char right) {
-  return (left == 'A' && right == 'U') || (left == 'U' && right == 'A') ||
-         (left == 'G' && right == 'C') || (left == 'C' && right == 'G') ||
-         (left == 'G' && right == 'U') || (left == 'U' && right == 'G');
-}
-
-class RuleCoreStubVPContext final : public ::scfg::PartFuncVPContext {
- public:
-  explicit RuleCoreStubVPContext(const std::string &seq) : seq_(seq) {}
-
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_WI(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_VP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WIP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_VPL(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_VPR(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pair_type pair_type_of(cand_pos_t i, cand_pos_t j) const override {
-    if (i < 1 || j < 1 || static_cast<size_t>(i) > seq_.size() ||
-        static_cast<size_t>(j) > seq_.size()) {
-      return 0;
-    }
-    const char left = seq_[static_cast<size_t>(i - 1)];
-    const char right = seq_[static_cast<size_t>(j - 1)];
-    return is_allowed_pair(left, right) ? 1 : 0;
-  }
-  pf_t get_e_stP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_e_intP(cand_pos_t, cand_pos_t, cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t expap_penalty() const override { return 0; }
-  pf_t expbp_penalty() const override { return 0; }
-  pf_t expcp_pen(cand_pos_t) const override { return 0; }
-  pf_t scale(cand_pos_t) const override { return 0; }
-  pf_t expbp_penalty_sq() const override { return 0; }
-  void set_VP(cand_pos_t, pf_t) override {}
-
- private:
-  const std::string &seq_;
-};
-
-class RuleCoreStubWMBWContext final : public ::scfg::PartFuncWMBWContext {
- public:
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_WMBP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WI(cand_pos_t, cand_pos_t) override { return 0; }
-  void set_WMBW(cand_pos_t, pf_t) override {}
-};
-
-class RuleCoreStubWMBPContext final : public ::scfg::PartFuncWMBPContext {
- public:
-  explicit RuleCoreStubWMBPContext(int n) : n_(n) {}
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_WMBP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WMBW(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_VP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WI(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_BE(cand_pos_t, cand_pos_t, cand_pos_t, cand_pos_t, sparse_tree &) override { return 0; }
-  pf_t expPB_penalty() const override { return 1; }
-  cand_pos_t n() const override { return n_; }
-  int compute_exterior_cases(cand_pos_t, cand_pos_t, sparse_tree &) override { return 0; }
-  void set_WMBP(cand_pos_t, pf_t) override {}
-
- private:
-  cand_pos_t n_;
-};
-
-class RuleCoreStubWMBContext final : public ::scfg::PartFuncWMBContext {
- public:
-  explicit RuleCoreStubWMBContext(int n) : n_(n) {}
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  pf_t get_WMBP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_WI(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_BE(cand_pos_t, cand_pos_t, cand_pos_t, cand_pos_t, sparse_tree &) override { return 0; }
-  pf_t expPB_penalty() const override { return 1; }
-  cand_pos_t n() const override { return n_; }
-  void set_WMB(cand_pos_t, pf_t) override {}
-
- private:
-  cand_pos_t n_;
-};
-
-class RuleCoreStubBEContext final : public ::scfg::PartFuncBEContext {
- public:
-  explicit RuleCoreStubBEContext(int n) : n_(n) {}
-  cand_pos_t index_of(cand_pos_t, cand_pos_t) const override { return 0; }
-  cand_pos_t n() const override { return n_; }
-  pf_t get_WIP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_V(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_BE(cand_pos_t, cand_pos_t, cand_pos_t, cand_pos_t, sparse_tree &) override { return 0; }
-  pf_t get_e_stP(cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t get_e_intP(cand_pos_t, cand_pos_t, cand_pos_t, cand_pos_t) override { return 0; }
-  pf_t expap_penalty() const override { return 0; }
-  pf_t expbp_penalty_sq() const override { return 0; }
-  pf_t expcp_pen(cand_pos_t) const override { return 0; }
-  pf_t scale(cand_pos_t) const override { return 0; }
-  void set_BE(cand_pos_t, pf_t) override {}
-
- private:
-  cand_pos_t n_;
-};
-
-struct NormalizedInput {
-  std::string seq;
-  std::string db_full;
-  std::vector<int> pair_map;
-};
-
-NormalizedInput normalize_input(const std::string &seq, const std::string &db_full);
 
 enum class SharedStateKind {
   kW,
@@ -310,201 +83,6 @@ struct SharedEvaluationResult {
   std::vector<internal::RuleTraceStep> trace;
   EnergyBreakdown breakdown;
 };
-
-[[noreturn]] void fail_invalid_input(const std::string &reason) {
-  throw std::invalid_argument("invalid fixed-structure input: " + reason);
-}
-
-void validate_sequence(const std::string &seq) {
-  if (seq.empty()) {
-    fail_invalid_input("sequence is empty");
-  }
-
-  for (size_t i = 0; i < seq.size(); ++i) {
-    const char c = seq[i];
-    if (c == 'A' || c == 'U' || c == 'G' || c == 'C') {
-      continue;
-    }
-    if (c == 'T') {
-      fail_invalid_input("sequence contains T at position " + std::to_string(i + 1));
-    }
-    fail_invalid_input("sequence contains non-AUGC base at position " + std::to_string(i + 1));
-  }
-}
-
-void validate_structure(const std::string &db_full, const size_t expected_length) {
-  if (db_full.empty()) {
-    fail_invalid_input("structure is empty");
-  }
-  if (db_full.size() != expected_length) {
-    fail_invalid_input("sequence/structure length mismatch");
-  }
-
-  std::vector<size_t> round_stack;
-  std::vector<size_t> square_stack;
-  round_stack.reserve(db_full.size());
-  square_stack.reserve(db_full.size());
-
-  for (size_t i = 0; i < db_full.size(); ++i) {
-    const char c = db_full[i];
-    if (c == '.') {
-      continue;
-    }
-    if (c == '(') {
-      round_stack.push_back(i);
-      continue;
-    }
-    if (c == '[') {
-      square_stack.push_back(i);
-      continue;
-    }
-    if (c == ')') {
-      if (round_stack.empty()) {
-        fail_invalid_input("unbalanced structure: closing bracket without opener");
-      }
-      round_stack.pop_back();
-      continue;
-    }
-    if (c == ']') {
-      if (square_stack.empty()) {
-        fail_invalid_input("unbalanced structure: closing bracket without opener");
-      }
-      square_stack.pop_back();
-      continue;
-    }
-    fail_invalid_input("structure contains unsupported symbol at position " + std::to_string(i + 1));
-  }
-
-  if (!round_stack.empty() || !square_stack.empty()) {
-    fail_invalid_input("unbalanced structure: missing closing bracket");
-  }
-}
-
-void validate_structure_subset(const std::string &db,
-                               const size_t expected_length,
-                               const char open_bracket,
-                               const char close_bracket,
-                               const std::string &label) {
-  if (db.empty()) {
-    fail_invalid_input(label + " is empty");
-  }
-  if (db.size() != expected_length) {
-    fail_invalid_input("sequence/" + label + " length mismatch");
-  }
-
-  std::vector<size_t> stack;
-  stack.reserve(db.size());
-
-  for (size_t i = 0; i < db.size(); ++i) {
-    const char c = db[i];
-    if (c == '.') {
-      continue;
-    }
-    if (c == open_bracket) {
-      stack.push_back(i);
-      continue;
-    }
-    if (c == close_bracket) {
-      if (stack.empty()) {
-        fail_invalid_input("unbalanced " + label + ": closing bracket without opener");
-      }
-      stack.pop_back();
-      continue;
-    }
-    fail_invalid_input(label + " contains unsupported symbol at position " + std::to_string(i + 1));
-  }
-
-  if (!stack.empty()) {
-    fail_invalid_input("unbalanced " + label + ": missing closing bracket");
-  }
-}
-
-NormalizedInput normalize_union_input(const std::string &seq,
-                                      const std::string &structure_g,
-                                      const std::string &structure_gprime) {
-  validate_sequence(seq);
-  validate_structure_subset(structure_g, seq.size(), '(', ')', "G");
-  validate_structure_subset(structure_gprime, seq.size(), '[', ']', "G'");
-
-  std::string merged;
-  merged.resize(seq.size(), '.');
-  for (size_t i = 0; i < seq.size(); ++i) {
-    const char g = structure_g[i];
-    const char gp = structure_gprime[i];
-    if (g != '.' && gp != '.') {
-      fail_invalid_input("G and G' overlap at position " + std::to_string(i + 1));
-    }
-    if (g != '.') {
-      merged[i] = g;
-    } else if (gp != '.') {
-      merged[i] = gp;
-    }
-  }
-
-  return normalize_input(seq, merged);
-}
-
-NormalizedInput normalize_input(const std::string &seq, const std::string &db_full) {
-  validate_sequence(seq);
-  validate_structure(db_full, seq.size());
-
-  NormalizedInput out;
-  out.seq = seq;
-  out.db_full = db_full;
-  out.pair_map.assign(static_cast<size_t>(db_full.size()), -1);
-
-  std::vector<int> round_stack;
-  std::vector<int> square_stack;
-  round_stack.reserve(db_full.size());
-  square_stack.reserve(db_full.size());
-  for (size_t idx = 0; idx < db_full.size(); ++idx) {
-    const char c = db_full[idx];
-    if (c == '(') {
-      round_stack.push_back(static_cast<int>(idx));
-      continue;
-    }
-    if (c == '[') {
-      square_stack.push_back(static_cast<int>(idx));
-      continue;
-    }
-    if (c == ')') {
-      const int left = round_stack.back();
-      round_stack.pop_back();
-      out.pair_map[static_cast<size_t>(left)] = static_cast<int>(idx);
-      out.pair_map[idx] = left;
-      continue;
-    }
-    if (c == ']') {
-      const int left = square_stack.back();
-      square_stack.pop_back();
-      out.pair_map[static_cast<size_t>(left)] = static_cast<int>(idx);
-      out.pair_map[idx] = left;
-    }
-  }
-  return out;
-}
-
-bool is_pk_free_structure(const std::string &db_full) {
-  return db_full.find('[') == std::string::npos && db_full.find(']') == std::string::npos;
-}
-
-bool is_h_type_structure(const std::string &db_full) {
-  const bool has_round = db_full.find('(') != std::string::npos || db_full.find(')') != std::string::npos;
-  const bool has_square = db_full.find('[') != std::string::npos || db_full.find(']') != std::string::npos;
-  return (!has_round && has_square);
-}
-
-std::string normalize_h_type_brackets(const std::string &db_full) {
-  std::string out = db_full;
-  for (char &c : out) {
-    if (c == '[') {
-      c = '(';
-    } else if (c == ']') {
-      c = ')';
-    }
-  }
-  return out;
-}
 
 bool file_exists(const std::string &path) {
   struct stat buffer;
@@ -912,175 +490,6 @@ std::string nonterminal_name(const ::scfg::NonTerminal nonterminal) {
   return "UNKNOWN";
 }
 
-std::vector<internal::RuleTraceStep> trace_rule_chain_rules_core_from_normalized(const NormalizedInput &ctx) {
-  if (!is_pk_free_structure(ctx.db_full) && !is_h_type_structure(ctx.db_full)) {
-    fail_invalid_input("rules_core parse requires pk_free or h_type structure");
-  }
-  const std::string tree_db =
-      is_h_type_structure(ctx.db_full) ? normalize_h_type_brackets(ctx.db_full) : ctx.db_full;
-  const int n = static_cast<int>(tree_db.size());
-  sparse_tree tree(tree_db, n);
-  RuleCoreStubWContext wctx(n);
-  RuleCoreStubWIContext wictx;
-  RuleCoreStubVContext vctx;
-  RuleCoreStubVMContext vmctx;
-  RuleCoreStubWMvWMpContext wmvwmpctx;
-  RuleCoreStubWMContext wmctx;
-  RuleCoreStubWIPContext wipctx;
-  RuleCoreStubVPLContext vplctx;
-  RuleCoreStubVPRContext vprctx;
-  RuleCoreStubVPContext vpctx(ctx.seq);
-  RuleCoreStubWMBWContext wmbwctx;
-  RuleCoreStubWMBPContext wmbpctx(n);
-  RuleCoreStubWMBContext wmbctx(n);
-  RuleCoreStubBEContext bectx(n);
-
-  auto wmv_wmp_rules = [&](::scfg::NonTerminal target, cand_pos_t i, cand_pos_t j) {
-    std::vector<::scfg::ApplicableRule> out;
-    for (::scfg::RuleId rule : ::scfg::rules_for(target)) {
-      const auto splits = ::scfg::enumerate_splits_wmv_wmp(rule, i, j, wmvwmpctx, tree.tree);
-      for (const auto &split : splits) {
-        out.push_back({rule, split});
-      }
-    }
-    return out;
-  };
-
-  struct ParseItem {
-    ::scfg::NonTerminal nt;
-    int i = 0;
-    int j = 0;
-  };
-
-  std::vector<ParseItem> stack;
-  stack.push_back(ParseItem{::scfg::NonTerminal::W, 1, n});
-  std::vector<internal::RuleTraceStep> trace;
-
-  while (!stack.empty()) {
-    const ParseItem cur = stack.back();
-    stack.pop_back();
-    if (cur.i > cur.j) {
-      fail_invalid_input("rules_core parse encountered empty span for " + nonterminal_name(cur.nt));
-    }
-
-    std::vector<::scfg::ApplicableRule> applicable;
-    switch (cur.nt) {
-      case ::scfg::NonTerminal::W:
-        applicable = ::scfg::applicable_rules_w(cur.i, cur.j, wctx, tree);
-        break;
-      case ::scfg::NonTerminal::WI:
-        applicable = ::scfg::applicable_rules_wi(cur.i, cur.j, wictx, tree);
-        break;
-      case ::scfg::NonTerminal::V:
-        applicable = ::scfg::applicable_rules_v(cur.i, cur.j, vctx, tree);
-        break;
-      case ::scfg::NonTerminal::VM:
-        applicable = ::scfg::applicable_rules_vm(cur.i, cur.j, vmctx, tree.up);
-        break;
-      case ::scfg::NonTerminal::WMv:
-        applicable = wmv_wmp_rules(::scfg::NonTerminal::WMv, cur.i, cur.j);
-        break;
-      case ::scfg::NonTerminal::WMp:
-        applicable = wmv_wmp_rules(::scfg::NonTerminal::WMp, cur.i, cur.j);
-        break;
-      case ::scfg::NonTerminal::WM:
-        applicable = ::scfg::applicable_rules_wm(cur.i, cur.j, wmctx, tree);
-        break;
-      case ::scfg::NonTerminal::WIP:
-        applicable = ::scfg::applicable_rules_wip(cur.i, cur.j, wipctx, tree);
-        break;
-      case ::scfg::NonTerminal::VPL:
-        applicable = ::scfg::applicable_rules_vpl(cur.i, cur.j, vplctx, tree);
-        break;
-      case ::scfg::NonTerminal::VPR:
-        applicable = ::scfg::applicable_rules_vpr(cur.i, cur.j, vprctx, tree);
-        break;
-      case ::scfg::NonTerminal::VP:
-        applicable = ::scfg::applicable_rules_vp(cur.i, cur.j, vpctx, tree);
-        break;
-      case ::scfg::NonTerminal::WMBW:
-        applicable = ::scfg::applicable_rules_wmbw(cur.i, cur.j, wmbwctx, tree);
-        break;
-      case ::scfg::NonTerminal::WMBP:
-        applicable = ::scfg::applicable_rules_wmbp(cur.i, cur.j, wmbpctx, tree);
-        break;
-      case ::scfg::NonTerminal::WMB:
-        applicable = ::scfg::applicable_rules_wmb(cur.i, cur.j, wmbctx, tree);
-        break;
-      case ::scfg::NonTerminal::BE:
-        applicable = ::scfg::applicable_rules_be(cur.i, cur.j, cur.i, cur.j, bectx, tree);
-        break;
-      default:
-        fail_invalid_input("rules_core parse hit unexpected nonterminal " + nonterminal_name(cur.nt));
-    }
-
-    if (applicable.size() != 1) {
-      fail_invalid_input("rules_core parse could not select unique rule for " + nonterminal_name(cur.nt) + "[" +
-                         std::to_string(cur.i) + "," + std::to_string(cur.j) + "] with candidates=" +
-                         std::to_string(applicable.size()));
-    }
-
-    const ::scfg::ApplicableRule selected = applicable.front();
-    trace.push_back(
-        internal::RuleTraceStep{nonterminal_name(cur.nt), cur.i, cur.j, ::scfg::rule_id_name(selected.rule)});
-
-    std::vector<::scfg::RuleChild> children;
-    switch (cur.nt) {
-      case ::scfg::NonTerminal::W:
-        children = ::scfg::expand_w(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::WI:
-        children = ::scfg::expand_wi(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::V:
-        children = ::scfg::expand_v(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::VM:
-        children = ::scfg::expand_vm(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::WMv:
-      case ::scfg::NonTerminal::WMp:
-        children = ::scfg::expand_wmv_wmp(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::WM:
-        children = ::scfg::expand_wm(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::WIP:
-        children = ::scfg::expand_wip(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::VPL:
-        children = ::scfg::expand_vpl(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::VPR:
-        children = ::scfg::expand_vpr(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::VP:
-        children = ::scfg::expand_vp(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::WMBW:
-        children = ::scfg::expand_wmbw(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::WMBP:
-        children = ::scfg::expand_wmbp(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::WMB:
-        children = ::scfg::expand_wmb(selected.rule, cur.i, cur.j, selected.split);
-        break;
-      case ::scfg::NonTerminal::BE:
-        children = ::scfg::expand_be(selected.rule, cur.i, cur.j, cur.i, cur.j, selected.split);
-        break;
-      default:
-        break;
-    }
-
-    for (auto it = children.rbegin(); it != children.rend(); ++it) {
-      stack.push_back(ParseItem{it->nonterminal, it->i, it->j});
-    }
-  }
-
-  return trace;
-}
-
 std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_rules_core_from_normalized(const NormalizedInput &ctx) {
   if (!is_pk_free_structure(ctx.db_full) && !is_h_type_structure(ctx.db_full)) {
     fail_invalid_input("rules_core slice-a trace requires pk_free or h_type structure");
@@ -1089,8 +498,8 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_a_rules_core_from_no
       is_h_type_structure(ctx.db_full) ? normalize_h_type_brackets(ctx.db_full) : ctx.db_full;
   const int n = static_cast<int>(tree_db.size());
   sparse_tree tree(tree_db, n);
-  RuleCoreStubWContext wctx(n);
-  RuleCoreStubVContext vctx;
+  ::cparty::scfg::detail::RuleCoreStubWContext wctx(n);
+  ::cparty::scfg::detail::RuleCoreStubVContext vctx;
 
   struct Item {
     ::scfg::NonTerminal nonterminal;
@@ -1203,12 +612,12 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_b_rules_core_from_no
       is_h_type_structure(ctx.db_full) ? normalize_h_type_brackets(ctx.db_full) : ctx.db_full;
   const int n = static_cast<int>(tree_db.size());
   sparse_tree tree(tree_db, n);
-  RuleCoreStubWContext wctx(n);
-  RuleCoreStubWIContext wictx;
-  RuleCoreStubVContext vctx;
-  RuleCoreStubVMContext vmctx;
-  RuleCoreStubWMvWMpContext wmvwmpctx;
-  RuleCoreStubWMContext wmctx;
+  ::cparty::scfg::detail::RuleCoreStubWContext wctx(n);
+  ::cparty::scfg::detail::RuleCoreStubWIContext wictx;
+  ::cparty::scfg::detail::RuleCoreStubVContext vctx;
+  ::cparty::scfg::detail::RuleCoreStubVMContext vmctx;
+  ::cparty::scfg::detail::RuleCoreStubWMvWMpContext wmvwmpctx;
+  ::cparty::scfg::detail::RuleCoreStubWMContext wmctx;
 
   auto wmv_wmp_rules = [&](::scfg::NonTerminal target, cand_pos_t i, cand_pos_t j) {
     std::vector<::scfg::ApplicableRule> out;
@@ -1310,16 +719,16 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_c_rules_core_from_no
       is_h_type_structure(ctx.db_full) ? normalize_h_type_brackets(ctx.db_full) : ctx.db_full;
   const int n = static_cast<int>(tree_db.size());
   sparse_tree tree(tree_db, n);
-  RuleCoreStubWContext wctx(n);
-  RuleCoreStubWIContext wictx;
-  RuleCoreStubVContext vctx;
-  RuleCoreStubVMContext vmctx;
-  RuleCoreStubWMvWMpContext wmvwmpctx;
-  RuleCoreStubWMContext wmctx;
-  RuleCoreStubWIPContext wipctx;
-  RuleCoreStubVPLContext vplctx;
-  RuleCoreStubVPRContext vprctx;
-  RuleCoreStubVPContext vpctx(ctx.seq);
+  ::cparty::scfg::detail::RuleCoreStubWContext wctx(n);
+  ::cparty::scfg::detail::RuleCoreStubWIContext wictx;
+  ::cparty::scfg::detail::RuleCoreStubVContext vctx;
+  ::cparty::scfg::detail::RuleCoreStubVMContext vmctx;
+  ::cparty::scfg::detail::RuleCoreStubWMvWMpContext wmvwmpctx;
+  ::cparty::scfg::detail::RuleCoreStubWMContext wmctx;
+  ::cparty::scfg::detail::RuleCoreStubWIPContext wipctx;
+  ::cparty::scfg::detail::RuleCoreStubVPLContext vplctx;
+  ::cparty::scfg::detail::RuleCoreStubVPRContext vprctx;
+  ::cparty::scfg::detail::RuleCoreStubVPContext vpctx(ctx.seq);
 
   auto wmv_wmp_rules = [&](::scfg::NonTerminal target, cand_pos_t i, cand_pos_t j) {
     std::vector<::scfg::ApplicableRule> out;
@@ -1444,20 +853,20 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_slice_d_rules_core_from_no
       is_h_type_structure(ctx.db_full) ? normalize_h_type_brackets(ctx.db_full) : ctx.db_full;
   const int n = static_cast<int>(tree_db.size());
   sparse_tree tree(tree_db, n);
-  RuleCoreStubWContext wctx(n);
-  RuleCoreStubWIContext wictx;
-  RuleCoreStubVContext vctx;
-  RuleCoreStubVMContext vmctx;
-  RuleCoreStubWMvWMpContext wmvwmpctx;
-  RuleCoreStubWMContext wmctx;
-  RuleCoreStubWIPContext wipctx;
-  RuleCoreStubVPLContext vplctx;
-  RuleCoreStubVPRContext vprctx;
-  RuleCoreStubVPContext vpctx(ctx.seq);
-  RuleCoreStubWMBWContext wmbwctx;
-  RuleCoreStubWMBPContext wmbpctx(n);
-  RuleCoreStubWMBContext wmbctx(n);
-  RuleCoreStubBEContext bectx(n);
+  ::cparty::scfg::detail::RuleCoreStubWContext wctx(n);
+  ::cparty::scfg::detail::RuleCoreStubWIContext wictx;
+  ::cparty::scfg::detail::RuleCoreStubVContext vctx;
+  ::cparty::scfg::detail::RuleCoreStubVMContext vmctx;
+  ::cparty::scfg::detail::RuleCoreStubWMvWMpContext wmvwmpctx;
+  ::cparty::scfg::detail::RuleCoreStubWMContext wmctx;
+  ::cparty::scfg::detail::RuleCoreStubWIPContext wipctx;
+  ::cparty::scfg::detail::RuleCoreStubVPLContext vplctx;
+  ::cparty::scfg::detail::RuleCoreStubVPRContext vprctx;
+  ::cparty::scfg::detail::RuleCoreStubVPContext vpctx(ctx.seq);
+  ::cparty::scfg::detail::RuleCoreStubWMBWContext wmbwctx;
+  ::cparty::scfg::detail::RuleCoreStubWMBPContext wmbpctx(n);
+  ::cparty::scfg::detail::RuleCoreStubWMBContext wmbctx(n);
+  ::cparty::scfg::detail::RuleCoreStubBEContext bectx(n);
 
   auto wmv_wmp_rules = [&](::scfg::NonTerminal target, cand_pos_t i, cand_pos_t j) {
     std::vector<::scfg::ApplicableRule> out;
@@ -1914,40 +1323,6 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(co
 }
 
 }  // namespace
-
-namespace scfg {
-
-ParseResult parse_fixed_energy(const std::string &seq,
-                               const std::string &structure_g,
-                               const std::string &structure_gprime,
-                               const ParseOptions &options) {
-  ParseResult result{};
-  try {
-    const NormalizedInput normalized = normalize_union_input(seq, structure_g, structure_gprime);
-    const auto breakdown = structure_energy_breakdown_from_normalized(normalized);
-    result.total_energy = breakdown.total_energy;
-
-    if (options.return_trace) {
-      std::vector<internal::RuleTraceStep> trace_internal;
-      if (options.prefer_rules_core_trace &&
-          (is_pk_free_structure(normalized.db_full) || is_h_type_structure(normalized.db_full))) {
-        trace_internal = trace_rule_chain_rules_core_from_normalized(normalized);
-      } else {
-        trace_internal = trace_rule_chain_slice_d_shared_from_normalized(normalized);
-      }
-      result.trace.reserve(trace_internal.size());
-      for (const auto &step : trace_internal) {
-        result.trace.push_back({step.state, step.i, step.j, step.rule});
-      }
-    }
-  } catch (const std::exception &err) {
-    result.ok = false;
-    result.error = err.what();
-  }
-  return result;
-}
-
-}  // namespace scfg
 
 double get_structure_energy(const std::string &seq, const std::string &db_full) {
   const NormalizedInput normalized = normalize_input(seq, db_full);

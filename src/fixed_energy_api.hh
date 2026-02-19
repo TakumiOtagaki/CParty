@@ -2,6 +2,7 @@
 #define CPARTY_FIXED_ENERGY_API_HH
 
 #include "fixed_energy_breakdown.hh"
+#include "scfg/grammar_tree_parser.hh"
 
 #include <string>
 #include <vector>
@@ -14,34 +15,6 @@ double get_structure_energy(const std::string &seq, const std::string &db_full);
 double get_structure_energy_union(const std::string &seq,
                                   const std::string &structure_g,
                                   const std::string &structure_gprime);
-
-namespace scfg {
-
-struct ParseOptions {
-  bool return_trace = true;
-  bool prefer_rules_core_trace = true;
-};
-
-struct RuleTraceStep {
-  std::string state;
-  int i = 0;
-  int j = 0;
-  std::string rule;
-};
-
-struct ParseResult {
-  double total_energy = 0.0;
-  std::vector<RuleTraceStep> trace;
-  bool ok = true;
-  std::string error;
-};
-
-ParseResult parse_fixed_energy(const std::string &seq,
-                               const std::string &structure_g,
-                               const std::string &structure_gprime,
-                               const ParseOptions &options = {});
-
-}  // namespace scfg
 
 namespace internal {
 

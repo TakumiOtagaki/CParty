@@ -63,7 +63,9 @@ SET(SOURCE
   src/scfg/rules_pseudo_loop.cc
   src/scfg/legacy_rules_part_func.cc
   src/scfg/rules_part_helpers.cc
+  src/scfg/grammar_tree_parser.cc
   src/fixed_energy_api.cc
+  src/fixed_energy_input.cc
   src/CParty.cc
   src/cmdline.cc
   src/Result.cc	
@@ -158,6 +160,7 @@ include(CTest)
 if(BUILD_TESTING)
   set(FIXED_ENERGY_TEST_SOURCES
     src/fixed_energy_api.cc
+    src/fixed_energy_input.cc
     src/sparse_tree.cc
     src/scfg/core.cc
     src/scfg/constraint_oracle.cc
@@ -172,6 +175,7 @@ if(BUILD_TESTING)
     src/scfg/rules_core/band_vp.cc
     src/scfg/rules_core/band_wmb.cc
     src/scfg/rules_core/band_be.cc
+    src/scfg/grammar_tree_parser.cc
     src/scfg/legacy_rules_part_func.cc
   src/scfg/rules_part_helpers.cc
   )

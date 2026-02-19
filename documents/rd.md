@@ -203,6 +203,16 @@ test/tools/compare_cli_stdout.sh worktree_legacy_debug/build/CParty build/CParty
 - rule chain からの **遷移重み再計算**は未実装（context/oracle の本格実装が必要）。
 - k-type の場合は shared trace のみ（rules_core trace は未対応）。
 
+### 5.1.8 SCFG パーサ分離（2026-02-19）
+#### 実装整理
+- 入力正規化を `fixed_energy_input.cc/.hh` に分離。
+- ルール機械パースを `scfg/grammar_tree_parser.cc/.hh` に移管。
+- `fixed_energy_api.cc` は shared parse / fixed-energy scorer を中心に縮小。
+
+#### 仕様メモ
+- `cparty::scfg::parse_fixed_energy` は pk_free / h_type で rules_core パースを必須化。
+- k-type は strict には未対応（要求があれば shared parse の再配置を検討）。
+
 ## 5.2 k-type 設計メモ (2026-02-17)
 ### 5.2.1 前提
 - k-type = `()` と `[]` が混在し、相互に交差しうる
