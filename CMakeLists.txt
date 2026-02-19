@@ -66,6 +66,7 @@ SET(SOURCE
   src/scfg/grammar_tree_parser.cc
   src/fixed_energy_api.cc
   src/fixed_energy_input.cc
+  src/fixed_energy_shared_parse.cc
   src/CParty.cc
   src/cmdline.cc
   src/Result.cc	
@@ -161,6 +162,7 @@ if(BUILD_TESTING)
   set(FIXED_ENERGY_TEST_SOURCES
     src/fixed_energy_api.cc
     src/fixed_energy_input.cc
+    src/fixed_energy_shared_parse.cc
     src/sparse_tree.cc
     src/scfg/core.cc
     src/scfg/constraint_oracle.cc
