@@ -1,5 +1,6 @@
 #include "scfg/rules_core.hh"
 
+#include "scfg/legacy_adapter.hh"
 #include "scfg/rules_part_helpers.hh"
 #include "scfg/structure_view.hh"
 #include "sparse_tree.hh"
@@ -37,6 +38,18 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, sparse_t
     case RuleSpec::PredicateKind::BeBasepairWip:
         return scfg::is_empty_region(tree, ctx.i, ctx.split.k) &&
                tree.weakly_closed(ctx.split.l + 1, ctx.j - 1);
+    case RuleSpec::PredicateKind::VprBasepair:
+        return scfg::can_pair_right_span(tree, ctx.split.k, ctx.j);
+    case RuleSpec::PredicateKind::VpWiCase1:
+        return tree.tree[ctx.i].parent->index > 0 && tree.tree[ctx.j].parent->index < tree.tree[ctx.i].parent->index &&
+               tree.Bp(ctx.i, ctx.j) >= 0 && tree.B(ctx.i, ctx.j) >= 0 && tree.bp(ctx.i, ctx.j) < 0;
+    case RuleSpec::PredicateKind::VpWiCase2:
+        return tree.tree[ctx.i].parent->index < tree.tree[ctx.j].parent->index && tree.tree[ctx.j].parent->index > 0 &&
+               tree.b(ctx.i, ctx.j) >= 0 && tree.bp(ctx.i, ctx.j) >= 0 && tree.Bp(ctx.i, ctx.j) < 0;
+    case RuleSpec::PredicateKind::VpWiCase3:
+        return tree.tree[ctx.i].parent->index > 0 && tree.tree[ctx.j].parent->index > 0 &&
+               tree.Bp(ctx.i, ctx.j) >= 0 && tree.B(ctx.i, ctx.j) >= 0 && tree.b(ctx.i, ctx.j) >= 0 &&
+               tree.bp(ctx.i, ctx.j) >= 0;
     default:
         return true;
     }
@@ -67,6 +80,17 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const St
         return view.weakly_closed(ctx.i + 1, ctx.split.k - 1) && view.is_empty_region(ctx.split.l, ctx.j);
     case RuleSpec::PredicateKind::BeBasepairWip:
         return view.is_empty_region(ctx.i, ctx.split.k) && view.weakly_closed(ctx.split.l + 1, ctx.j - 1);
+    case RuleSpec::PredicateKind::VprBasepair:
+        return view.can_pair_right_span(ctx.split.k, ctx.j);
+    case RuleSpec::PredicateKind::VpWiCase1:
+        return view.parent_index(ctx.i) > 0 && view.parent_index(ctx.j) < view.parent_index(ctx.i) &&
+               view.Bp(ctx.i, ctx.j) >= 0 && view.B(ctx.i, ctx.j) >= 0 && view.bp(ctx.i, ctx.j) < 0;
+    case RuleSpec::PredicateKind::VpWiCase2:
+        return view.parent_index(ctx.i) < view.parent_index(ctx.j) && view.parent_index(ctx.j) > 0 &&
+               view.b(ctx.i, ctx.j) >= 0 && view.bp(ctx.i, ctx.j) >= 0 && view.Bp(ctx.i, ctx.j) < 0;
+    case RuleSpec::PredicateKind::VpWiCase3:
+        return view.parent_index(ctx.i) > 0 && view.parent_index(ctx.j) > 0 && view.Bp(ctx.i, ctx.j) >= 0 &&
+               view.B(ctx.i, ctx.j) >= 0 && view.b(ctx.i, ctx.j) >= 0 && view.bp(ctx.i, ctx.j) >= 0;
     default:
         return true;
     }
