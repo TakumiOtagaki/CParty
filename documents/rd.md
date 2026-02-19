@@ -134,6 +134,24 @@ test/tools/compare_cli_stdout.sh worktree_legacy_debug/build/CParty build/CParty
 - `TransitionWeights` を EnergyModel / Oracle インタフェースに昇格するか。
 - 空区間の明示的表現と契約を定義するか。
 
+### 5.1.4 SCFG 抽象化の進捗メモ (2026-02-19)
+#### Split/Predicate の宣言化
+- `RuleSpec` に split 生成 (K-range / band min-max range) と predicate を段階導入。
+- K-range: `WI_SPLIT_*`, `VM_SPLIT_WM_*`, `WIP_SPLIT_*` を宣言化。
+- band range: `VPL_SPLIT_VP`, `VPR_SPLIT_VP_*`, `VP_WIP_*`, `VP_VPL_WIP` を宣言化。
+- predicate: `V`, `W/WI` の unpaired、`VP_STACK / VP_INTERNAL_LOOP / VP_WI_CASE*`,
+  `VPR_SPLIT_VP_BASEPAIR`, `WMBP_*`, `WMB_SPLIT_BE_WMBP_WI`, `BE_*` の条件を宣言化。
+
+#### RHS の整理
+- W/WI/VM/WIP/VPL/VPR/VP/WMB/WMBP/WMBW/BE は RHS テーブルを優先使用。
+- `allow_empty` は必要最小限に絞り、理由コメントを付与。
+- RHS 定義は NonTerminal ごとにグルーピング。
+
+#### 残課題
+- `applicable_rules` の宣言化（predicate/split の統一的評価）を進める。
+- band 側の複合条件（WMBP の外側境界・inner arc 判定など）は未宣言化。
+- 空区間の仕様（allow_empty を明示表現へ移行するか）を確定する。
+
 ## 5.2 k-type 設計メモ (2026-02-17)
 ### 5.2.1 前提
 - k-type = `()` と `[]` が混在し、相互に交差しうる
