@@ -532,6 +532,16 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
                                            PartFuncVPContext &ctx,
                                            sparse_tree &tree) {
     const RuleSpec &spec = rule_spec(rule);
+    if (spec.split_gen == RuleSpec::SplitGenKind::BandMinBpRange ||
+        spec.split_gen == RuleSpec::SplitGenKind::BandMaxBpRange) {
+        auto min_fn = [&](cand_pos_t li, cand_pos_t lj) {
+            return std::min((cand_pos_tu)tree.b(li, lj), (cand_pos_tu)tree.Bp(li, lj));
+        };
+        auto max_fn = [&](cand_pos_t li, cand_pos_t lj) { return std::max(tree.B(li, lj), tree.bp(li, lj)); };
+        auto can_left = [&](cand_pos_t, cand_pos_t) { return true; };
+        auto can_right = [&](cand_pos_t, cand_pos_t) { return true; };
+        return enumerate_splits_band_range(spec, i, j, min_fn, max_fn, can_left, can_right);
+    }
     std::vector<RuleSplit> splits;
     cand_pos_t Bp_ij = tree.Bp(i, j);
     cand_pos_t B_ij = tree.B(i, j);
@@ -633,6 +643,16 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
                                            PartFuncVPContext &ctx,
                                            const StructureView &view) {
     const RuleSpec &spec = rule_spec(rule);
+    if (spec.split_gen == RuleSpec::SplitGenKind::BandMinBpRange ||
+        spec.split_gen == RuleSpec::SplitGenKind::BandMaxBpRange) {
+        auto min_fn = [&](cand_pos_t li, cand_pos_t lj) {
+            return std::min((cand_pos_tu)view.b(li, lj), (cand_pos_tu)view.Bp(li, lj));
+        };
+        auto max_fn = [&](cand_pos_t li, cand_pos_t lj) { return std::max(view.B(li, lj), view.bp(li, lj)); };
+        auto can_left = [&](cand_pos_t, cand_pos_t) { return true; };
+        auto can_right = [&](cand_pos_t, cand_pos_t) { return true; };
+        return enumerate_splits_band_range(spec, i, j, min_fn, max_fn, can_left, can_right);
+    }
     std::vector<RuleSplit> splits;
     cand_pos_t Bp_ij = view.Bp(i, j);
     cand_pos_t B_ij = view.B(i, j);
