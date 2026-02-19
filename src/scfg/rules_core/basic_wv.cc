@@ -54,6 +54,11 @@ std::vector<RuleSplit> enumerate_splits_w(RuleId rule,
 }
 
 std::vector<RuleChild> expand_w(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.rhs_len > 0) {
+        RuleSpanContext ctx{i, j, split};
+        return expand_rule_rhs(spec, ctx);
+    }
     std::vector<RuleChild> children;
     switch (rule) {
     case RuleId::W_EXTEND_UNPAIRED:
@@ -210,6 +215,11 @@ std::vector<RuleSplit> enumerate_splits_wi(RuleId rule,
 }
 
 std::vector<RuleChild> expand_wi(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.rhs_len > 0) {
+        RuleSpanContext ctx{i, j, split};
+        return expand_rule_rhs(spec, ctx);
+    }
     std::vector<RuleChild> children;
     switch (rule) {
     case RuleId::WI_BASE_SINGLE:

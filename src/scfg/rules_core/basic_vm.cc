@@ -51,6 +51,11 @@ std::vector<RuleSplit> enumerate_splits_vm(RuleId rule,
 }
 
 std::vector<RuleChild> expand_vm(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.rhs_len > 0) {
+        RuleSpanContext ctx{i, j, split};
+        return expand_rule_rhs(spec, ctx);
+    }
     std::vector<RuleChild> children;
     switch (rule) {
     case RuleId::VM_SPLIT_WM_WMv:

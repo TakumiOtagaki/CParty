@@ -3,6 +3,7 @@
 
 #include "scfg/rules_api.hh"
 
+#include <cstddef>
 #include <vector>
 
 class sparse_tree;
@@ -30,6 +31,8 @@ struct RuleSpec {
     RuleId id;
     NonTerminal lhs;
     SplitSpec split;
+    const struct RuleChildSpec *rhs = nullptr;
+    size_t rhs_len = 0;
 };
 
 struct RuleSplit {
@@ -45,6 +48,41 @@ struct RuleChild {
     cand_pos_t j = -1;
 };
 
+enum class Endpoint : unsigned char {
+    I,
+    J,
+    K,
+    L,
+    P,
+    Q,
+    IP,
+    JP,
+};
+
+struct EndpointRef {
+    Endpoint base = Endpoint::I;
+    int offset = 0;
+};
+
+struct SpanSpec {
+    EndpointRef left{};
+    EndpointRef right{};
+};
+
+struct RuleChildSpec {
+    NonTerminal nonterminal;
+    SpanSpec span{};
+    bool allow_empty = false;
+};
+
+struct RuleSpanContext {
+    cand_pos_t i = -1;
+    cand_pos_t j = -1;
+    RuleSplit split{};
+    cand_pos_t ip = -1;
+    cand_pos_t jp = -1;
+};
+
 struct ApplicableRule {
     RuleId rule;
     RuleSplit split;
@@ -52,6 +90,9 @@ struct ApplicableRule {
 
 const RuleSpec &rule_spec(RuleId rule);
 const std::vector<RuleSpec> &rule_catalog();
+
+cand_pos_t resolve_endpoint(EndpointRef endpoint, const RuleSpanContext &ctx);
+std::vector<RuleChild> expand_rule_rhs(const RuleSpec &spec, const RuleSpanContext &ctx);
 
 // Returns the full candidate rule list for a non-terminal, before applicability filtering.
 const std::vector<RuleId> &rules_for(NonTerminal nonterminal);
