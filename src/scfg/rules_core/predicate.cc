@@ -1,5 +1,6 @@
 #include "scfg/rules_core.hh"
 
+#include "scfg/rules_part_helpers.hh"
 #include "scfg/structure_view.hh"
 #include "sparse_tree.hh"
 
@@ -18,6 +19,8 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const sp
         const bool paired = (tree.tree[ctx.i].pair == ctx.j && tree.tree[ctx.j].pair == ctx.i);
         return paired || unpaired;
     }
+    case RuleSpec::PredicateKind::WmbSplitBeWmbpWi:
+        return tree.tree[ctx.j].pair >= 0 && ctx.j > tree.tree[ctx.j].pair && tree.tree[ctx.j].pair > ctx.i;
     default:
         return true;
     }
@@ -33,6 +36,34 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const St
         return ctx.j > 0 && view.is_unpaired(ctx.j - 1);
     case RuleSpec::PredicateKind::VPairingState:
         return true;
+    case RuleSpec::PredicateKind::WmbSplitBeWmbpWi:
+        return view.pair_square(ctx.j) >= 0 && ctx.j > view.pair_square(ctx.j) && view.pair_square(ctx.j) > ctx.i;
+    default:
+        return true;
+    }
+}
+
+bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const PartFuncRuleHelpers &rules) {
+    switch (spec.predicate) {
+    case RuleSpec::PredicateKind::None:
+        return true;
+    case RuleSpec::PredicateKind::WmbpJUnpaired:
+        return rules.pair_at(ctx.j) < 0;
+    case RuleSpec::PredicateKind::WmbpJUnpairedIpaired:
+        return rules.pair_at(ctx.j) < 0 && rules.pair_at(ctx.i) >= 0;
+    default:
+        return true;
+    }
+}
+
+bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const PartFuncRuleHelpersView &rules) {
+    switch (spec.predicate) {
+    case RuleSpec::PredicateKind::None:
+        return true;
+    case RuleSpec::PredicateKind::WmbpJUnpaired:
+        return rules.pair_at(ctx.j) < 0;
+    case RuleSpec::PredicateKind::WmbpJUnpairedIpaired:
+        return rules.pair_at(ctx.j) < 0 && rules.pair_at(ctx.i) >= 0;
     default:
         return true;
     }

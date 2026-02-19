@@ -153,14 +153,9 @@ std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
     scfg::PartFuncRuleHelpers rules(tree, mode_config);
     rules.on_traceback_hook(i, j);
     rules.on_fixed_parse_hook(i, j);
-
-    if (spec.predicate == RuleSpec::PredicateKind::WmbpJUnpaired && rules.pair_at(j) >= 0) {
+    RuleSpanContext span_ctx{i, j, {}};
+    if (!predicate_allows(spec, span_ctx, rules)) {
         return splits;
-    }
-    if (spec.predicate == RuleSpec::PredicateKind::WmbpJUnpairedIpaired) {
-        if (rules.pair_at(j) >= 0 || rules.pair_at(i) < 0) {
-            return splits;
-        }
     }
 
     switch (rule) {
@@ -213,14 +208,9 @@ std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
     scfg::PartFuncRuleHelpersView rules(view, mode_config);
     rules.on_traceback_hook(i, j);
     rules.on_fixed_parse_hook(i, j);
-
-    if (spec.predicate == RuleSpec::PredicateKind::WmbpJUnpaired && rules.pair_at(j) >= 0) {
+    RuleSpanContext span_ctx{i, j, {}};
+    if (!predicate_allows(spec, span_ctx, rules)) {
         return splits;
-    }
-    if (spec.predicate == RuleSpec::PredicateKind::WmbpJUnpairedIpaired) {
-        if (rules.pair_at(j) >= 0 || rules.pair_at(i) < 0) {
-            return splits;
-        }
     }
 
     switch (rule) {
@@ -364,6 +354,10 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
         }
         return splits;
     }
+    RuleSpanContext span_ctx{i, j, {}};
+    if (!predicate_allows(spec, span_ctx, tree)) {
+        return splits;
+    }
     switch (rule) {
     case RuleId::WMB_EMPTY:
         break;
@@ -371,11 +365,6 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
         splits.push_back({});
         break;
     case RuleId::WMB_SPLIT_BE_WMBP_WI:
-        if (spec.predicate == RuleSpec::PredicateKind::WmbSplitBeWmbpWi) {
-            if (!(tree.tree[j].pair >= 0 && j > tree.tree[j].pair && tree.tree[j].pair > i)) {
-                break;
-            }
-        }
         if (tree.tree[j].pair >= 0 && j > tree.tree[j].pair && tree.tree[j].pair > i) {
             cand_pos_t bp_j = tree.tree[j].pair;
             for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {
@@ -405,6 +394,10 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
         }
         return splits;
     }
+    RuleSpanContext span_ctx{i, j, {}};
+    if (!predicate_allows(spec, span_ctx, view)) {
+        return splits;
+    }
     switch (rule) {
     case RuleId::WMB_EMPTY:
         break;
@@ -412,11 +405,6 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
         splits.push_back({});
         break;
     case RuleId::WMB_SPLIT_BE_WMBP_WI:
-        if (spec.predicate == RuleSpec::PredicateKind::WmbSplitBeWmbpWi) {
-            if (!(view.pair_square(j) >= 0 && j > view.pair_square(j) && view.pair_square(j) > i)) {
-                break;
-            }
-        }
         if (view.pair_square(j) >= 0 && j > view.pair_square(j) && view.pair_square(j) > i) {
             cand_pos_t bp_j = view.pair_square(j);
             for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {

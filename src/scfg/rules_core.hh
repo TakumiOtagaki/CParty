@@ -26,6 +26,8 @@ class PartFuncWMBWContext;
 class PartFuncWMBPContext;
 class PartFuncWMBContext;
 class PartFuncBEContext;
+class PartFuncRuleHelpers;
+class PartFuncRuleHelpersView;
 
 struct RuleSplit {
     cand_pos_t k = -1;
@@ -127,6 +129,8 @@ std::vector<RuleChild> expand_rule_rhs(const RuleSpec &spec, const RuleSpanConte
 std::vector<RuleSplit> enumerate_splits_k_range(const RuleSpec &spec, const RuleSpanContext &ctx, cand_pos_t turn);
 bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const sparse_tree &tree);
 bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const StructureView &view);
+bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const PartFuncRuleHelpers &rules);
+bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const PartFuncRuleHelpersView &rules);
 
 // Returns the full candidate rule list for a non-terminal, before applicability filtering.
 const std::vector<RuleId> &rules_for(NonTerminal nonterminal);
