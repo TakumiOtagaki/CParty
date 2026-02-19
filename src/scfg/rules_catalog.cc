@@ -85,11 +85,11 @@ constexpr RuleChildSpec kWipBaseWmbRhs[] = {
     child(NonTerminal::WMB, Endpoint::I, 0, Endpoint::J, 0),
 };
 constexpr RuleChildSpec kWipSplitVRhs[] = {
-    child(NonTerminal::WIP, Endpoint::I, 0, Endpoint::K, -1, true),
+    child(NonTerminal::WIP, Endpoint::I, 0, Endpoint::K, -1),
     child(NonTerminal::V, Endpoint::K, 0, Endpoint::J, 0),
 };
 constexpr RuleChildSpec kWipSplitWmbRhs[] = {
-    child(NonTerminal::WIP, Endpoint::I, 0, Endpoint::K, -1, true),
+    child(NonTerminal::WIP, Endpoint::I, 0, Endpoint::K, -1),
     child(NonTerminal::WMB, Endpoint::K, 0, Endpoint::J, 0),
 };
 constexpr RuleChildSpec kWipBasepairVRhs[] = {
@@ -108,7 +108,7 @@ constexpr RuleChildSpec kVplSplitVpRhs[] = {
 
 constexpr RuleChildSpec kVprSplitVpWipRhs[] = {
     child(NonTerminal::VP, Endpoint::I, 0, Endpoint::K, 0),
-    child(NonTerminal::WIP, Endpoint::K, 1, Endpoint::J, 0, true),
+    child(NonTerminal::WIP, Endpoint::K, 1, Endpoint::J, 0),
 };
 constexpr RuleChildSpec kVprSplitVpBasepairRhs[] = {
     child(NonTerminal::VP, Endpoint::I, 0, Endpoint::K, 0),
@@ -152,15 +152,15 @@ constexpr RuleChildSpec kVpVplWipRhs[] = {
 
 constexpr RuleChildSpec kWmbwSplitWmbpWiRhs[] = {
     child(NonTerminal::WMBP, Endpoint::I, 0, Endpoint::K, 0),
-    child(NonTerminal::WI, Endpoint::K, 1, Endpoint::J, 0, true),
+    child(NonTerminal::WI, Endpoint::K, 1, Endpoint::J, 0),
 };
 
 constexpr RuleChildSpec kWmbpSplitBeWmbpVpRhs[] = {
-    child(NonTerminal::WMBP, Endpoint::I, 0, Endpoint::K, -1, true),
+    child(NonTerminal::WMBP, Endpoint::I, 0, Endpoint::K, -1),
     child(NonTerminal::VP, Endpoint::K, 0, Endpoint::J, 0),
 };
 constexpr RuleChildSpec kWmbpSplitBeWmbwVpRhs[] = {
-    child(NonTerminal::WMBW, Endpoint::I, 0, Endpoint::K, -1, true),
+    child(NonTerminal::WMBW, Endpoint::I, 0, Endpoint::K, -1),
     child(NonTerminal::VP, Endpoint::K, 0, Endpoint::J, 0),
 };
 constexpr RuleChildSpec kWmbpDirectVpRhs[] = {
