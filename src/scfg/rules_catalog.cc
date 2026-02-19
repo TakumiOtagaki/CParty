@@ -67,10 +67,12 @@ constexpr RuleChildSpec kWiExtendUnpairedRhs[] = {
 };
 
 constexpr RuleChildSpec kVmSplitWmWmvRhs[] = {
+    // WM(i+1..k-1) can be empty when k=i+1.
     child(NonTerminal::WM, Endpoint::I, 1, Endpoint::K, -1, true),
     child(NonTerminal::WMv, Endpoint::K, 0, Endpoint::J, -1),
 };
 constexpr RuleChildSpec kVmSplitWmWmpRhs[] = {
+    // WM(i+1..k-1) can be empty when k=i+1.
     child(NonTerminal::WM, Endpoint::I, 1, Endpoint::K, -1, true),
     child(NonTerminal::WMp, Endpoint::K, 0, Endpoint::J, -1),
 };
@@ -99,6 +101,7 @@ constexpr RuleChildSpec kWipBasepairWmbRhs[] = {
     child(NonTerminal::WMB, Endpoint::K, 0, Endpoint::J, 0),
 };
 constexpr RuleChildSpec kWipExtendUnpairedRhs[] = {
+    // WIP(i..j-1) can be empty when i==j.
     child(NonTerminal::WIP, Endpoint::I, 0, Endpoint::J, -1, true),
 };
 
@@ -115,14 +118,17 @@ constexpr RuleChildSpec kVprSplitVpBasepairRhs[] = {
 };
 
 constexpr RuleChildSpec kVpWiCase1Rhs[] = {
+    // WI segments can be empty when p/q are adjacent to i/j.
     child(NonTerminal::WI, Endpoint::I, 1, Endpoint::P, -1, true),
     child(NonTerminal::WI, Endpoint::Q, 1, Endpoint::J, -1, true),
 };
 constexpr RuleChildSpec kVpWiCase2Rhs[] = {
+    // WI segments can be empty when p/q are adjacent to i/j.
     child(NonTerminal::WI, Endpoint::I, 1, Endpoint::P, -1, true),
     child(NonTerminal::WI, Endpoint::Q, 1, Endpoint::J, -1, true),
 };
 constexpr RuleChildSpec kVpWiCase3Rhs[] = {
+    // WI segments can be empty when borders are adjacent.
     child(NonTerminal::WI, Endpoint::I, 1, Endpoint::P, -1, true),
     child(NonTerminal::WI, Endpoint::Q, 1, Endpoint::K, -1, true),
     child(NonTerminal::WI, Endpoint::L, 1, Endpoint::J, -1, true),
@@ -134,19 +140,23 @@ constexpr RuleChildSpec kVpInternalLoopRhs[] = {
     child(NonTerminal::VP, Endpoint::K, 0, Endpoint::L, 0),
 };
 constexpr RuleChildSpec kVpWipVpLeftRhs[] = {
+    // WIP(i+1..k-1) can be empty when k=i+1.
     child(NonTerminal::WIP, Endpoint::I, 1, Endpoint::K, -1, true),
     child(NonTerminal::VP, Endpoint::K, 0, Endpoint::J, -1),
 };
 constexpr RuleChildSpec kVpVpWipRightRhs[] = {
     child(NonTerminal::VP, Endpoint::I, 1, Endpoint::K, 0),
+    // WIP(k+1..j-1) can be empty when k=j-1.
     child(NonTerminal::WIP, Endpoint::K, 1, Endpoint::J, -1, true),
 };
 constexpr RuleChildSpec kVpWipVprRhs[] = {
+    // WIP(i+1..k-1) can be empty when k=i+1.
     child(NonTerminal::WIP, Endpoint::I, 1, Endpoint::K, -1, true),
     child(NonTerminal::VPR, Endpoint::K, 0, Endpoint::J, -1),
 };
 constexpr RuleChildSpec kVpVplWipRhs[] = {
     child(NonTerminal::VPL, Endpoint::I, 1, Endpoint::K, 0),
+    // WIP(k+1..j-1) can be empty when k=j-1.
     child(NonTerminal::WIP, Endpoint::K, 1, Endpoint::J, -1, true),
 };
 
@@ -167,6 +177,7 @@ constexpr RuleChildSpec kWmbpDirectVpRhs[] = {
     child(NonTerminal::VP, Endpoint::I, 0, Endpoint::J, 0),
 };
 constexpr RuleChildSpec kWmbpSplitBeWiVpRhs[] = {
+    // WI(p+1..k-1) can be empty when k=p+1.
     child(NonTerminal::WI, Endpoint::P, 1, Endpoint::K, -1, true),
     child(NonTerminal::VP, Endpoint::K, 0, Endpoint::J, 0),
 };
@@ -176,6 +187,7 @@ constexpr RuleChildSpec kWmbDirectWmbpRhs[] = {
 };
 constexpr RuleChildSpec kWmbSplitBeWmbpWiRhs[] = {
     child(NonTerminal::WMBP, Endpoint::I, 0, Endpoint::K, 0),
+    // WI(k+1..q-1) can be empty when k+1==q.
     child(NonTerminal::WI, Endpoint::K, 1, Endpoint::Q, -1, true),
 };
 
@@ -186,16 +198,19 @@ constexpr RuleChildSpec kBeInternalLoopRhs[] = {
     child(NonTerminal::BE, Endpoint::K, 0, Endpoint::L, 0),
 };
 constexpr RuleChildSpec kBeWipWipRhs[] = {
+    // WIP ranges can be empty when borders touch.
     child(NonTerminal::WIP, Endpoint::I, 1, Endpoint::K, -1, true),
     child(NonTerminal::BE, Endpoint::K, 0, Endpoint::L, 0),
     child(NonTerminal::WIP, Endpoint::L, 1, Endpoint::J, -1, true),
 };
 constexpr RuleChildSpec kBeWipBasepairRhs[] = {
+    // WIP(i+1..k-1) can be empty when k=i+1.
     child(NonTerminal::WIP, Endpoint::I, 1, Endpoint::K, -1, true),
     child(NonTerminal::BE, Endpoint::K, 0, Endpoint::L, 0),
 };
 constexpr RuleChildSpec kBeBasepairWipRhs[] = {
     child(NonTerminal::BE, Endpoint::K, 0, Endpoint::L, 0),
+    // WIP(l+1..j-1) can be empty when l=j-1.
     child(NonTerminal::WIP, Endpoint::L, 1, Endpoint::J, -1, true),
 };
 
