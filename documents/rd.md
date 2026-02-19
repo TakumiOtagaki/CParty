@@ -199,6 +199,30 @@ test/tools/compare_cli_stdout.sh worktree_legacy_debug/build/CParty build/CParty
   - エネルギーは既存の fixed-energy scorer で算出。
   - trace は pk_free / h_type で rules_core trace を優先し、それ以外は shared trace を返す。
 
+## 6. 残作業まとめ（2026-02-19 時点）
+### 6.1 宣言化の残り
+- `WMB/WMBP/WMBW/BE` の split 条件・適用条件の宣言化を完了させる。
+  - `split_filter` / `predicate` の整理と、inline 条件の除去。
+- `applicable_rules` の data-driven 化を最終化する。
+  - `for_each_entry` の `applicable_rules` 経路と `rules_for + enumerate` の差分をゼロにする。
+
+### 6.2 ルールテーブル/抽象化の整理
+- `RuleSpec` への「適用条件 + split 生成」の完全宣言化（Custom 分岐を削る）。
+- `TransitionWeights` を EnergyModel/Oracle へ昇格するかの設計決め。
+- 空区間（`allow_empty`）の仕様化と明示的表現の導入。
+
+### 6.3 構造依存の局所処理の整理
+- `BE` の span/split predicate 分離を進める（`SpanPredicate` の拡充）。
+- 構造依存 predicate の「構造非依存な API 形」への収束方針を決める。
+
+### 6.4 運用/検証
+- strict compare の運用継続:
+  - `CPARTY_FIXED_ENERGY_REAL_SCORE=1`
+  - `SCFG_RULES_MODE=1`
+  - `SCFG_RULES_APPLICABLE=1`
+  - `SCFG_INSIDE_CORE=1`
+- `worktree_legacy_debug` を基準にする運用を継続。
+
 #### 既知の制限
 - rule chain からの **遷移重み再計算**は未実装（context/oracle の本格実装が必要）。
 - k-type の場合は shared trace のみ（rules_core trace は未対応）。
