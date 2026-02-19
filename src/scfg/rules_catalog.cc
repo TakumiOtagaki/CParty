@@ -298,7 +298,7 @@ const RuleSpec kRuleSpecs[] = {
               2,
               RuleSpec::SplitGenKind::Custom,
               {},
-              RuleSpec::SplitFilterKind::None,
+              RuleSpec::SplitFilterKind::WeaklyClosedPrefix,
               RuleSpec::PredicateKind::WSpanWeaklyClosed),
     rule_spec(RuleId::W_SPLIT_WMB,
               NonTerminal::W,
@@ -307,7 +307,7 @@ const RuleSpec kRuleSpecs[] = {
               2,
               RuleSpec::SplitGenKind::Custom,
               {},
-              RuleSpec::SplitFilterKind::None,
+              RuleSpec::SplitFilterKind::WeaklyClosedPrefixAndSplitOrKIsI,
               RuleSpec::PredicateKind::WSpanWeaklyClosed),
 
     // VM

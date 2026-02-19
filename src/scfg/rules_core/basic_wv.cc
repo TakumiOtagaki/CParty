@@ -40,13 +40,20 @@ std::vector<RuleSplit> enumerate_splits_w(RuleId rule,
         break;
     case RuleId::W_SPLIT_V:
     case RuleId::W_SPLIT_WMB: {
-        if (!tree.weakly_closed(1, j)) {
-            break;
-        }
+        const RuleSpec &spec = rule_spec(rule);
         const cand_pos_t turn = ctx.turn();
         for (cand_pos_t k = i; k <= j - turn - 1; ++k) {
-            if (!tree.weakly_closed(1, k - 1)) continue;
-            if (rule == RuleId::W_SPLIT_WMB && !(k == i || tree.weakly_closed(k, j))) continue;
+            switch (spec.split_filter) {
+            case RuleSpec::SplitFilterKind::WeaklyClosedPrefix:
+                if (!tree.weakly_closed(1, k - 1)) continue;
+                break;
+            case RuleSpec::SplitFilterKind::WeaklyClosedPrefixAndSplitOrKIsI:
+                if (!tree.weakly_closed(1, k - 1)) continue;
+                if (!(k == i || tree.weakly_closed(k, j))) continue;
+                break;
+            default:
+                break;
+            }
             splits.push_back({k, -1});
         }
     } break;

@@ -86,7 +86,7 @@ struct RuleSpec {
         BeSplitPairWithin,
         WeaklyClosedRoot,
         WeaklyClosedPrefix,
-        WeaklyClosedSplitOrKIsI
+        WeaklyClosedPrefixAndSplitOrKIsI
     } split_filter =
         SplitFilterKind::None;
     enum class SpanPredicateKind : unsigned char {
