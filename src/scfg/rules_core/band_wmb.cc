@@ -359,8 +359,8 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
         splits.push_back({});
         break;
     case RuleId::WMB_SPLIT_BE_WMBP_WI:
-        if (tree.tree[j].pair >= 0 && j > tree.tree[j].pair && tree.tree[j].pair > i) {
-            cand_pos_t bp_j = tree.tree[j].pair;
+        {
+            const cand_pos_t bp_j = tree.tree[j].pair;
             for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {
                 cand_pos_t Bp_lj = tree.Bp(l, j);
                 if (Bp_lj >= 0 && Bp_lj < ctx.n()) {
@@ -399,8 +399,8 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
         splits.push_back({});
         break;
     case RuleId::WMB_SPLIT_BE_WMBP_WI:
-        if (view.pair_square(j) >= 0 && j > view.pair_square(j) && view.pair_square(j) > i) {
-            cand_pos_t bp_j = view.pair_square(j);
+        {
+            const cand_pos_t bp_j = view.pair_square(j);
             for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {
                 cand_pos_t Bp_lj = view.Bp(l, j);
                 if (Bp_lj >= 0 && Bp_lj < ctx.n()) {
