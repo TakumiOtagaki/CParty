@@ -42,8 +42,9 @@ constexpr RuleSpec rule_spec(RuleId id,
                              RuleSpec::SplitGenKind split_gen = RuleSpec::SplitGenKind::Custom,
                              RuleSpec::SplitRangeSpec split_range = {},
                              RuleSpec::SplitFilterKind split_filter = RuleSpec::SplitFilterKind::None,
-                             RuleSpec::PredicateKind predicate = RuleSpec::PredicateKind::None) {
-    return RuleSpec{id, lhs, split, rhs, rhs_len, split_gen, split_filter, predicate, split_range};
+                             RuleSpec::PredicateKind predicate = RuleSpec::PredicateKind::None,
+                             RuleSpec::SpanPredicateKind span_predicate = RuleSpec::SpanPredicateKind::None) {
+    return RuleSpec{id, lhs, split, rhs, rhs_len, split_gen, split_filter, span_predicate, predicate, split_range};
 }
 
 constexpr RuleSpec::SplitRangeSpec split_range(Endpoint start_base,
@@ -506,7 +507,8 @@ const RuleSpec kRuleSpecs[] = {
               RuleSpec::SplitGenKind::Custom,
               {},
               RuleSpec::SplitFilterKind::None,
-              RuleSpec::PredicateKind::BeBaseSamePair),
+              RuleSpec::PredicateKind::BeBaseSamePair,
+              RuleSpec::SpanPredicateKind::BeSpanValid),
     rule_spec(RuleId::BE_STACK,
               NonTerminal::BE,
               split_spec(SplitKind::None),
@@ -515,7 +517,8 @@ const RuleSpec kRuleSpecs[] = {
               RuleSpec::SplitGenKind::Custom,
               {},
               RuleSpec::SplitFilterKind::None,
-              RuleSpec::PredicateKind::BeStackPairing),
+              RuleSpec::PredicateKind::BeStackPairing,
+              RuleSpec::SpanPredicateKind::BeSpanValid),
     rule_spec(RuleId::BE_INTERNAL_LOOP,
               NonTerminal::BE,
               split_spec(SplitKind::KL),
@@ -524,7 +527,8 @@ const RuleSpec kRuleSpecs[] = {
               RuleSpec::SplitGenKind::Custom,
               {},
               RuleSpec::SplitFilterKind::None,
-              RuleSpec::PredicateKind::BeInternalLoop),
+              RuleSpec::PredicateKind::BeInternalLoop,
+              RuleSpec::SpanPredicateKind::BeSpanValid),
     rule_spec(RuleId::BE_WIP_WIP,
               NonTerminal::BE,
               split_spec(SplitKind::K),
@@ -533,7 +537,8 @@ const RuleSpec kRuleSpecs[] = {
               RuleSpec::SplitGenKind::Custom,
               {},
               RuleSpec::SplitFilterKind::None,
-              RuleSpec::PredicateKind::BeWipWip),
+              RuleSpec::PredicateKind::BeWipWip,
+              RuleSpec::SpanPredicateKind::BeSpanValid),
     rule_spec(RuleId::BE_WIP_BASEPAIR,
               NonTerminal::BE,
               split_spec(SplitKind::K),
@@ -542,7 +547,8 @@ const RuleSpec kRuleSpecs[] = {
               RuleSpec::SplitGenKind::Custom,
               {},
               RuleSpec::SplitFilterKind::None,
-              RuleSpec::PredicateKind::BeWipBasepair),
+              RuleSpec::PredicateKind::BeWipBasepair,
+              RuleSpec::SpanPredicateKind::BeSpanValid),
     rule_spec(RuleId::BE_BASEPAIR_WIP,
               NonTerminal::BE,
               split_spec(SplitKind::K),
@@ -551,7 +557,8 @@ const RuleSpec kRuleSpecs[] = {
               RuleSpec::SplitGenKind::Custom,
               {},
               RuleSpec::SplitFilterKind::None,
-              RuleSpec::PredicateKind::BeBasepairWip),
+              RuleSpec::PredicateKind::BeBasepairWip,
+              RuleSpec::SpanPredicateKind::BeSpanValid),
 };
 
 std::array<std::vector<RuleId>, kNonTerminalCount> build_rules_for() {

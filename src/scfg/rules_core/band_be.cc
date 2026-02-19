@@ -51,16 +51,12 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
                                            sparse_tree &tree) {
     const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
-    if (!(i >= 1 && i <= ip && ip < jp && jp <= j && j <= ctx.n() && tree.tree[i].pair > 0 && tree.tree[j].pair > 0 &&
-          tree.tree[ip].pair > 0 && tree.tree[jp].pair > 0 && tree.tree[i].pair == j && tree.tree[j].pair == i &&
-          tree.tree[ip].pair == jp && tree.tree[jp].pair == ip)) {
-        return splits;
-    }
-    if (tree.tree[i].pair != j || tree.tree[ip].pair != jp) {
+    (void)ctx;
+    RuleSpanContext span_ctx{i, j, {}, ip, jp};
+    if (!span_predicate_allows(spec, span_ctx, tree)) {
         return splits;
     }
     if (i == ip && j == jp && i < j) {
-        RuleSpanContext span_ctx{i, j, {}, ip, jp};
         if (predicate_allows(spec, span_ctx, tree)) {
             splits.push_back({});
         }
@@ -102,12 +98,12 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
                                            const StructureView &view) {
     const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
-    if (!(i >= 1 && i <= ip && ip < jp && jp <= j && j <= ctx.n() && view.is_pair_square(i, j) &&
-          view.is_pair_square(ip, jp))) {
+    (void)ctx;
+    RuleSpanContext span_ctx{i, j, {}, ip, jp};
+    if (!span_predicate_allows(spec, span_ctx, view)) {
         return splits;
     }
     if (i == ip && j == jp && i < j) {
-        RuleSpanContext span_ctx{i, j, {}, ip, jp};
         if (predicate_allows(spec, span_ctx, view)) {
             splits.push_back({});
         }

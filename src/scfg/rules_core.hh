@@ -85,6 +85,10 @@ struct RuleSpec {
         WmbpInnerArcSplit
     } split_filter =
         SplitFilterKind::None;
+    enum class SpanPredicateKind : unsigned char {
+        None,
+        BeSpanValid
+    } span_predicate = SpanPredicateKind::None;
     enum class PredicateKind : unsigned char {
         None,
         VPairingState,
@@ -141,6 +145,8 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const St
 bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const PartFuncRuleHelpers &rules);
 bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const PartFuncRuleHelpersView &rules);
 bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const std::vector<Node> &tree);
+bool span_predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, sparse_tree &tree);
+bool span_predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const StructureView &view);
 
 // Returns the full candidate rule list for a non-terminal, before applicability filtering.
 const std::vector<RuleId> &rules_for(NonTerminal nonterminal);

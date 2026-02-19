@@ -7,6 +7,33 @@
 
 namespace scfg {
 
+bool span_predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, sparse_tree &tree) {
+    switch (spec.span_predicate) {
+    case RuleSpec::SpanPredicateKind::None:
+        return true;
+    case RuleSpec::SpanPredicateKind::BeSpanValid:
+        return ctx.i >= 1 && ctx.i <= ctx.ip && ctx.ip < ctx.jp && ctx.jp <= ctx.j && ctx.j <= tree.n &&
+               tree.tree[ctx.i].pair > 0 && tree.tree[ctx.j].pair > 0 &&
+               tree.tree[ctx.ip].pair > 0 && tree.tree[ctx.jp].pair > 0 &&
+               tree.tree[ctx.i].pair == ctx.j && tree.tree[ctx.j].pair == ctx.i &&
+               tree.tree[ctx.ip].pair == ctx.jp && tree.tree[ctx.jp].pair == ctx.ip;
+    default:
+        return true;
+    }
+}
+
+bool span_predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const StructureView &view) {
+    switch (spec.span_predicate) {
+    case RuleSpec::SpanPredicateKind::None:
+        return true;
+    case RuleSpec::SpanPredicateKind::BeSpanValid:
+        return ctx.i >= 1 && ctx.i <= ctx.ip && ctx.ip < ctx.jp && ctx.jp <= ctx.j && ctx.j <= view.n() &&
+               view.is_pair_square(ctx.i, ctx.j) && view.is_pair_square(ctx.ip, ctx.jp);
+    default:
+        return true;
+    }
+}
+
 bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, sparse_tree &tree) {
     switch (spec.predicate) {
     case RuleSpec::PredicateKind::None:
