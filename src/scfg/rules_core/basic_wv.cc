@@ -135,12 +135,9 @@ std::vector<RuleSplit> enumerate_splits_v(RuleId rule,
     }
 
     switch (rule) {
-    case RuleId::V_HAIRPIN: {
-        const bool canH = !(tree.up[j - 1] < (j - i - 1));
-        if (canH) {
-            splits.push_back({});
-        }
-    } break;
+    case RuleId::V_HAIRPIN:
+        splits.push_back({});
+        break;
     case RuleId::V_INTERNAL:
     case RuleId::V_VM:
         splits.push_back({});
