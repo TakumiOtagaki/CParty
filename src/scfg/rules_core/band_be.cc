@@ -10,6 +10,15 @@ namespace scfg {
 
 // band/pseudoknot 側: BE の分解・スコア・適用判定。
 
+static bool split_filter_allows_be(const RuleSpec &spec, cand_pos_t j, cand_pos_t jp, cand_pos_t lp) {
+    switch (spec.split_filter) {
+    case RuleSpec::SplitFilterKind::BeSplitPairWithin:
+        return lp >= -1 && jp <= lp && lp < j;
+    default:
+        return true;
+    }
+}
+
 std::vector<ApplicableRule> applicable_rules_be(cand_pos_t i,
                                                 cand_pos_t j,
                                                 cand_pos_t ip,
@@ -74,12 +83,11 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
     case RuleId::BE_WIP_BASEPAIR:
     case RuleId::BE_BASEPAIR_WIP:
         for (cand_pos_t l = i + 1; l <= ip; l++) {
-            if (tree.tree[l].pair >= -1 && jp <= tree.tree[l].pair && tree.tree[l].pair < j) {
-                cand_pos_t lp = tree.tree[l].pair;
-                RuleSpanContext span_ctx{i, j, {l, lp}, ip, jp};
-                if (predicate_allows(spec, span_ctx, tree)) {
-                    splits.push_back({l, lp});
-                }
+            cand_pos_t lp = tree.tree[l].pair;
+            if (!split_filter_allows_be(spec, j, jp, lp)) continue;
+            RuleSpanContext span_ctx{i, j, {l, lp}, ip, jp};
+            if (predicate_allows(spec, span_ctx, tree)) {
+                splits.push_back({l, lp});
             }
         }
         break;
@@ -122,11 +130,10 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
     case RuleId::BE_BASEPAIR_WIP:
         for (cand_pos_t l = i + 1; l <= ip; l++) {
             const cand_pos_t lp = view.pair_square(l);
-            if (lp >= -1 && jp <= lp && lp < j) {
-                RuleSpanContext span_ctx{i, j, {l, lp}, ip, jp};
-                if (predicate_allows(spec, span_ctx, view)) {
-                    splits.push_back({l, lp});
-                }
+            if (!split_filter_allows_be(spec, j, jp, lp)) continue;
+            RuleSpanContext span_ctx{i, j, {l, lp}, ip, jp};
+            if (predicate_allows(spec, span_ctx, view)) {
+                splits.push_back({l, lp});
             }
         }
         break;

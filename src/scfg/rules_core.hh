@@ -82,7 +82,8 @@ struct RuleSpec {
         CanPairLeft,
         CanPairRight,
         WmbpExteriorSplit,
-        WmbpInnerArcSplit
+        WmbpInnerArcSplit,
+        BeSplitPairWithin
     } split_filter =
         SplitFilterKind::None;
     enum class SpanPredicateKind : unsigned char {
