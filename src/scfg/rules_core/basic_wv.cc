@@ -117,11 +117,14 @@ std::vector<RuleSplit> enumerate_splits_v(RuleId rule,
                                           PartFuncVContext &ctx,
                                           sparse_tree &tree) {
     (void)ctx;
+    const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
-    const bool unpaired = (tree.tree[i].pair < -1 && tree.tree[j].pair < -1);
-    const bool paired = (tree.tree[i].pair == j && tree.tree[j].pair == i);
-    if (!(paired || unpaired)) {
-        return splits;
+    if (spec.predicate == RuleSpec::PredicateKind::VPairingState) {
+        const bool unpaired = (tree.tree[i].pair < -1 && tree.tree[j].pair < -1);
+        const bool paired = (tree.tree[i].pair == j && tree.tree[j].pair == i);
+        if (!(paired || unpaired)) {
+            return splits;
+        }
     }
 
     switch (rule) {

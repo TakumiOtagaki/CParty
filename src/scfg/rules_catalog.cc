@@ -41,8 +41,9 @@ constexpr RuleSpec rule_spec(RuleId id,
                              size_t rhs_len = 0,
                              RuleSpec::SplitGenKind split_gen = RuleSpec::SplitGenKind::Custom,
                              RuleSpec::SplitRangeSpec split_range = {},
-                             RuleSpec::SplitFilterKind split_filter = RuleSpec::SplitFilterKind::None) {
-    return RuleSpec{id, lhs, split, rhs, rhs_len, split_gen, split_filter, split_range};
+                             RuleSpec::SplitFilterKind split_filter = RuleSpec::SplitFilterKind::None,
+                             RuleSpec::PredicateKind predicate = RuleSpec::PredicateKind::None) {
+    return RuleSpec{id, lhs, split, rhs, rhs_len, split_gen, split_filter, predicate, split_range};
 }
 
 constexpr RuleSpec::SplitRangeSpec split_range(Endpoint start_base,
@@ -239,9 +240,12 @@ constexpr RuleChildSpec kBeBasepairWipRhs[] = {
 
 const RuleSpec kRuleSpecs[] = {
     // V
-    rule_spec(RuleId::V_HAIRPIN, NonTerminal::V, split_spec(SplitKind::None)),
-    rule_spec(RuleId::V_INTERNAL, NonTerminal::V, split_spec(SplitKind::KL)),
-    rule_spec(RuleId::V_VM, NonTerminal::V, split_spec(SplitKind::None)),
+    rule_spec(RuleId::V_HAIRPIN, NonTerminal::V, split_spec(SplitKind::None), nullptr, 0,
+              RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::None, RuleSpec::PredicateKind::VPairingState),
+    rule_spec(RuleId::V_INTERNAL, NonTerminal::V, split_spec(SplitKind::KL), nullptr, 0,
+              RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::None, RuleSpec::PredicateKind::VPairingState),
+    rule_spec(RuleId::V_VM, NonTerminal::V, split_spec(SplitKind::None), nullptr, 0,
+              RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::None, RuleSpec::PredicateKind::VPairingState),
 
     // WI
     rule_spec(RuleId::WI_BASE_SINGLE, NonTerminal::WI, split_spec(SplitKind::None)),
@@ -316,7 +320,15 @@ const RuleSpec kRuleSpecs[] = {
               split_range(Endpoint::I, 1, Endpoint::J, -1, false, true)),
     rule_spec(RuleId::WIP_BASEPAIR_V, NonTerminal::WIP, split_spec(SplitKind::K), kWipBasepairVRhs, 1),
     rule_spec(RuleId::WIP_BASEPAIR_WMB, NonTerminal::WIP, split_spec(SplitKind::K), kWipBasepairWmbRhs, 1),
-    rule_spec(RuleId::WIP_EXTEND_UNPAIRED, NonTerminal::WIP, split_spec(SplitKind::None), kWipExtendUnpairedRhs, 1),
+    rule_spec(RuleId::WIP_EXTEND_UNPAIRED,
+              NonTerminal::WIP,
+              split_spec(SplitKind::None),
+              kWipExtendUnpairedRhs,
+              1,
+              RuleSpec::SplitGenKind::Custom,
+              {},
+              RuleSpec::SplitFilterKind::None,
+              RuleSpec::PredicateKind::UnpairedAtJ),
 
     // VPL
     rule_spec(RuleId::VPL_SPLIT_VP,
