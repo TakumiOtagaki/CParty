@@ -197,28 +197,24 @@ std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
     switch (rule) {
     case RuleId::WMBP_SPLIT_BE_WMBP_VP:
     case RuleId::WMBP_SPLIT_BE_WMBW_VP:
-        if (rules.pair_at(j) < 0) {
-            rules.for_each_split(i, j, [&](cand_pos_t l) {
-                RuleSpanContext split_ctx{i, j, {l, -1}};
-                if (!split_filter_allows_wmbp(spec, split_ctx, ctx, rules, tree)) return;
-                const cand_pos_t B_lj = rules.border_B(l, j);
-                const cand_pos_t Bp_lj = rules.border_Bp(l, j);
-                splits.push_back({l, -1, B_lj, Bp_lj});
-            });
-        }
+        rules.for_each_split(i, j, [&](cand_pos_t l) {
+            RuleSpanContext split_ctx{i, j, {l, -1}};
+            if (!split_filter_allows_wmbp(spec, split_ctx, ctx, rules, tree)) return;
+            const cand_pos_t B_lj = rules.border_B(l, j);
+            const cand_pos_t Bp_lj = rules.border_Bp(l, j);
+            splits.push_back({l, -1, B_lj, Bp_lj});
+        });
         break;
     case RuleId::WMBP_DIRECT_VP:
         splits.push_back({});
         break;
     case RuleId::WMBP_SPLIT_BE_WI_VP:
-        if (rules.pair_at(j) < 0 && rules.pair_at(i) >= 0) {
-            rules.for_each_split(i, j, [&](cand_pos_t l) {
-                RuleSpanContext split_ctx{i, j, {l, -1}};
-                if (!split_filter_allows_wmbp(spec, split_ctx, ctx, rules, tree)) return;
-                const cand_pos_t bp_il = rules.border_bp(i, l);
-                splits.push_back({l, -1, bp_il, -1});
-            });
-        }
+        rules.for_each_split(i, j, [&](cand_pos_t l) {
+            RuleSpanContext split_ctx{i, j, {l, -1}};
+            if (!split_filter_allows_wmbp(spec, split_ctx, ctx, rules, tree)) return;
+            const cand_pos_t bp_il = rules.border_bp(i, l);
+            splits.push_back({l, -1, bp_il, -1});
+        });
         break;
     default:
         break;
@@ -246,28 +242,24 @@ std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
     switch (rule) {
     case RuleId::WMBP_SPLIT_BE_WMBP_VP:
     case RuleId::WMBP_SPLIT_BE_WMBW_VP:
-        if (rules.pair_at(j) < 0) {
-            rules.for_each_split(i, j, [&](cand_pos_t l) {
-                RuleSpanContext split_ctx{i, j, {l, -1}};
-                if (!split_filter_allows_wmbp(spec, split_ctx, ctx, rules, tree)) return;
-                const cand_pos_t B_lj = rules.border_B(l, j);
-                const cand_pos_t Bp_lj = rules.border_Bp(l, j);
-                splits.push_back({l, -1, B_lj, Bp_lj});
-            });
-        }
+        rules.for_each_split(i, j, [&](cand_pos_t l) {
+            RuleSpanContext split_ctx{i, j, {l, -1}};
+            if (!split_filter_allows_wmbp(spec, split_ctx, ctx, rules, tree)) return;
+            const cand_pos_t B_lj = rules.border_B(l, j);
+            const cand_pos_t Bp_lj = rules.border_Bp(l, j);
+            splits.push_back({l, -1, B_lj, Bp_lj});
+        });
         break;
     case RuleId::WMBP_DIRECT_VP:
         splits.push_back({});
         break;
     case RuleId::WMBP_SPLIT_BE_WI_VP:
-        if (rules.pair_at(j) < 0 && rules.pair_at(i) >= 0) {
-            rules.for_each_split(i, j, [&](cand_pos_t l) {
-                RuleSpanContext split_ctx{i, j, {l, -1}};
-                if (!split_filter_allows_wmbp(spec, split_ctx, ctx, rules, tree)) return;
-                const cand_pos_t bp_il = rules.border_bp(i, l);
-                splits.push_back({l, -1, bp_il, -1});
-            });
-        }
+        rules.for_each_split(i, j, [&](cand_pos_t l) {
+            RuleSpanContext split_ctx{i, j, {l, -1}};
+            if (!split_filter_allows_wmbp(spec, split_ctx, ctx, rules, tree)) return;
+            const cand_pos_t bp_il = rules.border_bp(i, l);
+            splits.push_back({l, -1, bp_il, -1});
+        });
         break;
     default:
         break;
@@ -393,9 +385,11 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
             const cand_pos_t bp_j = tree.tree[j].pair;
             for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {
                 cand_pos_t Bp_lj = tree.Bp(l, j);
-                if (Bp_lj >= 0 && Bp_lj < ctx.n()) {
-                    splits.push_back({l, -1, bp_j, Bp_lj});
+                if (spec.split_filter == RuleSpec::SplitFilterKind::WmbBpRange &&
+                    (Bp_lj < 0 || Bp_lj >= ctx.n())) {
+                    continue;
                 }
+                splits.push_back({l, -1, bp_j, Bp_lj});
             }
         }
         break;
@@ -433,9 +427,11 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
             const cand_pos_t bp_j = view.pair_square(j);
             for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {
                 cand_pos_t Bp_lj = view.Bp(l, j);
-                if (Bp_lj >= 0 && Bp_lj < ctx.n()) {
-                    splits.push_back({l, -1, bp_j, Bp_lj});
+                if (spec.split_filter == RuleSpec::SplitFilterKind::WmbBpRange &&
+                    (Bp_lj < 0 || Bp_lj >= ctx.n())) {
+                    continue;
                 }
+                splits.push_back({l, -1, bp_j, Bp_lj});
             }
         }
         break;

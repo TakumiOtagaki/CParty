@@ -544,7 +544,7 @@ const RuleSpec kRuleSpecs[] = {
 
     // WMB
     rule_spec(RuleId::WMB_SPLIT_BE_WMBP_WI, NonTerminal::WMB, split_spec(SplitKind::K, true, true),
-              kWmbSplitBeWmbpWiRhs, 2, RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::None,
+              kWmbSplitBeWmbpWiRhs, 2, RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::WmbBpRange,
               RuleSpec::PredicateKind::WmbSplitBeWmbpWi),
     rule_spec(RuleId::WMB_DIRECT_WMBP, NonTerminal::WMB, split_spec(SplitKind::None), kWmbDirectWmbpRhs, 1),
     rule_spec(RuleId::WMB_EMPTY, NonTerminal::WMB, split_spec(SplitKind::None)),

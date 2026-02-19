@@ -83,6 +83,7 @@ struct RuleSpec {
         CanPairRight,
         WmbpExteriorSplit,
         WmbpInnerArcSplit,
+        WmbBpRange,
         BeSplitPairWithin,
         WeaklyClosedRoot,
         WeaklyClosedPrefix,
