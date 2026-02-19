@@ -116,6 +116,11 @@ std::vector<RuleSplit> enumerate_splits_wip(RuleId rule,
 }
 
 std::vector<RuleChild> expand_wip(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.rhs_len > 0) {
+        RuleSpanContext ctx{i, j, split};
+        return expand_rule_rhs(spec, ctx);
+    }
     std::vector<RuleChild> children;
     switch (rule) {
     case RuleId::WIP_BASE_V:
@@ -240,7 +245,11 @@ std::vector<RuleSplit> enumerate_splits_vpl(RuleId rule,
 }
 
 std::vector<RuleChild> expand_vpl(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
-    (void)i;
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.rhs_len > 0) {
+        RuleSpanContext ctx{i, j, split};
+        return expand_rule_rhs(spec, ctx);
+    }
     std::vector<RuleChild> children;
     switch (rule) {
     case RuleId::VPL_SPLIT_VP:
@@ -351,6 +360,11 @@ std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
 }
 
 std::vector<RuleChild> expand_vpr(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.rhs_len > 0) {
+        RuleSpanContext ctx{i, j, split};
+        return expand_rule_rhs(spec, ctx);
+    }
     std::vector<RuleChild> children;
     switch (rule) {
     case RuleId::VPR_SPLIT_VP_WIP:
@@ -586,8 +600,11 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
 }
 
 std::vector<RuleChild> expand_vp(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
-    (void)i;
-    (void)j;
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.rhs_len > 0) {
+        RuleSpanContext ctx{i, j, split};
+        return expand_rule_rhs(spec, ctx);
+    }
     std::vector<RuleChild> children;
     switch (rule) {
     case RuleId::VP_WI_CASE1:
