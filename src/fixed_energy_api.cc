@@ -25,6 +25,8 @@ extern "C" {
 namespace cparty {
 namespace {
 
+namespace scfg = ::scfg;
+
 class RuleCoreStubWContext final : public scfg::PartFuncWContext {
  public:
   explicit RuleCoreStubWContext(int n) : n_(n) {}
@@ -1743,6 +1745,40 @@ std::vector<internal::RuleTraceStep> trace_rule_chain_zw_only_from_normalized(co
 }
 
 }  // namespace
+
+namespace scfg {
+
+ParseResult parse_fixed_energy(const std::string &seq,
+                               const std::string &structure_g,
+                               const std::string &structure_gprime,
+                               const ParseOptions &options) {
+  ParseResult result{};
+  try {
+    const NormalizedInput normalized = normalize_union_input(seq, structure_g, structure_gprime);
+    const auto breakdown = structure_energy_breakdown_from_normalized(normalized);
+    result.total_energy = breakdown.total_energy;
+
+    if (options.return_trace) {
+      std::vector<internal::RuleTraceStep> trace_internal;
+      if (options.prefer_rules_core_trace &&
+          (is_pk_free_structure(normalized.db_full) || is_h_type_structure(normalized.db_full))) {
+        trace_internal = trace_rule_chain_slice_d_rules_core_from_normalized(normalized);
+      } else {
+        trace_internal = trace_rule_chain_slice_d_shared_from_normalized(normalized);
+      }
+      result.trace.reserve(trace_internal.size());
+      for (const auto &step : trace_internal) {
+        result.trace.push_back({step.state, step.i, step.j, step.rule});
+      }
+    }
+  } catch (const std::exception &err) {
+    result.ok = false;
+    result.error = err.what();
+  }
+  return result;
+}
+
+}  // namespace scfg
 
 double get_structure_energy(const std::string &seq, const std::string &db_full) {
   const NormalizedInput normalized = normalize_input(seq, db_full);

@@ -192,6 +192,17 @@ test/tools/compare_cli_stdout.sh worktree_legacy_debug/build/CParty build/CParty
 3. `enumerate_splits_be` の先頭で `span_predicate` 判定を実行し、手続き側のガードを削減。
 4. split ループ内では既存の `predicate` を呼び続ける（段階移行）。
 
+### 5.1.7 外部 SCFG API の試作（2026-02-19）
+#### 追加
+- `cparty::scfg::parse_fixed_energy(seq, G, G')` を追加。
+  - 入力は `normalize_union_input` を再利用（`G` は `()`, `G'` は `[]` 前提）。
+  - エネルギーは既存の fixed-energy scorer で算出。
+  - trace は pk_free / h_type で rules_core trace を優先し、それ以外は shared trace を返す。
+
+#### 既知の制限
+- rule chain からの **遷移重み再計算**は未実装（context/oracle の本格実装が必要）。
+- k-type の場合は shared trace のみ（rules_core trace は未対応）。
+
 ## 5.2 k-type 設計メモ (2026-02-17)
 ### 5.2.1 前提
 - k-type = `()` と `[]` が混在し、相互に交差しうる
