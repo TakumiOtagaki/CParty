@@ -51,6 +51,7 @@ SET(SOURCE
   src/scfg/rules_core/basic_vm.cc
   src/scfg/rules_core/basic_wm.cc
   src/scfg/rules_core/rule_rhs.cc
+  src/scfg/rules_core/predicate.cc
   src/scfg/rules_core/band_vp.cc
   src/scfg/rules_core/band_wmb.cc
   src/scfg/rules_core/band_be.cc
@@ -167,6 +168,7 @@ if(BUILD_TESTING)
     src/scfg/rules_core/basic_vm.cc
     src/scfg/rules_core/basic_wm.cc
     src/scfg/rules_core/rule_rhs.cc
+    src/scfg/rules_core/predicate.cc
     src/scfg/rules_core/band_vp.cc
     src/scfg/rules_core/band_wmb.cc
     src/scfg/rules_core/band_be.cc

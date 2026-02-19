@@ -77,11 +77,11 @@ std::vector<RuleSplit> enumerate_splits_wip(RuleId rule,
                                             PartFuncWIPContext &ctx,
                                             sparse_tree &tree) {
     const RuleSpec &spec = rule_spec(rule);
-    if (spec.predicate == RuleSpec::PredicateKind::UnpairedAtJ && tree.tree[j].pair >= 0) {
+    RuleSpanContext span_ctx{i, j, {}};
+    if (!predicate_allows(spec, span_ctx, tree)) {
         return {};
     }
     if (spec.split_gen == RuleSpec::SplitGenKind::KRange) {
-        RuleSpanContext span_ctx{i, j, {}};
         return enumerate_splits_k_range(spec, span_ctx, ctx.turn());
     }
     std::vector<RuleSplit> splits;
@@ -122,11 +122,11 @@ std::vector<RuleSplit> enumerate_splits_wip(RuleId rule,
                                             PartFuncWIPContext &ctx,
                                             const StructureView &view) {
     const RuleSpec &spec = rule_spec(rule);
-    if (spec.predicate == RuleSpec::PredicateKind::UnpairedAtJ && !view.is_unpaired(j)) {
+    RuleSpanContext span_ctx{i, j, {}};
+    if (!predicate_allows(spec, span_ctx, view)) {
         return {};
     }
     if (spec.split_gen == RuleSpec::SplitGenKind::KRange) {
-        RuleSpanContext span_ctx{i, j, {}};
         return enumerate_splits_k_range(spec, span_ctx, ctx.turn());
     }
     std::vector<RuleSplit> splits;

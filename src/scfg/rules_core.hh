@@ -125,6 +125,8 @@ const std::vector<RuleSpec> &rule_catalog();
 cand_pos_t resolve_endpoint(EndpointRef endpoint, const RuleSpanContext &ctx);
 std::vector<RuleChild> expand_rule_rhs(const RuleSpec &spec, const RuleSpanContext &ctx);
 std::vector<RuleSplit> enumerate_splits_k_range(const RuleSpec &spec, const RuleSpanContext &ctx, cand_pos_t turn);
+bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const sparse_tree &tree);
+bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const StructureView &view);
 
 // Returns the full candidate rule list for a non-terminal, before applicability filtering.
 const std::vector<RuleId> &rules_for(NonTerminal nonterminal);

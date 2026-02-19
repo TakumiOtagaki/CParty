@@ -29,12 +29,14 @@ std::vector<RuleSplit> enumerate_splits_w(RuleId rule,
                                           PartFuncWContext &ctx,
                                           sparse_tree &tree) {
     const RuleSpec &spec = rule_spec(rule);
+    RuleSpanContext span_ctx{i, j, {}};
+    if (!predicate_allows(spec, span_ctx, tree)) {
+        return {};
+    }
     std::vector<RuleSplit> splits;
     switch (rule) {
     case RuleId::W_EXTEND_UNPAIRED:
-        if (spec.predicate != RuleSpec::PredicateKind::UnpairedAtJ || tree.tree[j].pair < 0) {
-            splits.push_back({});
-        }
+        splits.push_back({});
         break;
     case RuleId::W_SPLIT_V:
     case RuleId::W_SPLIT_WMB: {
@@ -119,13 +121,10 @@ std::vector<RuleSplit> enumerate_splits_v(RuleId rule,
                                           sparse_tree &tree) {
     (void)ctx;
     const RuleSpec &spec = rule_spec(rule);
+    RuleSpanContext span_ctx{i, j, {}};
     std::vector<RuleSplit> splits;
-    if (spec.predicate == RuleSpec::PredicateKind::VPairingState) {
-        const bool unpaired = (tree.tree[i].pair < -1 && tree.tree[j].pair < -1);
-        const bool paired = (tree.tree[i].pair == j && tree.tree[j].pair == i);
-        if (!(paired || unpaired)) {
-            return splits;
-        }
+    if (!predicate_allows(spec, span_ctx, tree)) {
+        return splits;
     }
 
     switch (rule) {
@@ -200,8 +199,11 @@ std::vector<RuleSplit> enumerate_splits_wi(RuleId rule,
         }
         return splits;
     }
+    RuleSpanContext span_ctx{i, j, {}};
+    if (!predicate_allows(spec, span_ctx, tree)) {
+        return splits;
+    }
     if (spec.split_gen == RuleSpec::SplitGenKind::KRange) {
-        RuleSpanContext span_ctx{i, j, {}};
         return enumerate_splits_k_range(spec, span_ctx, ctx.turn());
     }
     switch (rule) {
@@ -213,9 +215,7 @@ std::vector<RuleSplit> enumerate_splits_wi(RuleId rule,
         }
     } break;
     case RuleId::WI_EXTEND_UNPAIRED:
-        if (spec.predicate != RuleSpec::PredicateKind::UnpairedAtJ || tree.tree[j].pair < 0) {
-            splits.push_back({});
-        }
+        splits.push_back({});
         break;
     default:
         break;
