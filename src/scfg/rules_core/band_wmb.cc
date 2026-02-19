@@ -50,12 +50,9 @@ std::vector<RuleSplit> enumerate_splits_wmbw(RuleId rule,
     if (rule != RuleId::WMBW_SPLIT_WMBP_WI) {
         return splits;
     }
-    if (!(tree.tree[j].pair < j)) {
-        return splits;
-    }
     for (cand_pos_t l = i + 1; l < j; l++) {
-        if (tree.tree[l].pair < 0 && tree.tree[l].parent->index > -1 && tree.tree[j].parent->index > -1
-            && tree.tree[j].parent->index == tree.tree[l].parent->index) {
+        RuleSpanContext span_ctx{i, j, {l, -1}};
+        if (predicate_allows(rule_spec(rule), span_ctx, tree)) {
             splits.push_back({l, -1});
         }
     }
@@ -72,12 +69,9 @@ std::vector<RuleSplit> enumerate_splits_wmbw(RuleId rule,
     if (rule != RuleId::WMBW_SPLIT_WMBP_WI) {
         return splits;
     }
-    if (!(view.pair_square(j) < j)) {
-        return splits;
-    }
-    const cand_pos_t parent_j = view.parent_index(j);
     for (cand_pos_t l = i + 1; l < j; l++) {
-        if (view.is_unpaired(l) && view.parent_index(l) > -1 && parent_j > -1 && parent_j == view.parent_index(l)) {
+        RuleSpanContext span_ctx{i, j, {l, -1}};
+        if (predicate_allows(rule_spec(rule), span_ctx, view)) {
             splits.push_back({l, -1});
         }
     }

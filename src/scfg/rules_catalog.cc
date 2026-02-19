@@ -453,7 +453,15 @@ const RuleSpec kRuleSpecs[] = {
               RuleSpec::SplitGenKind::BandMaxBpRange),
 
     // WMBW
-    rule_spec(RuleId::WMBW_SPLIT_WMBP_WI, NonTerminal::WMBW, split_spec(SplitKind::K), kWmbwSplitWmbpWiRhs, 2),
+    rule_spec(RuleId::WMBW_SPLIT_WMBP_WI,
+              NonTerminal::WMBW,
+              split_spec(SplitKind::K),
+              kWmbwSplitWmbpWiRhs,
+              2,
+              RuleSpec::SplitGenKind::Custom,
+              {},
+              RuleSpec::SplitFilterKind::None,
+              RuleSpec::PredicateKind::WmbwSplitWmbpWi),
 
     // WMBP
     rule_spec(RuleId::WMBP_SPLIT_BE_WMBP_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, true),

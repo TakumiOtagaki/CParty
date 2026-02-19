@@ -22,6 +22,13 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, sparse_t
     }
     case RuleSpec::PredicateKind::WmbSplitBeWmbpWi:
         return tree.tree[ctx.j].pair >= 0 && ctx.j > tree.tree[ctx.j].pair && tree.tree[ctx.j].pair > ctx.i;
+    case RuleSpec::PredicateKind::WmbwSplitWmbpWi: {
+        if (!(tree.tree[ctx.j].pair < ctx.j)) return false;
+        const Node *parent_j = tree.tree[ctx.j].parent;
+        const Node *parent_l = tree.tree[ctx.split.k].parent;
+        if (!parent_j || !parent_l) return false;
+        return tree.tree[ctx.split.k].pair < 0 && parent_j->index > -1 && parent_j->index == parent_l->index;
+    }
     case RuleSpec::PredicateKind::BeBaseSamePair:
         return ctx.i == ctx.ip && ctx.j == ctx.jp && ctx.i < ctx.j;
     case RuleSpec::PredicateKind::BeStackPairing:
@@ -72,6 +79,9 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const St
         return true;
     case RuleSpec::PredicateKind::WmbSplitBeWmbpWi:
         return view.pair_square(ctx.j) >= 0 && ctx.j > view.pair_square(ctx.j) && view.pair_square(ctx.j) > ctx.i;
+    case RuleSpec::PredicateKind::WmbwSplitWmbpWi:
+        return view.pair_square(ctx.j) < ctx.j && view.is_unpaired(ctx.split.k) && view.parent_index(ctx.j) > -1 &&
+               view.parent_index(ctx.j) == view.parent_index(ctx.split.k);
     case RuleSpec::PredicateKind::BeBaseSamePair:
         return ctx.i == ctx.ip && ctx.j == ctx.jp && ctx.i < ctx.j;
     case RuleSpec::PredicateKind::BeStackPairing:

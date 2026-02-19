@@ -91,6 +91,7 @@ struct RuleSpec {
         VpWiCase2,
         VpWiCase3,
         BeStackPairing,
+        WmbwSplitWmbpWi,
         WmbpJUnpaired,
         WmbpJUnpairedIpaired,
         WmbSplitBeWmbpWi,
