@@ -45,7 +45,7 @@ std::vector<RuleSplit> enumerate_splits_wmv_wmp(RuleId rule,
         break;
     case RuleId::WMv_EXTEND_UNPAIRED:
     case RuleId::WMp_EXTEND_UNPAIRED:
-        if (tree[j].pair < 0) {
+        if (predicate_allows(rule_spec(rule), RuleSpanContext{i, j, {}}, tree)) {
             splits.push_back({});
         }
         break;

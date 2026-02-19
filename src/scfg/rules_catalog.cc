@@ -306,9 +306,25 @@ const RuleSpec kRuleSpecs[] = {
 
     // WMv / WMp
     rule_spec(RuleId::WMv_STEM_V, NonTerminal::WMv, split_spec(SplitKind::None)),
-    rule_spec(RuleId::WMv_EXTEND_UNPAIRED, NonTerminal::WMv, split_spec(SplitKind::None)),
     rule_spec(RuleId::WMp_STEM_WMB, NonTerminal::WMp, split_spec(SplitKind::None)),
-    rule_spec(RuleId::WMp_EXTEND_UNPAIRED, NonTerminal::WMp, split_spec(SplitKind::None)),
+    rule_spec(RuleId::WMv_EXTEND_UNPAIRED,
+              NonTerminal::WMv,
+              split_spec(SplitKind::None),
+              nullptr,
+              0,
+              RuleSpec::SplitGenKind::Custom,
+              {},
+              RuleSpec::SplitFilterKind::None,
+              RuleSpec::PredicateKind::UnpairedAtJ),
+    rule_spec(RuleId::WMp_EXTEND_UNPAIRED,
+              NonTerminal::WMp,
+              split_spec(SplitKind::None),
+              nullptr,
+              0,
+              RuleSpec::SplitGenKind::Custom,
+              {},
+              RuleSpec::SplitFilterKind::None,
+              RuleSpec::PredicateKind::UnpairedAtJ),
 
     // WM
     rule_spec(RuleId::WM_START_V, NonTerminal::WM, split_spec(SplitKind::K)),
