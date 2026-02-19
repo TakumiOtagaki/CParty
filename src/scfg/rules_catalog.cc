@@ -480,14 +480,14 @@ const RuleSpec kRuleSpecs[] = {
 
     // WMBP
     rule_spec(RuleId::WMBP_SPLIT_BE_WMBP_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, true),
-              kWmbpSplitBeWmbpVpRhs, 2, RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::None,
+              kWmbpSplitBeWmbpVpRhs, 2, RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::WmbpExteriorSplit,
               RuleSpec::PredicateKind::WmbpJUnpaired),
     rule_spec(RuleId::WMBP_SPLIT_BE_WMBW_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, true),
-              kWmbpSplitBeWmbwVpRhs, 2, RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::None,
+              kWmbpSplitBeWmbwVpRhs, 2, RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::WmbpExteriorSplit,
               RuleSpec::PredicateKind::WmbpJUnpaired),
     rule_spec(RuleId::WMBP_DIRECT_VP, NonTerminal::WMBP, split_spec(SplitKind::None), kWmbpDirectVpRhs, 1),
     rule_spec(RuleId::WMBP_SPLIT_BE_WI_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, false),
-              kWmbpSplitBeWiVpRhs, 2, RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::None,
+              kWmbpSplitBeWiVpRhs, 2, RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::WmbpInnerArcSplit,
               RuleSpec::PredicateKind::WmbpJUnpairedIpaired),
 
     // WMB

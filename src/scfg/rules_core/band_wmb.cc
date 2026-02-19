@@ -12,6 +12,48 @@ namespace scfg {
 
 // band/pseudoknot 側: WMBW/WMBP/WMB の分解・スコア・適用判定。
 
+static bool split_filter_allows_wmbp(const RuleSpec &spec,
+                                     const RuleSpanContext &span_ctx,
+                                     PartFuncWMBPContext &ctx,
+                                     PartFuncRuleHelpers &rules,
+                                     sparse_tree &tree) {
+    switch (spec.split_filter) {
+    case RuleSpec::SplitFilterKind::WmbpExteriorSplit: {
+        const cand_pos_t b_ij = rules.border_b(span_ctx.i, span_ctx.j);
+        const int ext_case = ctx.compute_exterior_cases(span_ctx.split.k, span_ctx.j, tree);
+        if (!rules.allow_exterior_split(span_ctx.split.k, span_ctx.j, b_ij, ext_case)) return false;
+        if (!rules.has_valid_band_borders(span_ctx.i, span_ctx.split.k, span_ctx.j)) return false;
+        return rules.parent_within_interval_and_turn(span_ctx.i, span_ctx.split.k, span_ctx.j);
+    }
+    case RuleSpec::SplitFilterKind::WmbpInnerArcSplit:
+        if (!rules.has_valid_inner_arc_split(span_ctx.i, span_ctx.split.k, span_ctx.j, ctx.n())) return false;
+        return rules.parent_within_interval_and_turn(span_ctx.i, span_ctx.split.k, span_ctx.j);
+    default:
+        return true;
+    }
+}
+
+static bool split_filter_allows_wmbp(const RuleSpec &spec,
+                                     const RuleSpanContext &span_ctx,
+                                     PartFuncWMBPContext &ctx,
+                                     PartFuncRuleHelpersView &rules,
+                                     sparse_tree &tree) {
+    switch (spec.split_filter) {
+    case RuleSpec::SplitFilterKind::WmbpExteriorSplit: {
+        const cand_pos_t b_ij = rules.border_b(span_ctx.i, span_ctx.j);
+        const int ext_case = ctx.compute_exterior_cases(span_ctx.split.k, span_ctx.j, tree);
+        if (!rules.allow_exterior_split(span_ctx.split.k, span_ctx.j, b_ij, ext_case)) return false;
+        if (!rules.has_valid_band_borders(span_ctx.i, span_ctx.split.k, span_ctx.j)) return false;
+        return rules.parent_within_interval_and_turn(span_ctx.i, span_ctx.split.k, span_ctx.j);
+    }
+    case RuleSpec::SplitFilterKind::WmbpInnerArcSplit:
+        if (!rules.has_valid_inner_arc_split(span_ctx.i, span_ctx.split.k, span_ctx.j, ctx.n())) return false;
+        return rules.parent_within_interval_and_turn(span_ctx.i, span_ctx.split.k, span_ctx.j);
+    default:
+        return true;
+    }
+}
+
 std::vector<ApplicableRule> applicable_rules_wmbw(cand_pos_t i,
                                                   cand_pos_t j,
                                                   PartFuncWMBWContext &ctx,
@@ -156,18 +198,12 @@ std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
     case RuleId::WMBP_SPLIT_BE_WMBP_VP:
     case RuleId::WMBP_SPLIT_BE_WMBW_VP:
         if (rules.pair_at(j) < 0) {
-            const cand_pos_t b_ij = rules.border_b(i, j);
             rules.for_each_split(i, j, [&](cand_pos_t l) {
-                int ext_case = ctx.compute_exterior_cases(l, j, tree);
-                if (rules.allow_exterior_split(l, j, b_ij, ext_case)) {
-                    if (rules.has_valid_band_borders(i, l, j)) {
-                        const cand_pos_t B_lj = rules.border_B(l, j);
-                        const cand_pos_t Bp_lj = rules.border_Bp(l, j);
-                        if (rules.parent_within_interval_and_turn(i, l, j)) {
-                            splits.push_back({l, -1, B_lj, Bp_lj});
-                        }
-                    }
-                }
+                RuleSpanContext split_ctx{i, j, {l, -1}};
+                if (!split_filter_allows_wmbp(spec, split_ctx, ctx, rules, tree)) return;
+                const cand_pos_t B_lj = rules.border_B(l, j);
+                const cand_pos_t Bp_lj = rules.border_Bp(l, j);
+                splits.push_back({l, -1, B_lj, Bp_lj});
             });
         }
         break;
@@ -177,10 +213,10 @@ std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
     case RuleId::WMBP_SPLIT_BE_WI_VP:
         if (rules.pair_at(j) < 0 && rules.pair_at(i) >= 0) {
             rules.for_each_split(i, j, [&](cand_pos_t l) {
-                if (rules.has_valid_inner_arc_split(i, l, j, ctx.n()) && rules.parent_within_interval_and_turn(i, l, j)) {
-                    const cand_pos_t bp_il = rules.border_bp(i, l);
-                    splits.push_back({l, -1, bp_il, -1});
-                }
+                RuleSpanContext split_ctx{i, j, {l, -1}};
+                if (!split_filter_allows_wmbp(spec, split_ctx, ctx, rules, tree)) return;
+                const cand_pos_t bp_il = rules.border_bp(i, l);
+                splits.push_back({l, -1, bp_il, -1});
             });
         }
         break;
@@ -211,18 +247,12 @@ std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
     case RuleId::WMBP_SPLIT_BE_WMBP_VP:
     case RuleId::WMBP_SPLIT_BE_WMBW_VP:
         if (rules.pair_at(j) < 0) {
-            const cand_pos_t b_ij = rules.border_b(i, j);
             rules.for_each_split(i, j, [&](cand_pos_t l) {
-                int ext_case = ctx.compute_exterior_cases(l, j, tree);
-                if (rules.allow_exterior_split(l, j, b_ij, ext_case)) {
-                    if (rules.has_valid_band_borders(i, l, j)) {
-                        const cand_pos_t B_lj = rules.border_B(l, j);
-                        const cand_pos_t Bp_lj = rules.border_Bp(l, j);
-                        if (rules.parent_within_interval_and_turn(i, l, j)) {
-                            splits.push_back({l, -1, B_lj, Bp_lj});
-                        }
-                    }
-                }
+                RuleSpanContext split_ctx{i, j, {l, -1}};
+                if (!split_filter_allows_wmbp(spec, split_ctx, ctx, rules, tree)) return;
+                const cand_pos_t B_lj = rules.border_B(l, j);
+                const cand_pos_t Bp_lj = rules.border_Bp(l, j);
+                splits.push_back({l, -1, B_lj, Bp_lj});
             });
         }
         break;
@@ -232,10 +262,10 @@ std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
     case RuleId::WMBP_SPLIT_BE_WI_VP:
         if (rules.pair_at(j) < 0 && rules.pair_at(i) >= 0) {
             rules.for_each_split(i, j, [&](cand_pos_t l) {
-                if (rules.has_valid_inner_arc_split(i, l, j, ctx.n()) && rules.parent_within_interval_and_turn(i, l, j)) {
-                    const cand_pos_t bp_il = rules.border_bp(i, l);
-                    splits.push_back({l, -1, bp_il, -1});
-                }
+                RuleSpanContext split_ctx{i, j, {l, -1}};
+                if (!split_filter_allows_wmbp(spec, split_ctx, ctx, rules, tree)) return;
+                const cand_pos_t bp_il = rules.border_bp(i, l);
+                splits.push_back({l, -1, bp_il, -1});
             });
         }
         break;

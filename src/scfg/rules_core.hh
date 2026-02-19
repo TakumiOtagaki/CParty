@@ -77,7 +77,13 @@ struct RuleSpec {
     size_t rhs_len = 0;
     enum class SplitGenKind : unsigned char { Custom, KRange, BandMinBpRange, BandMaxBpRange } split_gen =
         SplitGenKind::Custom;
-    enum class SplitFilterKind : unsigned char { None, CanPairLeft, CanPairRight } split_filter =
+    enum class SplitFilterKind : unsigned char {
+        None,
+        CanPairLeft,
+        CanPairRight,
+        WmbpExteriorSplit,
+        WmbpInnerArcSplit
+    } split_filter =
         SplitFilterKind::None;
     enum class PredicateKind : unsigned char {
         None,
