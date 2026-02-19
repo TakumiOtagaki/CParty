@@ -115,6 +115,25 @@ test/tools/compare_cli_stdout.sh worktree_legacy_debug/build/CParty build/CParty
 - **transition_weight の抽象化**
   - `TransitionWeights` を導入し、重み計算を ctx 直接参照から分離
 
+### 5.1.3 SCFG 抽象化の現状と不足点 (2026-02-19)
+#### 現状
+- inside core は rule/split 列挙 + applicable 分岐を統合済み（`for_each_entry`）。
+- `RuleSpec` に RHS を追加し、`expand_*` を RHS 優先に移行済み（W/WI/VM/WIP/VPL/VPR/VP/WMB/WMBP/WMBW/BE）。
+- StructureView の round/square 分離はデフォルト ON（フラグで OFF 可能）。
+- strict compare は `SCFG_RULES_MODE=1` + `SCFG_RULES_APPLICABLE=1` + `SCFG_INSIDE_CORE=1` で継続一致。
+
+#### 不足点 / ギャップ
+1. RHS は expand 置換に留まり、真の文法テーブル化（適用条件/分割生成の data-driven 化）が未完。
+2. `TransitionWeights` は導入済みだが、EnergyModel/Oracle の責務分離は未完。
+3. StructureView の完全注入はフラグ運用段階（常時分離の最終化は未実施）。
+4. 空区間 (`allow_empty`) の仕様化が未完（明示的な空区間表現/契約が未定）。
+5. `rules_catalog.cc` が肥大化しつつあり、将来的な分割・生成手段の検討余地あり。
+
+#### 次に詰めるべき論点
+- `RuleSpec` に RHS だけでなく適用条件/分割生成の宣言情報を持たせるか。
+- `TransitionWeights` を EnergyModel / Oracle インタフェースに昇格するか。
+- 空区間の明示的表現と契約を定義するか。
+
 ## 5.2 k-type 設計メモ (2026-02-17)
 ### 5.2.1 前提
 - k-type = `()` と `[]` が混在し、相互に交差しうる
