@@ -563,22 +563,17 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
         cand_pos_t edge_i = std::min(static_cast<cand_pos_t>(i + MAXLOOP + 1), static_cast<cand_pos_t>(j - TURN - 1));
         min_borders = std::min(min_borders, edge_i);
         for (cand_pos_t k = i + 1; k < min_borders; ++k) {
-            if (scfg::is_unpaired_position(tree, k) && scfg::is_empty_region(tree, i, k)) {
-                cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
-                cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
-                max_borders = std::max(max_borders, edge_j);
-                for (cand_pos_t l = j - 1; l > max_borders; --l) {
-                    if (k == i + 1 && l == j - 1) continue;
-                    pair_type ptype_closingkj = ctx.pair_type_of(k, l);
-                    if (scfg::is_unpaired_position(tree, l) && scfg::is_empty_region(tree, l, j)) {
-                        RuleSpanContext span_ctx{i, j, {k, l}};
-                        span_ctx.pair_type_kl = ptype_closingkj;
-                        if (!predicate_allows(spec, span_ctx, tree)) {
-                            continue;
-                        }
-                        splits.push_back({k, l});
-                    }
+            cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
+            cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
+            max_borders = std::max(max_borders, edge_j);
+            for (cand_pos_t l = j - 1; l > max_borders; --l) {
+                pair_type ptype_closingkj = ctx.pair_type_of(k, l);
+                RuleSpanContext span_ctx{i, j, {k, l}};
+                span_ctx.pair_type_kl = ptype_closingkj;
+                if (!predicate_allows(spec, span_ctx, tree)) {
+                    continue;
                 }
+                splits.push_back({k, l});
             }
         }
     } break;
@@ -663,22 +658,17 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
         cand_pos_t edge_i = std::min(static_cast<cand_pos_t>(i + MAXLOOP + 1), static_cast<cand_pos_t>(j - TURN - 1));
         min_borders = std::min(min_borders, edge_i);
         for (cand_pos_t k = i + 1; k < min_borders; ++k) {
-            if (view.is_unpaired(k) && view.is_empty_region(i, k)) {
-                cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
-                cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
-                max_borders = std::max(max_borders, edge_j);
-                for (cand_pos_t l = j - 1; l > max_borders; --l) {
-                    if (k == i + 1 && l == j - 1) continue;
-                    pair_type ptype_closingkj = ctx.pair_type_of(k, l);
-                    if (view.is_unpaired(l) && view.is_empty_region(l, j)) {
-                        RuleSpanContext span_ctx{i, j, {k, l}};
-                        span_ctx.pair_type_kl = ptype_closingkj;
-                        if (!predicate_allows(spec, span_ctx, view)) {
-                            continue;
-                        }
-                        splits.push_back({k, l});
-                    }
+            cand_pos_t max_borders = std::max(bp_ij, B_ij) + 1;
+            cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
+            max_borders = std::max(max_borders, edge_j);
+            for (cand_pos_t l = j - 1; l > max_borders; --l) {
+                pair_type ptype_closingkj = ctx.pair_type_of(k, l);
+                RuleSpanContext span_ctx{i, j, {k, l}};
+                span_ctx.pair_type_kl = ptype_closingkj;
+                if (!predicate_allows(spec, span_ctx, view)) {
+                    continue;
                 }
+                splits.push_back({k, l});
             }
         }
     } break;

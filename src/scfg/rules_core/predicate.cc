@@ -1,5 +1,6 @@
 #include "scfg/rules_core.hh"
 
+#include "scfg/constraint_oracle.hh"
 #include "scfg/legacy_adapter.hh"
 #include "scfg/rules_part_helpers.hh"
 #include "scfg/structure_view.hh"
@@ -95,8 +96,13 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, sparse_t
     case RuleSpec::PredicateKind::VpStackPairing:
         return tree.tree[ctx.i + 1].pair < -1 && tree.tree[ctx.j - 1].pair < -1 &&
                scfg::is_pair_type_allowed(ctx.pair_type_ip1jm1);
-    case RuleSpec::PredicateKind::VpInternalLoopPairing:
-        return scfg::is_pair_type_allowed(ctx.pair_type_kl);
+    case RuleSpec::PredicateKind::VpInternalLoopSplit:
+        if (ctx.split.k == ctx.i + 1 && ctx.split.l == ctx.j - 1) return false;
+        return scfg::is_pair_type_allowed(ctx.pair_type_kl) &&
+               scfg::is_unpaired_position(tree, ctx.split.k) &&
+               scfg::is_unpaired_position(tree, ctx.split.l) &&
+               scfg::is_empty_region(tree, ctx.i, ctx.split.k) &&
+               scfg::is_empty_region(tree, ctx.split.l, ctx.j);
     default:
         return true;
     }
@@ -146,8 +152,13 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const St
     case RuleSpec::PredicateKind::VpStackPairing:
         return view.is_unpaired(ctx.i + 1) && view.is_unpaired(ctx.j - 1) &&
                scfg::is_pair_type_allowed(ctx.pair_type_ip1jm1);
-    case RuleSpec::PredicateKind::VpInternalLoopPairing:
-        return scfg::is_pair_type_allowed(ctx.pair_type_kl);
+    case RuleSpec::PredicateKind::VpInternalLoopSplit:
+        if (ctx.split.k == ctx.i + 1 && ctx.split.l == ctx.j - 1) return false;
+        return scfg::is_pair_type_allowed(ctx.pair_type_kl) &&
+               view.is_unpaired(ctx.split.k) &&
+               view.is_unpaired(ctx.split.l) &&
+               view.is_empty_region(ctx.i, ctx.split.k) &&
+               view.is_empty_region(ctx.split.l, ctx.j);
     default:
         return true;
     }

@@ -101,7 +101,7 @@ struct RuleSpec {
         UnpairedAtJMinus1,
         WSpanWeaklyClosed,
         VpStackPairing,
-        VpInternalLoopPairing,
+        VpInternalLoopSplit,
         VprBasepair,
         VpWiCase1,
         VpWiCase2,

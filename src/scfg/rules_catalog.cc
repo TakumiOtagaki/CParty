@@ -493,7 +493,7 @@ const RuleSpec kRuleSpecs[] = {
               RuleSpec::SplitGenKind::Custom,
               {},
               RuleSpec::SplitFilterKind::None,
-              RuleSpec::PredicateKind::VpInternalLoopPairing),
+              RuleSpec::PredicateKind::VpInternalLoopSplit),
     rule_spec(RuleId::VP_WIP_VP_LEFT,
               NonTerminal::VP,
               split_spec(SplitKind::K),
