@@ -114,6 +114,8 @@ struct RuleSpanContext {
     RuleSplit split{};
     cand_pos_t ip = -1;
     cand_pos_t jp = -1;
+    pair_type pair_type_ip1jm1 = 0;
+    pair_type pair_type_kl = 0;
 };
 
 struct ApplicableRule {

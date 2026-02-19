@@ -50,6 +50,11 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, sparse_t
         return tree.tree[ctx.i].parent->index > 0 && tree.tree[ctx.j].parent->index > 0 &&
                tree.Bp(ctx.i, ctx.j) >= 0 && tree.B(ctx.i, ctx.j) >= 0 && tree.b(ctx.i, ctx.j) >= 0 &&
                tree.bp(ctx.i, ctx.j) >= 0;
+    case RuleSpec::PredicateKind::VpStackPairing:
+        return tree.tree[ctx.i + 1].pair < -1 && tree.tree[ctx.j - 1].pair < -1 &&
+               scfg::is_pair_type_allowed(ctx.pair_type_ip1jm1);
+    case RuleSpec::PredicateKind::VpInternalLoopPairing:
+        return scfg::is_pair_type_allowed(ctx.pair_type_kl);
     default:
         return true;
     }
@@ -91,6 +96,11 @@ bool predicate_allows(const RuleSpec &spec, const RuleSpanContext &ctx, const St
     case RuleSpec::PredicateKind::VpWiCase3:
         return view.parent_index(ctx.i) > 0 && view.parent_index(ctx.j) > 0 && view.Bp(ctx.i, ctx.j) >= 0 &&
                view.B(ctx.i, ctx.j) >= 0 && view.b(ctx.i, ctx.j) >= 0 && view.bp(ctx.i, ctx.j) >= 0;
+    case RuleSpec::PredicateKind::VpStackPairing:
+        return view.is_unpaired(ctx.i + 1) && view.is_unpaired(ctx.j - 1) &&
+               scfg::is_pair_type_allowed(ctx.pair_type_ip1jm1);
+    case RuleSpec::PredicateKind::VpInternalLoopPairing:
+        return scfg::is_pair_type_allowed(ctx.pair_type_kl);
     default:
         return true;
     }

@@ -569,17 +569,10 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
         }
         break;
     case RuleId::VP_STACK: {
-        if (spec.predicate == RuleSpec::PredicateKind::VpStackPairing) {
-            pair_type ptype_closingip1jm1 = ctx.pair_type_of(i + 1, j - 1);
-            if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 &&
-                scfg::is_pair_type_allowed(ptype_closingip1jm1)) {
-                splits.push_back({});
-            }
-            break;
-        }
         pair_type ptype_closingip1jm1 = ctx.pair_type_of(i + 1, j - 1);
-        if ((tree.tree[i + 1].pair) < -1 && (tree.tree[j - 1].pair) < -1 &&
-            scfg::is_pair_type_allowed(ptype_closingip1jm1)) {
+        RuleSpanContext span_ctx{i, j, {}};
+        span_ctx.pair_type_ip1jm1 = ptype_closingip1jm1;
+        if (predicate_allows(spec, span_ctx, tree)) {
             splits.push_back({});
         }
     } break;
@@ -595,10 +588,12 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
                 for (cand_pos_t l = j - 1; l > max_borders; --l) {
                     if (k == i + 1 && l == j - 1) continue;
                     pair_type ptype_closingkj = ctx.pair_type_of(k, l);
-                    if (scfg::is_unpaired_position(tree, l) &&
-                        (spec.predicate != RuleSpec::PredicateKind::VpInternalLoopPairing ||
-                         scfg::is_pair_type_allowed(ptype_closingkj)) &&
-                        scfg::is_empty_region(tree, l, j)) {
+                    if (scfg::is_unpaired_position(tree, l) && scfg::is_empty_region(tree, l, j)) {
+                        RuleSpanContext span_ctx{i, j, {k, l}};
+                        span_ctx.pair_type_kl = ptype_closingkj;
+                        if (!predicate_allows(spec, span_ctx, tree)) {
+                            continue;
+                        }
                         splits.push_back({k, l});
                     }
                 }
@@ -674,16 +669,10 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
         }
         break;
     case RuleId::VP_STACK: {
-        if (spec.predicate == RuleSpec::PredicateKind::VpStackPairing) {
-            pair_type ptype_closingip1jm1 = ctx.pair_type_of(i + 1, j - 1);
-            if (view.is_unpaired(i + 1) && view.is_unpaired(j - 1) &&
-                scfg::is_pair_type_allowed(ptype_closingip1jm1)) {
-                splits.push_back({});
-            }
-            break;
-        }
         pair_type ptype_closingip1jm1 = ctx.pair_type_of(i + 1, j - 1);
-        if (view.is_unpaired(i + 1) && view.is_unpaired(j - 1) && scfg::is_pair_type_allowed(ptype_closingip1jm1)) {
+        RuleSpanContext span_ctx{i, j, {}};
+        span_ctx.pair_type_ip1jm1 = ptype_closingip1jm1;
+        if (predicate_allows(spec, span_ctx, view)) {
             splits.push_back({});
         }
     } break;
@@ -699,10 +688,12 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
                 for (cand_pos_t l = j - 1; l > max_borders; --l) {
                     if (k == i + 1 && l == j - 1) continue;
                     pair_type ptype_closingkj = ctx.pair_type_of(k, l);
-                    if (view.is_unpaired(l) &&
-                        (spec.predicate != RuleSpec::PredicateKind::VpInternalLoopPairing ||
-                         scfg::is_pair_type_allowed(ptype_closingkj)) &&
-                        view.is_empty_region(l, j)) {
+                    if (view.is_unpaired(l) && view.is_empty_region(l, j)) {
+                        RuleSpanContext span_ctx{i, j, {k, l}};
+                        span_ctx.pair_type_kl = ptype_closingkj;
+                        if (!predicate_allows(spec, span_ctx, view)) {
+                            continue;
+                        }
                         splits.push_back({k, l});
                     }
                 }
