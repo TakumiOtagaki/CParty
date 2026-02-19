@@ -40,8 +40,9 @@ constexpr RuleSpec rule_spec(RuleId id,
                              const RuleChildSpec *rhs = nullptr,
                              size_t rhs_len = 0,
                              RuleSpec::SplitGenKind split_gen = RuleSpec::SplitGenKind::Custom,
-                             RuleSpec::SplitRangeSpec split_range = {}) {
-    return RuleSpec{id, lhs, split, rhs, rhs_len, split_gen, split_range};
+                             RuleSpec::SplitRangeSpec split_range = {},
+                             RuleSpec::SplitFilterKind split_filter = RuleSpec::SplitFilterKind::None) {
+    return RuleSpec{id, lhs, split, rhs, rhs_len, split_gen, split_filter, split_range};
 }
 
 constexpr RuleSpec::SplitRangeSpec split_range(Endpoint start_base,
@@ -318,11 +319,30 @@ const RuleSpec kRuleSpecs[] = {
     rule_spec(RuleId::WIP_EXTEND_UNPAIRED, NonTerminal::WIP, split_spec(SplitKind::None), kWipExtendUnpairedRhs, 1),
 
     // VPL
-    rule_spec(RuleId::VPL_SPLIT_VP, NonTerminal::VPL, split_spec(SplitKind::K), kVplSplitVpRhs, 1),
+    rule_spec(RuleId::VPL_SPLIT_VP,
+              NonTerminal::VPL,
+              split_spec(SplitKind::K),
+              kVplSplitVpRhs,
+              1,
+              RuleSpec::SplitGenKind::BandMinBpRange,
+              {},
+              RuleSpec::SplitFilterKind::CanPairLeft),
 
     // VPR
-    rule_spec(RuleId::VPR_SPLIT_VP_WIP, NonTerminal::VPR, split_spec(SplitKind::K), kVprSplitVpWipRhs, 2),
-    rule_spec(RuleId::VPR_SPLIT_VP_BASEPAIR, NonTerminal::VPR, split_spec(SplitKind::K), kVprSplitVpBasepairRhs, 1),
+    rule_spec(RuleId::VPR_SPLIT_VP_WIP,
+              NonTerminal::VPR,
+              split_spec(SplitKind::K),
+              kVprSplitVpWipRhs,
+              2,
+              RuleSpec::SplitGenKind::BandMaxBpRange),
+    rule_spec(RuleId::VPR_SPLIT_VP_BASEPAIR,
+              NonTerminal::VPR,
+              split_spec(SplitKind::K),
+              kVprSplitVpBasepairRhs,
+              1,
+              RuleSpec::SplitGenKind::BandMaxBpRange,
+              {},
+              RuleSpec::SplitFilterKind::CanPairRight),
 
     // VP
     rule_spec(RuleId::VP_WI_CASE1, NonTerminal::VP, split_spec(SplitKind::None, true, true), kVpWiCase1Rhs, 2),

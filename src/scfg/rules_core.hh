@@ -73,7 +73,10 @@ struct RuleSpec {
     SplitSpec split;
     const RuleChildSpec *rhs = nullptr;
     size_t rhs_len = 0;
-    enum class SplitGenKind : unsigned char { Custom, KRange } split_gen = SplitGenKind::Custom;
+    enum class SplitGenKind : unsigned char { Custom, KRange, BandMinBpRange, BandMaxBpRange } split_gen =
+        SplitGenKind::Custom;
+    enum class SplitFilterKind : unsigned char { None, CanPairLeft, CanPairRight } split_filter =
+        SplitFilterKind::None;
     struct SplitRangeSpec {
         EndpointRef start{};
         EndpointRef end{};

@@ -13,6 +13,36 @@ namespace scfg {
 
 // band/pseudoknot 側: VP/VPL/VPR/WIP の分解・スコア・適用判定。
 
+template <typename MinFn, typename MaxFn, typename CanLeftFn, typename CanRightFn>
+static inline std::vector<RuleSplit> enumerate_splits_band_range(const RuleSpec &spec,
+                                                                  cand_pos_t i,
+                                                                  cand_pos_t j,
+                                                                  MinFn min_fn,
+                                                                  MaxFn max_fn,
+                                                                  CanLeftFn can_left,
+                                                                  CanRightFn can_right) {
+    std::vector<RuleSplit> splits;
+    switch (spec.split_gen) {
+    case RuleSpec::SplitGenKind::BandMinBpRange: {
+        const cand_pos_t min_bp = min_fn(i, j);
+        for (cand_pos_t k = i + 1; k < min_bp; ++k) {
+            if (spec.split_filter == RuleSpec::SplitFilterKind::CanPairLeft && !can_left(i, k)) continue;
+            splits.push_back({k, -1});
+        }
+    } break;
+    case RuleSpec::SplitGenKind::BandMaxBpRange: {
+        const cand_pos_t max_bp = max_fn(i, j);
+        for (cand_pos_t k = max_bp + 1; k < j; ++k) {
+            if (spec.split_filter == RuleSpec::SplitFilterKind::CanPairRight && !can_right(k, j)) continue;
+            splits.push_back({k, -1});
+        }
+    } break;
+    default:
+        break;
+    }
+    return splits;
+}
+
 std::vector<ApplicableRule> applicable_rules_wip(cand_pos_t i,
                                                  cand_pos_t j,
                                                  PartFuncWIPContext &ctx,
@@ -222,6 +252,16 @@ std::vector<RuleSplit> enumerate_splits_vpl(RuleId rule,
                                             PartFuncVPLContext &ctx,
                                             sparse_tree &tree) {
     (void)ctx;
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.split_gen == RuleSpec::SplitGenKind::BandMinBpRange) {
+        auto min_fn = [&](cand_pos_t li, cand_pos_t lj) {
+            return std::min((cand_pos_tu)tree.b(li, lj), (cand_pos_tu)tree.Bp(li, lj));
+        };
+        auto max_fn = [&](cand_pos_t, cand_pos_t) { return static_cast<cand_pos_t>(-1); };
+        auto can_left = [&](cand_pos_t li, cand_pos_t lk) { return scfg::can_pair_left_span(tree, li, lk); };
+        auto can_right = [&](cand_pos_t, cand_pos_t) { return true; };
+        return enumerate_splits_band_range(spec, i, j, min_fn, max_fn, can_left, can_right);
+    }
     std::vector<RuleSplit> splits;
     if (rule != RuleId::VPL_SPLIT_VP) {
         return splits;
@@ -241,6 +281,16 @@ std::vector<RuleSplit> enumerate_splits_vpl(RuleId rule,
                                             PartFuncVPLContext &ctx,
                                             const StructureView &view) {
     (void)ctx;
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.split_gen == RuleSpec::SplitGenKind::BandMinBpRange) {
+        auto min_fn = [&](cand_pos_t li, cand_pos_t lj) {
+            return std::min((cand_pos_tu)view.b(li, lj), (cand_pos_tu)view.Bp(li, lj));
+        };
+        auto max_fn = [&](cand_pos_t, cand_pos_t) { return static_cast<cand_pos_t>(-1); };
+        auto can_left = [&](cand_pos_t li, cand_pos_t lk) { return view.can_pair_left_span(li, lk); };
+        auto can_right = [&](cand_pos_t, cand_pos_t) { return true; };
+        return enumerate_splits_band_range(spec, i, j, min_fn, max_fn, can_left, can_right);
+    }
     std::vector<RuleSplit> splits;
     if (rule != RuleId::VPL_SPLIT_VP) {
         return splits;
@@ -321,6 +371,14 @@ std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
                                             PartFuncVPRContext &ctx,
                                             sparse_tree &tree) {
     (void)ctx;
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.split_gen == RuleSpec::SplitGenKind::BandMaxBpRange) {
+        auto min_fn = [&](cand_pos_t, cand_pos_t) { return static_cast<cand_pos_t>(-1); };
+        auto max_fn = [&](cand_pos_t li, cand_pos_t lj) { return std::max(tree.B(li, lj), tree.bp(li, lj)); };
+        auto can_left = [&](cand_pos_t, cand_pos_t) { return true; };
+        auto can_right = [&](cand_pos_t lk, cand_pos_t lj) { return scfg::can_pair_right_span(tree, lk, lj); };
+        return enumerate_splits_band_range(spec, i, j, min_fn, max_fn, can_left, can_right);
+    }
     std::vector<RuleSplit> splits;
     const cand_pos_t max_i_bp = std::max(tree.B(i, j), tree.bp(i, j));
     switch (rule) {
@@ -348,6 +406,14 @@ std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
                                             PartFuncVPRContext &ctx,
                                             const StructureView &view) {
     (void)ctx;
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.split_gen == RuleSpec::SplitGenKind::BandMaxBpRange) {
+        auto min_fn = [&](cand_pos_t, cand_pos_t) { return static_cast<cand_pos_t>(-1); };
+        auto max_fn = [&](cand_pos_t li, cand_pos_t lj) { return std::max(view.B(li, lj), view.bp(li, lj)); };
+        auto can_left = [&](cand_pos_t, cand_pos_t) { return true; };
+        auto can_right = [&](cand_pos_t lk, cand_pos_t lj) { return view.can_pair_right_span(lk, lj); };
+        return enumerate_splits_band_range(spec, i, j, min_fn, max_fn, can_left, can_right);
+    }
     std::vector<RuleSplit> splits;
     const cand_pos_t max_i_bp = std::max(view.B(i, j), view.bp(i, j));
     switch (rule) {
