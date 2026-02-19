@@ -91,7 +91,12 @@ struct RuleSpec {
         BeStackPairing,
         WmbpJUnpaired,
         WmbpJUnpairedIpaired,
-        WmbSplitBeWmbpWi
+        WmbSplitBeWmbpWi,
+        BeBaseSamePair,
+        BeInternalLoop,
+        BeWipWip,
+        BeWipBasepair,
+        BeBasepairWip
     } predicate = PredicateKind::None;
     struct SplitRangeSpec {
         EndpointRef start{};

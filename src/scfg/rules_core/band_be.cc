@@ -60,7 +60,7 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
         return splits;
     }
     if (i == ip && j == jp && i < j) {
-        if (rule == RuleId::BE_BASE_SAMEPAIR) {
+        if (spec.predicate == RuleSpec::PredicateKind::BeBaseSamePair) {
             splits.push_back({});
         }
         return splits;
@@ -84,19 +84,19 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
                 bool weakly_closed_il = tree.weakly_closed(i + 1, l - 1);
                 bool weakly_closed_lpj = tree.weakly_closed(lp + 1, j - 1);
 
-                if (rule == RuleId::BE_INTERNAL_LOOP) {
+                if (spec.predicate == RuleSpec::PredicateKind::BeInternalLoop) {
                     if (empty_region_il && empty_region_lpj) {
                         splits.push_back({l, lp});
                     }
-                } else if (rule == RuleId::BE_WIP_WIP) {
+                } else if (spec.predicate == RuleSpec::PredicateKind::BeWipWip) {
                     if (weakly_closed_il && weakly_closed_lpj) {
                         splits.push_back({l, lp});
                     }
-                } else if (rule == RuleId::BE_WIP_BASEPAIR) {
+                } else if (spec.predicate == RuleSpec::PredicateKind::BeWipBasepair) {
                     if (weakly_closed_il && empty_region_lpj) {
                         splits.push_back({l, lp});
                     }
-                } else if (rule == RuleId::BE_BASEPAIR_WIP) {
+                } else if (spec.predicate == RuleSpec::PredicateKind::BeBasepairWip) {
                     if (empty_region_il && weakly_closed_lpj) {
                         splits.push_back({l, lp});
                     }
@@ -124,7 +124,7 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
         return splits;
     }
     if (i == ip && j == jp && i < j) {
-        if (rule == RuleId::BE_BASE_SAMEPAIR) {
+        if (spec.predicate == RuleSpec::PredicateKind::BeBaseSamePair) {
             splits.push_back({});
         }
         return splits;
@@ -148,19 +148,19 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
                 bool weakly_closed_il = view.weakly_closed(i + 1, l - 1);
                 bool weakly_closed_lpj = view.weakly_closed(lp + 1, j - 1);
 
-                if (rule == RuleId::BE_INTERNAL_LOOP) {
+                if (spec.predicate == RuleSpec::PredicateKind::BeInternalLoop) {
                     if (empty_region_il && empty_region_lpj) {
                         splits.push_back({l, lp});
                     }
-                } else if (rule == RuleId::BE_WIP_WIP) {
+                } else if (spec.predicate == RuleSpec::PredicateKind::BeWipWip) {
                     if (weakly_closed_il && weakly_closed_lpj) {
                         splits.push_back({l, lp});
                     }
-                } else if (rule == RuleId::BE_WIP_BASEPAIR) {
+                } else if (spec.predicate == RuleSpec::PredicateKind::BeWipBasepair) {
                     if (weakly_closed_il && empty_region_lpj) {
                         splits.push_back({l, lp});
                     }
-                } else if (rule == RuleId::BE_BASEPAIR_WIP) {
+                } else if (spec.predicate == RuleSpec::PredicateKind::BeBasepairWip) {
                     if (empty_region_il && weakly_closed_lpj) {
                         splits.push_back({l, lp});
                     }
