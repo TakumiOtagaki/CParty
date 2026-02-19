@@ -87,7 +87,10 @@ struct RuleSpec {
         VprBasepair,
         VpWiCase1,
         VpWiCase2,
-        VpWiCase3
+        VpWiCase3,
+        BeStackPairing,
+        WmbpJUnpaired,
+        WmbpJUnpairedIpaired
     } predicate = PredicateKind::None;
     struct SplitRangeSpec {
         EndpointRef start{};

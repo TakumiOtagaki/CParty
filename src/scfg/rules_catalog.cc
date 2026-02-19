@@ -449,12 +449,15 @@ const RuleSpec kRuleSpecs[] = {
 
     // WMBP
     rule_spec(RuleId::WMBP_SPLIT_BE_WMBP_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, true),
-              kWmbpSplitBeWmbpVpRhs, 2),
+              kWmbpSplitBeWmbpVpRhs, 2, RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::None,
+              RuleSpec::PredicateKind::WmbpJUnpaired),
     rule_spec(RuleId::WMBP_SPLIT_BE_WMBW_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, true),
-              kWmbpSplitBeWmbwVpRhs, 2),
+              kWmbpSplitBeWmbwVpRhs, 2, RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::None,
+              RuleSpec::PredicateKind::WmbpJUnpaired),
     rule_spec(RuleId::WMBP_DIRECT_VP, NonTerminal::WMBP, split_spec(SplitKind::None), kWmbpDirectVpRhs, 1),
     rule_spec(RuleId::WMBP_SPLIT_BE_WI_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, false),
-              kWmbpSplitBeWiVpRhs, 2),
+              kWmbpSplitBeWiVpRhs, 2, RuleSpec::SplitGenKind::Custom, {}, RuleSpec::SplitFilterKind::None,
+              RuleSpec::PredicateKind::WmbpJUnpairedIpaired),
 
     // WMB
     rule_spec(RuleId::WMB_SPLIT_BE_WMBP_WI, NonTerminal::WMB, split_spec(SplitKind::K, true, true),
@@ -464,7 +467,15 @@ const RuleSpec kRuleSpecs[] = {
 
     // BE
     rule_spec(RuleId::BE_BASE_SAMEPAIR, NonTerminal::BE, split_spec(SplitKind::None)),
-    rule_spec(RuleId::BE_STACK, NonTerminal::BE, split_spec(SplitKind::None), kBeStackRhs, 1),
+    rule_spec(RuleId::BE_STACK,
+              NonTerminal::BE,
+              split_spec(SplitKind::None),
+              kBeStackRhs,
+              1,
+              RuleSpec::SplitGenKind::Custom,
+              {},
+              RuleSpec::SplitFilterKind::None,
+              RuleSpec::PredicateKind::BeStackPairing),
     rule_spec(RuleId::BE_INTERNAL_LOOP, NonTerminal::BE, split_spec(SplitKind::KL), kBeInternalLoopRhs, 1),
     rule_spec(RuleId::BE_WIP_WIP, NonTerminal::BE, split_spec(SplitKind::K), kBeWipWipRhs, 3),
     rule_spec(RuleId::BE_WIP_BASEPAIR, NonTerminal::BE, split_spec(SplitKind::K), kBeWipBasepairRhs, 2),

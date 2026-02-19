@@ -49,6 +49,7 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
                                            cand_pos_t jp,
                                            PartFuncBEContext &ctx,
                                            sparse_tree &tree) {
+    const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
     if (!(i >= 1 && i <= ip && ip < jp && jp <= j && j <= ctx.n() && tree.tree[i].pair > 0 && tree.tree[j].pair > 0 &&
           tree.tree[ip].pair > 0 && tree.tree[jp].pair > 0 && tree.tree[i].pair == j && tree.tree[j].pair == i &&
@@ -67,7 +68,7 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
 
     switch (rule) {
     case RuleId::BE_STACK:
-        if (tree.tree[i + 1].pair == j - 1) {
+        if (spec.predicate == RuleSpec::PredicateKind::BeStackPairing && tree.tree[i + 1].pair == j - 1) {
             splits.push_back({});
         }
         break;
@@ -116,6 +117,7 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
                                            cand_pos_t jp,
                                            PartFuncBEContext &ctx,
                                            const StructureView &view) {
+    const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
     if (!(i >= 1 && i <= ip && ip < jp && jp <= j && j <= ctx.n() && view.is_pair_square(i, j) &&
           view.is_pair_square(ip, jp))) {
@@ -130,7 +132,7 @@ std::vector<RuleSplit> enumerate_splits_be(RuleId rule,
 
     switch (rule) {
     case RuleId::BE_STACK:
-        if (view.is_pair_square(i + 1, j - 1)) {
+        if (spec.predicate == RuleSpec::PredicateKind::BeStackPairing && view.is_pair_square(i + 1, j - 1)) {
             splits.push_back({});
         }
         break;

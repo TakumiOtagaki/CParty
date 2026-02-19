@@ -147,11 +147,21 @@ std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
                                              cand_pos_t j,
                                              PartFuncWMBPContext &ctx,
                                              sparse_tree &tree) {
+    const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
     const scfg::PartFuncModeConfig mode_config{ctx.expPB_penalty(), TURN};
     scfg::PartFuncRuleHelpers rules(tree, mode_config);
     rules.on_traceback_hook(i, j);
     rules.on_fixed_parse_hook(i, j);
+
+    if (spec.predicate == RuleSpec::PredicateKind::WmbpJUnpaired && rules.pair_at(j) >= 0) {
+        return splits;
+    }
+    if (spec.predicate == RuleSpec::PredicateKind::WmbpJUnpairedIpaired) {
+        if (rules.pair_at(j) >= 0 || rules.pair_at(i) < 0) {
+            return splits;
+        }
+    }
 
     switch (rule) {
     case RuleId::WMBP_SPLIT_BE_WMBP_VP:
@@ -197,11 +207,21 @@ std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
                                              PartFuncWMBPContext &ctx,
                                              const StructureView &view,
                                              sparse_tree &tree) {
+    const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
     const scfg::PartFuncModeConfig mode_config{ctx.expPB_penalty(), TURN};
     scfg::PartFuncRuleHelpersView rules(view, mode_config);
     rules.on_traceback_hook(i, j);
     rules.on_fixed_parse_hook(i, j);
+
+    if (spec.predicate == RuleSpec::PredicateKind::WmbpJUnpaired && rules.pair_at(j) >= 0) {
+        return splits;
+    }
+    if (spec.predicate == RuleSpec::PredicateKind::WmbpJUnpairedIpaired) {
+        if (rules.pair_at(j) >= 0 || rules.pair_at(i) < 0) {
+            return splits;
+        }
+    }
 
     switch (rule) {
     case RuleId::WMBP_SPLIT_BE_WMBP_VP:
