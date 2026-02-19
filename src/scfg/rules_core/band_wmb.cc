@@ -356,6 +356,7 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
                                             cand_pos_t j,
                                             PartFuncWMBContext &ctx,
                                             sparse_tree &tree) {
+    const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
     if (i == j) {
         if (rule == RuleId::WMB_EMPTY) {
@@ -370,6 +371,11 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
         splits.push_back({});
         break;
     case RuleId::WMB_SPLIT_BE_WMBP_WI:
+        if (spec.predicate == RuleSpec::PredicateKind::WmbSplitBeWmbpWi) {
+            if (!(tree.tree[j].pair >= 0 && j > tree.tree[j].pair && tree.tree[j].pair > i)) {
+                break;
+            }
+        }
         if (tree.tree[j].pair >= 0 && j > tree.tree[j].pair && tree.tree[j].pair > i) {
             cand_pos_t bp_j = tree.tree[j].pair;
             for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {
@@ -391,6 +397,7 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
                                             cand_pos_t j,
                                             PartFuncWMBContext &ctx,
                                             const StructureView &view) {
+    const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
     if (i == j) {
         if (rule == RuleId::WMB_EMPTY) {
@@ -405,6 +412,11 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
         splits.push_back({});
         break;
     case RuleId::WMB_SPLIT_BE_WMBP_WI:
+        if (spec.predicate == RuleSpec::PredicateKind::WmbSplitBeWmbpWi) {
+            if (!(view.pair_square(j) >= 0 && j > view.pair_square(j) && view.pair_square(j) > i)) {
+                break;
+            }
+        }
         if (view.pair_square(j) >= 0 && j > view.pair_square(j) && view.pair_square(j) > i) {
             cand_pos_t bp_j = view.pair_square(j);
             for (cand_pos_t l = (bp_j + 1); (l < j); ++l) {
