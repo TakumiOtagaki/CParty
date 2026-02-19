@@ -152,6 +152,22 @@ test/tools/compare_cli_stdout.sh worktree_legacy_debug/build/CParty build/CParty
 - band 側の複合条件（WMBP の外側境界・inner arc 判定など）は未宣言化。
 - 空区間の仕様（allow_empty を明示表現へ移行するか）を確定する。
 
+### 5.1.5 predicate 宣言の適用漏れ監査メモ (2026-02-19)
+#### 監査結果（現状）
+明示的な `PredicateKind::None` の誤適用は見つからず。既存の差分は「per-split 条件」を inline で実装しているケースに集約。
+
+#### 宣言化されていない適用条件（代表）
+- `WM_START_V / WM_START_WMB` の `can_pair_left_span(i,k)` 条件は `enumerate_splits_wm` に inline。
+- `WIP_BASEPAIR_*` の `can_pair_left_span(i,k)` 条件は `enumerate_splits_wip` に inline。
+- `W_SPLIT_V / W_SPLIT_WMB` の `weakly_closed` 条件は `enumerate_splits_w` に inline。
+- `V_HAIRPIN` の `canH`（最小ループ長）判定は `enumerate_splits_v` に inline。
+- `VP_INTERNAL_LOOP` の `is_unpaired/is_empty_region` と `pair_type` チェックは split 探索中に inline。
+
+#### 次の候補（宣言化へ寄せるなら）
+- K-range 用の `SplitFilterKind` 対応を `enumerate_splits_k_range` に追加する（`can_pair_*` を宣言化可能に）。
+- per-split predicate を `RuleSpec` に導入するか、`predicate_allows(spec, ctx)` を split 評価の内側で呼ぶ方針に揃える。
+- `weakly_closed`/`canH` のような span-only 条件は `PredicateKind` へ追加できる余地あり。
+
 ## 5.2 k-type 設計メモ (2026-02-17)
 ### 5.2.1 前提
 - k-type = `()` と `[]` が混在し、相互に交差しうる
