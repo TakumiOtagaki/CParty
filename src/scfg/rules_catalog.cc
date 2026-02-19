@@ -150,6 +150,55 @@ constexpr RuleChildSpec kVpVplWipRhs[] = {
     child(NonTerminal::WIP, Endpoint::K, 1, Endpoint::J, -1, true),
 };
 
+constexpr RuleChildSpec kWmbwSplitWmbpWiRhs[] = {
+    child(NonTerminal::WMBP, Endpoint::I, 0, Endpoint::K, 0),
+    child(NonTerminal::WI, Endpoint::K, 1, Endpoint::J, 0, true),
+};
+
+constexpr RuleChildSpec kWmbpSplitBeWmbpVpRhs[] = {
+    child(NonTerminal::WMBP, Endpoint::I, 0, Endpoint::K, -1, true),
+    child(NonTerminal::VP, Endpoint::K, 0, Endpoint::J, 0),
+};
+constexpr RuleChildSpec kWmbpSplitBeWmbwVpRhs[] = {
+    child(NonTerminal::WMBW, Endpoint::I, 0, Endpoint::K, -1, true),
+    child(NonTerminal::VP, Endpoint::K, 0, Endpoint::J, 0),
+};
+constexpr RuleChildSpec kWmbpDirectVpRhs[] = {
+    child(NonTerminal::VP, Endpoint::I, 0, Endpoint::J, 0),
+};
+constexpr RuleChildSpec kWmbpSplitBeWiVpRhs[] = {
+    child(NonTerminal::WI, Endpoint::P, 1, Endpoint::K, -1, true),
+    child(NonTerminal::VP, Endpoint::K, 0, Endpoint::J, 0),
+};
+
+constexpr RuleChildSpec kWmbDirectWmbpRhs[] = {
+    child(NonTerminal::WMBP, Endpoint::I, 0, Endpoint::J, 0),
+};
+constexpr RuleChildSpec kWmbSplitBeWmbpWiRhs[] = {
+    child(NonTerminal::WMBP, Endpoint::I, 0, Endpoint::K, 0),
+    child(NonTerminal::WI, Endpoint::K, 1, Endpoint::Q, -1, true),
+};
+
+constexpr RuleChildSpec kBeStackRhs[] = {
+    child(NonTerminal::BE, Endpoint::I, 1, Endpoint::J, -1),
+};
+constexpr RuleChildSpec kBeInternalLoopRhs[] = {
+    child(NonTerminal::BE, Endpoint::K, 0, Endpoint::L, 0),
+};
+constexpr RuleChildSpec kBeWipWipRhs[] = {
+    child(NonTerminal::WIP, Endpoint::I, 1, Endpoint::K, -1, true),
+    child(NonTerminal::BE, Endpoint::K, 0, Endpoint::L, 0),
+    child(NonTerminal::WIP, Endpoint::L, 1, Endpoint::J, -1, true),
+};
+constexpr RuleChildSpec kBeWipBasepairRhs[] = {
+    child(NonTerminal::WIP, Endpoint::I, 1, Endpoint::K, -1, true),
+    child(NonTerminal::BE, Endpoint::K, 0, Endpoint::L, 0),
+};
+constexpr RuleChildSpec kBeBasepairWipRhs[] = {
+    child(NonTerminal::BE, Endpoint::K, 0, Endpoint::L, 0),
+    child(NonTerminal::WIP, Endpoint::L, 1, Endpoint::J, -1, true),
+};
+
 const RuleSpec kRuleSpecs[] = {
     // V
     rule_spec(RuleId::V_HAIRPIN, NonTerminal::V, split_spec(SplitKind::None)),
@@ -214,26 +263,30 @@ const RuleSpec kRuleSpecs[] = {
     rule_spec(RuleId::VP_VPL_WIP, NonTerminal::VP, split_spec(SplitKind::K), kVpVplWipRhs, 2),
 
     // WMBW
-    rule_spec(RuleId::WMBW_SPLIT_WMBP_WI, NonTerminal::WMBW, split_spec(SplitKind::K)),
+    rule_spec(RuleId::WMBW_SPLIT_WMBP_WI, NonTerminal::WMBW, split_spec(SplitKind::K), kWmbwSplitWmbpWiRhs, 2),
 
     // WMBP
-    rule_spec(RuleId::WMBP_SPLIT_BE_WMBP_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, true)),
-    rule_spec(RuleId::WMBP_SPLIT_BE_WMBW_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, true)),
-    rule_spec(RuleId::WMBP_DIRECT_VP, NonTerminal::WMBP, split_spec(SplitKind::None)),
-    rule_spec(RuleId::WMBP_SPLIT_BE_WI_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, false)),
+    rule_spec(RuleId::WMBP_SPLIT_BE_WMBP_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, true),
+              kWmbpSplitBeWmbpVpRhs, 2),
+    rule_spec(RuleId::WMBP_SPLIT_BE_WMBW_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, true),
+              kWmbpSplitBeWmbwVpRhs, 2),
+    rule_spec(RuleId::WMBP_DIRECT_VP, NonTerminal::WMBP, split_spec(SplitKind::None), kWmbpDirectVpRhs, 1),
+    rule_spec(RuleId::WMBP_SPLIT_BE_WI_VP, NonTerminal::WMBP, split_spec(SplitKind::K, true, false),
+              kWmbpSplitBeWiVpRhs, 2),
 
     // WMB
-    rule_spec(RuleId::WMB_SPLIT_BE_WMBP_WI, NonTerminal::WMB, split_spec(SplitKind::K, true, true)),
-    rule_spec(RuleId::WMB_DIRECT_WMBP, NonTerminal::WMB, split_spec(SplitKind::None)),
+    rule_spec(RuleId::WMB_SPLIT_BE_WMBP_WI, NonTerminal::WMB, split_spec(SplitKind::K, true, true),
+              kWmbSplitBeWmbpWiRhs, 2),
+    rule_spec(RuleId::WMB_DIRECT_WMBP, NonTerminal::WMB, split_spec(SplitKind::None), kWmbDirectWmbpRhs, 1),
     rule_spec(RuleId::WMB_EMPTY, NonTerminal::WMB, split_spec(SplitKind::None)),
 
     // BE
     rule_spec(RuleId::BE_BASE_SAMEPAIR, NonTerminal::BE, split_spec(SplitKind::None)),
-    rule_spec(RuleId::BE_STACK, NonTerminal::BE, split_spec(SplitKind::None)),
-    rule_spec(RuleId::BE_INTERNAL_LOOP, NonTerminal::BE, split_spec(SplitKind::KL)),
-    rule_spec(RuleId::BE_WIP_WIP, NonTerminal::BE, split_spec(SplitKind::K)),
-    rule_spec(RuleId::BE_WIP_BASEPAIR, NonTerminal::BE, split_spec(SplitKind::K)),
-    rule_spec(RuleId::BE_BASEPAIR_WIP, NonTerminal::BE, split_spec(SplitKind::K)),
+    rule_spec(RuleId::BE_STACK, NonTerminal::BE, split_spec(SplitKind::None), kBeStackRhs, 1),
+    rule_spec(RuleId::BE_INTERNAL_LOOP, NonTerminal::BE, split_spec(SplitKind::KL), kBeInternalLoopRhs, 1),
+    rule_spec(RuleId::BE_WIP_WIP, NonTerminal::BE, split_spec(SplitKind::K), kBeWipWipRhs, 3),
+    rule_spec(RuleId::BE_WIP_BASEPAIR, NonTerminal::BE, split_spec(SplitKind::K), kBeWipBasepairRhs, 2),
+    rule_spec(RuleId::BE_BASEPAIR_WIP, NonTerminal::BE, split_spec(SplitKind::K), kBeBasepairWipRhs, 2),
 };
 
 std::array<std::vector<RuleId>, kNonTerminalCount> build_rules_for() {

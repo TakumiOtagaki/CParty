@@ -85,6 +85,11 @@ std::vector<RuleSplit> enumerate_splits_wmbw(RuleId rule,
 }
 
 std::vector<RuleChild> expand_wmbw(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.rhs_len > 0) {
+        RuleSpanContext ctx{i, j, split};
+        return expand_rule_rhs(spec, ctx);
+    }
     std::vector<RuleChild> children;
     if (rule == RuleId::WMBW_SPLIT_WMBP_WI) {
         children.push_back({NonTerminal::WMBP, i, split.k});
@@ -237,6 +242,11 @@ std::vector<RuleSplit> enumerate_splits_wmbp(RuleId rule,
 }
 
 std::vector<RuleChild> expand_wmbp(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.rhs_len > 0) {
+        RuleSpanContext ctx{i, j, split};
+        return expand_rule_rhs(spec, ctx);
+    }
     std::vector<RuleChild> children;
     switch (rule) {
     case RuleId::WMBP_SPLIT_BE_WMBP_VP:
@@ -392,6 +402,11 @@ std::vector<RuleSplit> enumerate_splits_wmb(RuleId rule,
 }
 
 std::vector<RuleChild> expand_wmb(RuleId rule, cand_pos_t i, cand_pos_t j, const RuleSplit &split) {
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.rhs_len > 0) {
+        RuleSpanContext ctx{i, j, split};
+        return expand_rule_rhs(spec, ctx);
+    }
     std::vector<RuleChild> children;
     switch (rule) {
     case RuleId::WMB_EMPTY:

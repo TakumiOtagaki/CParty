@@ -178,8 +178,11 @@ std::vector<RuleChild> expand_be(RuleId rule,
                                  cand_pos_t ip,
                                  cand_pos_t jp,
                                  const RuleSplit &split) {
-    (void)ip;
-    (void)jp;
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.rhs_len > 0) {
+        RuleSpanContext ctx{i, j, split, ip, jp};
+        return expand_rule_rhs(spec, ctx);
+    }
     std::vector<RuleChild> children;
     switch (rule) {
     case RuleId::BE_BASE_SAMEPAIR:
