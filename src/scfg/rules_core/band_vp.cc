@@ -383,16 +383,6 @@ std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
         auto max_fn = [&](cand_pos_t li, cand_pos_t lj) { return std::max(tree.B(li, lj), tree.bp(li, lj)); };
         auto can_left = [&](cand_pos_t, cand_pos_t) { return true; };
         auto can_right = [&](cand_pos_t lk, cand_pos_t lj) { return scfg::can_pair_right_span(tree, lk, lj); };
-        if (spec.predicate == RuleSpec::PredicateKind::VprBasepair) {
-            std::vector<RuleSplit> splits;
-            const cand_pos_t max_bp = max_fn(i, j);
-            for (cand_pos_t k = max_bp + 1; k < j; ++k) {
-                RuleSpanContext span_ctx{i, j, {k, -1}};
-                if (!predicate_allows(spec, span_ctx, tree)) continue;
-                splits.push_back({k, -1});
-            }
-            return splits;
-        }
         return enumerate_splits_band_range(spec, i, j, min_fn, max_fn, can_left, can_right);
     }
     std::vector<RuleSplit> splits;
@@ -405,8 +395,7 @@ std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
         break;
     case RuleId::VPR_SPLIT_VP_BASEPAIR:
         for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
-            RuleSpanContext span_ctx{i, j, {k, -1}};
-            if (predicate_allows(spec, span_ctx, tree)) {
+            if (scfg::can_pair_right_span(tree, k, j)) {
                 splits.push_back({k, -1});
             }
         }
@@ -429,16 +418,6 @@ std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
         auto max_fn = [&](cand_pos_t li, cand_pos_t lj) { return std::max(view.B(li, lj), view.bp(li, lj)); };
         auto can_left = [&](cand_pos_t, cand_pos_t) { return true; };
         auto can_right = [&](cand_pos_t lk, cand_pos_t lj) { return view.can_pair_right_span(lk, lj); };
-        if (spec.predicate == RuleSpec::PredicateKind::VprBasepair) {
-            std::vector<RuleSplit> splits;
-            const cand_pos_t max_bp = max_fn(i, j);
-            for (cand_pos_t k = max_bp + 1; k < j; ++k) {
-                RuleSpanContext span_ctx{i, j, {k, -1}};
-                if (!predicate_allows(spec, span_ctx, view)) continue;
-                splits.push_back({k, -1});
-            }
-            return splits;
-        }
         return enumerate_splits_band_range(spec, i, j, min_fn, max_fn, can_left, can_right);
     }
     std::vector<RuleSplit> splits;
@@ -451,8 +430,7 @@ std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
         break;
     case RuleId::VPR_SPLIT_VP_BASEPAIR:
         for (cand_pos_t k = max_i_bp + 1; k < j; ++k) {
-            RuleSpanContext span_ctx{i, j, {k, -1}};
-            if (predicate_allows(spec, span_ctx, view)) {
+            if (view.can_pair_right_span(k, j)) {
                 splits.push_back({k, -1});
             }
         }

@@ -378,8 +378,7 @@ const RuleSpec kRuleSpecs[] = {
               1,
               RuleSpec::SplitGenKind::BandMaxBpRange,
               {},
-              RuleSpec::SplitFilterKind::None,
-              RuleSpec::PredicateKind::VprBasepair),
+              RuleSpec::SplitFilterKind::CanPairRight),
 
     // VP
     rule_spec(RuleId::VP_WI_CASE1,
