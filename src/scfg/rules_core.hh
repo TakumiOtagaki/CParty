@@ -82,7 +82,9 @@ struct RuleSpec {
         VPairingState,
         UnpairedAtJ,
         UnpairedAtJMinus1,
-        VpStackPairing
+        VpStackPairing,
+        VpInternalLoopPairing,
+        VprBasepair
     } predicate = PredicateKind::None;
     struct SplitRangeSpec {
         EndpointRef start{};

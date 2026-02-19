@@ -383,6 +383,15 @@ std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
         auto max_fn = [&](cand_pos_t li, cand_pos_t lj) { return std::max(tree.B(li, lj), tree.bp(li, lj)); };
         auto can_left = [&](cand_pos_t, cand_pos_t) { return true; };
         auto can_right = [&](cand_pos_t lk, cand_pos_t lj) { return scfg::can_pair_right_span(tree, lk, lj); };
+        if (spec.predicate == RuleSpec::PredicateKind::VprBasepair) {
+            std::vector<RuleSplit> splits;
+            const cand_pos_t max_bp = max_fn(i, j);
+            for (cand_pos_t k = max_bp + 1; k < j; ++k) {
+                if (!can_right(k, j)) continue;
+                splits.push_back({k, -1});
+            }
+            return splits;
+        }
         return enumerate_splits_band_range(spec, i, j, min_fn, max_fn, can_left, can_right);
     }
     std::vector<RuleSplit> splits;
@@ -418,6 +427,15 @@ std::vector<RuleSplit> enumerate_splits_vpr(RuleId rule,
         auto max_fn = [&](cand_pos_t li, cand_pos_t lj) { return std::max(view.B(li, lj), view.bp(li, lj)); };
         auto can_left = [&](cand_pos_t, cand_pos_t) { return true; };
         auto can_right = [&](cand_pos_t lk, cand_pos_t lj) { return view.can_pair_right_span(lk, lj); };
+        if (spec.predicate == RuleSpec::PredicateKind::VprBasepair) {
+            std::vector<RuleSplit> splits;
+            const cand_pos_t max_bp = max_fn(i, j);
+            for (cand_pos_t k = max_bp + 1; k < j; ++k) {
+                if (!can_right(k, j)) continue;
+                splits.push_back({k, -1});
+            }
+            return splits;
+        }
         return enumerate_splits_band_range(spec, i, j, min_fn, max_fn, can_left, can_right);
     }
     std::vector<RuleSplit> splits;
@@ -564,9 +582,11 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
                 cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
                 max_borders = std::max(max_borders, edge_j);
                 for (cand_pos_t l = j - 1; l > max_borders; --l) {
-                    pair_type ptype_closingkj = ctx.pair_type_of(k, l);
                     if (k == i + 1 && l == j - 1) continue;
-                    if (scfg::is_unpaired_position(tree, l) && scfg::is_pair_type_allowed(ptype_closingkj) &&
+                    pair_type ptype_closingkj = ctx.pair_type_of(k, l);
+                    if (scfg::is_unpaired_position(tree, l) &&
+                        (spec.predicate != RuleSpec::PredicateKind::VpInternalLoopPairing ||
+                         scfg::is_pair_type_allowed(ptype_closingkj)) &&
                         scfg::is_empty_region(tree, l, j)) {
                         splits.push_back({k, l});
                     }
@@ -659,9 +679,11 @@ std::vector<RuleSplit> enumerate_splits_vp(RuleId rule,
                 cand_pos_t edge_j = k + j - i - MAXLOOP - 2;
                 max_borders = std::max(max_borders, edge_j);
                 for (cand_pos_t l = j - 1; l > max_borders; --l) {
-                    pair_type ptype_closingkj = ctx.pair_type_of(k, l);
                     if (k == i + 1 && l == j - 1) continue;
-                    if (view.is_unpaired(l) && scfg::is_pair_type_allowed(ptype_closingkj) &&
+                    pair_type ptype_closingkj = ctx.pair_type_of(k, l);
+                    if (view.is_unpaired(l) &&
+                        (spec.predicate != RuleSpec::PredicateKind::VpInternalLoopPairing ||
+                         scfg::is_pair_type_allowed(ptype_closingkj)) &&
                         view.is_empty_region(l, j)) {
                         splits.push_back({k, l});
                     }
