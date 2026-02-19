@@ -27,14 +27,6 @@ class PartFuncWMBPContext;
 class PartFuncWMBContext;
 class PartFuncBEContext;
 
-struct RuleSpec {
-    RuleId id;
-    NonTerminal lhs;
-    SplitSpec split;
-    const struct RuleChildSpec *rhs = nullptr;
-    size_t rhs_len = 0;
-};
-
 struct RuleSplit {
     cand_pos_t k = -1;
     cand_pos_t l = -1;
@@ -75,6 +67,21 @@ struct RuleChildSpec {
     bool allow_empty = false;
 };
 
+struct RuleSpec {
+    RuleId id;
+    NonTerminal lhs;
+    SplitSpec split;
+    const RuleChildSpec *rhs = nullptr;
+    size_t rhs_len = 0;
+    enum class SplitGenKind : unsigned char { Custom, KRange } split_gen = SplitGenKind::Custom;
+    struct SplitRangeSpec {
+        EndpointRef start{};
+        EndpointRef end{};
+        bool end_inclusive = true;
+        bool subtract_turn = false;
+    } split_range{};
+};
+
 struct RuleSpanContext {
     cand_pos_t i = -1;
     cand_pos_t j = -1;
@@ -93,6 +100,7 @@ const std::vector<RuleSpec> &rule_catalog();
 
 cand_pos_t resolve_endpoint(EndpointRef endpoint, const RuleSpanContext &ctx);
 std::vector<RuleChild> expand_rule_rhs(const RuleSpec &spec, const RuleSpanContext &ctx);
+std::vector<RuleSplit> enumerate_splits_k_range(const RuleSpec &spec, const RuleSpanContext &ctx, cand_pos_t turn);
 
 // Returns the full candidate rule list for a non-terminal, before applicability filtering.
 const std::vector<RuleId> &rules_for(NonTerminal nonterminal);

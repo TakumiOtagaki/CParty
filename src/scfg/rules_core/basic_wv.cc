@@ -188,12 +188,17 @@ std::vector<RuleSplit> enumerate_splits_wi(RuleId rule,
                                            cand_pos_t j,
                                            PartFuncWIContext &ctx,
                                            sparse_tree &tree) {
+    const RuleSpec &spec = rule_spec(rule);
     std::vector<RuleSplit> splits;
     if (i == j) {
         if (rule == RuleId::WI_BASE_SINGLE) {
             splits.push_back({});
         }
         return splits;
+    }
+    if (spec.split_gen == RuleSpec::SplitGenKind::KRange) {
+        RuleSpanContext span_ctx{i, j, {}};
+        return enumerate_splits_k_range(spec, span_ctx, ctx.turn());
     }
     switch (rule) {
     case RuleId::WI_SPLIT_V:

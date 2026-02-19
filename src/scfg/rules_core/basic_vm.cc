@@ -28,6 +28,11 @@ std::vector<RuleSplit> enumerate_splits_vm(RuleId rule,
                                            cand_pos_t j,
                                            PartFuncVMContext &ctx,
                                            std::vector<int> &up) {
+    const RuleSpec &spec = rule_spec(rule);
+    if (spec.split_gen == RuleSpec::SplitGenKind::KRange) {
+        RuleSpanContext span_ctx{i, j, {}};
+        return enumerate_splits_k_range(spec, span_ctx, ctx.turn());
+    }
     std::vector<RuleSplit> splits;
     const cand_pos_t turn = ctx.turn();
     switch (rule) {

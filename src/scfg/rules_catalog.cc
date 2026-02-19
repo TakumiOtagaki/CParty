@@ -38,8 +38,19 @@ constexpr RuleSpec rule_spec(RuleId id,
                              NonTerminal lhs,
                              SplitSpec split,
                              const RuleChildSpec *rhs = nullptr,
-                             size_t rhs_len = 0) {
-    return RuleSpec{id, lhs, split, rhs, rhs_len};
+                             size_t rhs_len = 0,
+                             RuleSpec::SplitGenKind split_gen = RuleSpec::SplitGenKind::Custom,
+                             RuleSpec::SplitRangeSpec split_range = {}) {
+    return RuleSpec{id, lhs, split, rhs, rhs_len, split_gen, split_range};
+}
+
+constexpr RuleSpec::SplitRangeSpec split_range(Endpoint start_base,
+                                               int start_offset,
+                                               Endpoint end_base,
+                                               int end_offset,
+                                               bool end_inclusive,
+                                               bool subtract_turn) {
+    return RuleSpec::SplitRangeSpec{ep(start_base, start_offset), ep(end_base, end_offset), end_inclusive, subtract_turn};
 }
 
 // RHS: WI
@@ -233,8 +244,20 @@ const RuleSpec kRuleSpecs[] = {
 
     // WI
     rule_spec(RuleId::WI_BASE_SINGLE, NonTerminal::WI, split_spec(SplitKind::None)),
-    rule_spec(RuleId::WI_SPLIT_V, NonTerminal::WI, split_spec(SplitKind::K), kWiSplitVRhs, 2),
-    rule_spec(RuleId::WI_SPLIT_WMB, NonTerminal::WI, split_spec(SplitKind::K), kWiSplitWmbRhs, 2),
+    rule_spec(RuleId::WI_SPLIT_V,
+              NonTerminal::WI,
+              split_spec(SplitKind::K),
+              kWiSplitVRhs,
+              2,
+              RuleSpec::SplitGenKind::KRange,
+              split_range(Endpoint::I, 0, Endpoint::J, -1, true, true)),
+    rule_spec(RuleId::WI_SPLIT_WMB,
+              NonTerminal::WI,
+              split_spec(SplitKind::K),
+              kWiSplitWmbRhs,
+              2,
+              RuleSpec::SplitGenKind::KRange,
+              split_range(Endpoint::I, 0, Endpoint::J, -1, true, true)),
     rule_spec(RuleId::WI_EXTEND_UNPAIRED, NonTerminal::WI, split_spec(SplitKind::None), kWiExtendUnpairedRhs, 1),
 
     // W
@@ -243,8 +266,20 @@ const RuleSpec kRuleSpecs[] = {
     rule_spec(RuleId::W_SPLIT_WMB, NonTerminal::W, split_spec(SplitKind::K), kWSplitWmbRhs, 2),
 
     // VM
-    rule_spec(RuleId::VM_SPLIT_WM_WMv, NonTerminal::VM, split_spec(SplitKind::K), kVmSplitWmWmvRhs, 2),
-    rule_spec(RuleId::VM_SPLIT_WM_WMp, NonTerminal::VM, split_spec(SplitKind::K), kVmSplitWmWmpRhs, 2),
+    rule_spec(RuleId::VM_SPLIT_WM_WMv,
+              NonTerminal::VM,
+              split_spec(SplitKind::K),
+              kVmSplitWmWmvRhs,
+              2,
+              RuleSpec::SplitGenKind::KRange,
+              split_range(Endpoint::I, 1, Endpoint::J, -1, true, true)),
+    rule_spec(RuleId::VM_SPLIT_WM_WMp,
+              NonTerminal::VM,
+              split_spec(SplitKind::K),
+              kVmSplitWmWmpRhs,
+              2,
+              RuleSpec::SplitGenKind::KRange,
+              split_range(Endpoint::I, 1, Endpoint::J, -1, true, true)),
     rule_spec(RuleId::VM_SPLIT_WMp_BASE, NonTerminal::VM, split_spec(SplitKind::K), kVmSplitWmpBaseRhs, 1),
     rule_spec(RuleId::VM_SCALE2, NonTerminal::VM, split_spec(SplitKind::None)),
 
@@ -264,8 +299,20 @@ const RuleSpec kRuleSpecs[] = {
     // WIP
     rule_spec(RuleId::WIP_BASE_V, NonTerminal::WIP, split_spec(SplitKind::None), kWipBaseVRhs, 1),
     rule_spec(RuleId::WIP_BASE_WMB, NonTerminal::WIP, split_spec(SplitKind::None), kWipBaseWmbRhs, 1),
-    rule_spec(RuleId::WIP_SPLIT_V, NonTerminal::WIP, split_spec(SplitKind::K), kWipSplitVRhs, 2),
-    rule_spec(RuleId::WIP_SPLIT_WMB, NonTerminal::WIP, split_spec(SplitKind::K), kWipSplitWmbRhs, 2),
+    rule_spec(RuleId::WIP_SPLIT_V,
+              NonTerminal::WIP,
+              split_spec(SplitKind::K),
+              kWipSplitVRhs,
+              2,
+              RuleSpec::SplitGenKind::KRange,
+              split_range(Endpoint::I, 1, Endpoint::J, -1, false, true)),
+    rule_spec(RuleId::WIP_SPLIT_WMB,
+              NonTerminal::WIP,
+              split_spec(SplitKind::K),
+              kWipSplitWmbRhs,
+              2,
+              RuleSpec::SplitGenKind::KRange,
+              split_range(Endpoint::I, 1, Endpoint::J, -1, false, true)),
     rule_spec(RuleId::WIP_BASEPAIR_V, NonTerminal::WIP, split_spec(SplitKind::K), kWipBasepairVRhs, 1),
     rule_spec(RuleId::WIP_BASEPAIR_WMB, NonTerminal::WIP, split_spec(SplitKind::K), kWipBasepairWmbRhs, 1),
     rule_spec(RuleId::WIP_EXTEND_UNPAIRED, NonTerminal::WIP, split_spec(SplitKind::None), kWipExtendUnpairedRhs, 1),

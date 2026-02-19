@@ -37,4 +37,24 @@ std::vector<RuleChild> expand_rule_rhs(const RuleSpec &spec, const RuleSpanConte
     return children;
 }
 
+std::vector<RuleSplit> enumerate_splits_k_range(const RuleSpec &spec, const RuleSpanContext &ctx, cand_pos_t turn) {
+    std::vector<RuleSplit> splits;
+    const RuleSpec::SplitRangeSpec &range = spec.split_range;
+    cand_pos_t start = resolve_endpoint(range.start, ctx);
+    cand_pos_t end = resolve_endpoint(range.end, ctx);
+    if (range.subtract_turn) {
+        end -= turn;
+    }
+    if (range.end_inclusive) {
+        for (cand_pos_t k = start; k <= end; ++k) {
+            splits.push_back({k, -1});
+        }
+    } else {
+        for (cand_pos_t k = start; k < end; ++k) {
+            splits.push_back({k, -1});
+        }
+    }
+    return splits;
+}
+
 } // namespace scfg
